@@ -34,12 +34,13 @@ metadata:
 ### 第三步：生成 Demo 页面总览
 
 1. 先读取 [Demo设计规格](references/01-workflow/03-demo-design-spec.md)，执行Demo范围过滤、页面拆解和导航结构设计。
-2. 页面拆解和导航结构设计后，如果存在业务设计Skill，必须优先查阅业务设计Skill中的产品介绍、页面导航结构、页面说明、页面设计规范和同类模块设计规则，校准菜单层级、命名、页面归属、容器选择、字段表达和弹窗/抽屉等交互方式。
-3. 业务设计Skill识别方式：先通过Skill名称和描述判断；名称中包含深信服产品英文缩写 aTrust、ZTP、DSP、SASE、XDR、MSS、DR、aES，或描述中同时包含具体深信服产品名称、设计、业务设计规范等关键词时，可判定为业务设计Skill；例如“为深信服下一代端点安全产品路由策略类产品设计与前端交付需求”可作为业务设计Skill使用。
-4. 只有业务设计Skill没有覆盖、没有说清楚，或用户没有提供业务设计Skill时，按需求命中的主题读取 [主题设计库](references/02-theme-patterns/)；主题模板仍未覆盖时，再按需读取 [功能点设计库](references/03-function-patterns/) 和 [基础设计库](references/04-design-basics/) 中的页面类型、布局、表单、表格、交互和状态规则，用通用B端设计规则补充页面类型、页面容器、表格、表单、详情、二次确认和多层级下钻设计。
-5. 如果存在可用代码环境，读取相关模块代码并校准页面拆解：判断应复用已有页面、在已有菜单下新增页面、组合成Tab，还是使用弹窗/抽屉承载；同时参考已有代码中的组件、状态、Mock数据和交互实现方式。
-6. 生成页面关键交互说明时，必须综合五类信息：需求资料中明确写出的操作、流程、状态和限制；业务设计Skill中的既有产品规范；可用Demo代码环境中的已有模块实现；通用设计库中的B端页面设计模式；AI基于业务目标、用户任务和页面容器类型做出的合理补齐。
-6. 对话框主体只输出到“页面总览表”为止，禁止在对话框继续输出逐页设计说明、Demo交互与逻辑规则、Mock数据细节或AI Coding完整提示词。
+2. 页面拆解和导航结构设计后，如果存在业务设计Skill，必须优先查阅业务设计Skill中的产品介绍、页面导航结构、页面说明、页面设计规范和同类模块设计规则，校准菜单层级、导航位置、菜单命名、页面归属、容器选择、字段表达和弹窗/抽屉等交互方式。
+3. 导航结构主要作为“需求拆解到页面设计”时的页面归属和导航菜单结构位置输入；新增页面命名必须参考所属产品已有导航命名规律，同一导航菜单内不得与已有菜单或页面重名，Tab页面一般也不得重名。若相同名称位于不同菜单路径下、表达的是不同菜单下的同类任务页面，例如不同菜单下均叫“任务管理”，可允许同名，但必须在导航路径中体现差异。
+4. 业务设计Skill识别方式：先通过Skill名称和描述判断；名称中包含深信服产品英文缩写 aTrust、ZTP、DSP、SASE、XDR、MSS、DR、aES，或描述中同时包含具体深信服产品名称、设计、业务设计规范等关键词时，可判定为业务设计Skill；例如“为深信服下一代端点安全产品路由策略类产品设计与前端交付需求”可作为业务设计Skill使用。
+5. 只有业务设计Skill没有覆盖、没有说清楚，或用户没有提供业务设计Skill时，按需求命中的主题读取 [主题设计库](references/02-theme-patterns/)；主题模板仍未覆盖时，再按需读取 [功能点设计库](references/03-function-patterns/) 和 [基础设计库](references/04-design-basics/) 中的页面类型、布局、表单、表格、交互和状态规则，用通用B端设计规则补充页面类型、页面容器、表格、表单、详情、二次确认和多层级下钻设计。若导航结构仍不明确，再读取 [产品导航索引库](references/06-product-navigation/navigation-index.md) 作为低优先级兜底参考。
+6. 如果存在可用代码环境，读取相关模块代码并校准页面拆解：判断应复用已有页面、在已有菜单下新增页面、组合成Tab，还是使用弹窗/抽屉承载；同时参考已有代码中的组件、状态、Mock数据和交互实现方式。
+7. 生成页面关键交互说明时，必须综合五类信息：需求资料中明确写出的操作、流程、状态和限制；业务设计Skill中的既有产品规范；可用Demo代码环境中的已有模块实现；通用设计库中的B端页面设计模式；AI基于业务目标、用户任务和页面容器类型做出的合理补齐。
+8. 对话框主体只输出到“页面总览表”为止，禁止在对话框继续输出逐页设计说明、Demo交互与逻辑规则、Mock数据细节或AI Coding完整提示词。
 
 对话框输出上限：需求与Demo范围、核心用户与场景、导航结构、页面总览表、待确认问题、HTML文件路径和简短说明。详细页面内容必须进入HTML。
 
@@ -123,6 +124,7 @@ HTML设计说明书生成后，先提醒用户查看HTML页面内容；HTML是�
 - 基础设计库：见 [references/04-design-basics/04-layout-patterns.md](references/04-design-basics/04-layout-patterns.md)（何时读取：设计详情页、Tab、页面层级和内容组织时）
 - 基础设计库：见 [references/04-design-basics/05-interaction-patterns.md](references/04-design-basics/05-interaction-patterns.md)（何时读取：设计二次确认、高危操作、反馈和容器使用边界时）
 - 基础设计库：见 [references/04-design-basics/06-state-patterns.md](references/04-design-basics/06-state-patterns.md)（何时读取：补充空状态、加载态、异常态、无权限和极端情况时）
+- 产品导航索引：见 [references/06-product-navigation/navigation-index.md](references/06-product-navigation/navigation-index.md)（何时读取：缺少业务设计Skill、业务设计Skill未覆盖导航结构，或需要辅助判断产品菜单归属时；仅作低优先级导航兜底参考）
 - 示例：见 [references/05-examples/demo-design-examples.md](references/05-examples/demo-design-examples.md)（何时读取：需要参考HTML说明书输入JSON、页面说明颗粒度或完整输出示例时）
 
 ## 注意事项
