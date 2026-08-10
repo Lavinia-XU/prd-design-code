@@ -150,7 +150,7 @@ HTML设计说明书已生成。请先查看HTML页面内容；如果HTML中有�
 
 ## 4. HTML说明书生成模板
 
-页面总览之后，将完整设计说明整理为JSON并调用脚本生成HTML。JSON中不写入`questions`字段；待确认问题只在对话框展示。交互与逻辑规则必须整合进对应页面的`sections`区块说明中，例如工具栏、筛选项、字段展示、可点击操作、状态值、表单选项、校验和边界状态；不再使用独立的页面内关键交互章节或全局交互规则页。若页面引用业务设计Skill或通用功能点设计，页面内容区只简要描述功能点入口、触发效果、展示规则和校验规则，并在页面内`codingGuide.designReferences`和`codingGuide.implementationNotes`中补充关联说明和编码指引。总结性Coding指导写入顶层`codingGuide`，页面级Coding指导写入页面内`codingGuide`。页面层级通过页面内`children`字段表达。每个页面必须写入`navigation`对象，用`primary`、`secondary`、`tertiary`、`tab`分别表示一级导航、二级导航、三级导航和Tab页面；没有对应层级时填空字符串，禁止只用`/`拼接路径。
+页面总览之后，将完整设计说明整理为JSON并调用脚本生成HTML。JSON中不写入`questions`字段；待确认问题只在对话框展示。交互与逻辑规则必须整合进对应页面的`sections`区块说明中，例如工具栏、筛选项、字段展示、可点击操作、状态值、表单选项、校验和边界状态；不再使用独立的页面内关键交互章节或全局交互规则页。若页面引用业务设计Skill或通用功能点设计，页面内容区只简要描述功能点入口、触发效果、展示规则和校验规则，并在页面内`codingGuide.designReferences`和`codingGuide.implementationNotes`中补充关联说明和编码指引。总结性Coding指导写入顶层`codingGuide`，页面级Coding指导写入页面内`codingGuide`。页面层级通过页面内`children`字段表达。每个页面必须写入`navigation`对象，用`primary`、`secondary`、`tertiary`、`tab`分别表示一级导航、二级导航、三级导航和Tab页面；没有对应层级时填空字符串，禁止只用`/`拼接路径。`navigation`表示页面所属菜单或Tab位置，不表示当前功能子页面名称；新增、编辑、详情、弹窗、抽屉等由主页面操作进入的非菜单页面，必须继承所属主页面的`navigation`，不要把“新增xx”“编辑xx”“xx详情”写进导航位置。HTML中的目录开发要求必须写入Coding指导：左侧目录只用于切换页面内容，Coding时不要使用URL hash定位锚点开发目录。
 
 ### 4.1 脚本调用
 
@@ -208,7 +208,8 @@ python scripts/generate_demo_spec_html.py --input ./demo-spec.json --output ./de
     "components": ["统计卡片", "筛选表单", "表格", "抽屉", "弹窗"],
     "mockData": ["至少12条事件数据，覆盖高/中/低风险和待处置/处理中/已处置状态"],
     "frontendRules": ["筛选基于Mock数据实时生效", "提交处置后更新当前行状态"],
-    "prompt": "请基于本HTML说明书实现前端Demo，使用Mock数据并完成基础交互逻辑。"
+    "implementationNotes": ["左侧目录用于切换页面内容，不要使用URL hash定位锚点开发目录。"],
+    "prompt": "请基于本HTML说明书实现前端Demo，使用Mock数据并完成基础交互逻辑；左侧目录切换不要使用URL hash定位锚点。"
   }
 }
 ```
@@ -256,3 +257,30 @@ HTML设计说明书已生成。请先查看HTML页面内容；如果HTML中有�
 ```text
 Demo已开发完毕，请告知有哪些需要调整的。你可以从页面结构、字段内容、交互逻辑、状态展示、样式细节或Coding效果上提出修改。
 ```
+
+### 6.4 Coding前复核
+
+```markdown
+## Coding前复核
+
+- 本次将开发页面：<按页面层级列出页面ID-页面名称>
+- 主要输入依据：<HTML设计说明书、原始需求、用户确认内容、业务设计Skill、通用设计库、功能点设计、已有代码>
+- 优先遵循：<用户确认内容、业务设计Skill、已有代码结构、页面类型还原要求>
+- HTML使用方式：HTML用于对齐页面范围、结构和显性设计决策，不作为唯一Coding输入。
+- 冲突处理：若HTML与业务设计Skill、用户确认内容或已有代码冲突，以更高优先级依据修正实现，并在开发进度中说明原因。
+```
+
+### 6.5 Coding效果问题回溯
+
+```markdown
+## 问题来源判断
+
+| 问题来源 | 判断依据 | 处理方式 |
+|---|---|---|
+| 需求理解问题 | 原始需求与页面总览或HTML方向不一致 | 回到需求理解和页面总览修正 |
+| HTML设计说明问题 | 页面结构、字段、交互或状态在HTML中写错 | 修正设计说明JSON并重新生成HTML，再调整代码 |
+| 业务规范问题 | HTML或代码未遵循业务设计Skill | 回查业务设计Skill并修正HTML或代码 |
+| 代码实现问题 | HTML正确但代码未还原 | 按HTML和设计依据修正代码 |
+| 组件复用问题 | 复用组件与目标页面不匹配 | 调整复用策略或补充页面级实现 |
+```
+

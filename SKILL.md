@@ -71,8 +71,9 @@ HTML标题使用“XX需求设计说明书”。左侧为目录结构，第一�
 
 ### 第六步：询问并执行 Coding 计划
 
-HTML设计说明书生成后，先提醒用户查看HTML页面内容；如果HTML中有需要调整的页面结构、字段、交互、状态或说明内容，用户可以直接告知修改点。随后输出具体Coding计划并询问用户是否确认执行；只有用户明确同意后，才开始Coding执行。这里确认的是Coding相关内容，业务设计相关内容应已在第四步待确认问题中完成确认，不要在此重新展开业务方案讨论。若用户在确认Coding前提出HTML修改意见，先更新HTML设计说明书并重新生成一次最新HTML，再重新输出Coding计划确认。
+HTML设计说明书生成后，先提醒用户查看HTML页面内容；HTML是需求到Coding之间的可审阅中间产物和实现边界说明，不是Coding唯一输入，也不是机械执行稿。如果HTML中有需要调整的页面结构、字段、交互、状态或说明内容，用户可以直接告知修改点。随后先做Coding前上下文复核，再输出具体Coding计划并询问用户是否确认执行；只有用户明确同意后，才开始Coding执行。这里确认的是Coding相关内容，业务设计相关内容应已在第四步待确认问题中完成确认，不要在此重新展开业务方案讨论。若用户在确认Coding前提出HTML修改意见，先更新HTML设计说明书并重新生成一次最新HTML，再重新输出Coding前复核和Coding计划确认。
 
+- Coding前复核必须说明：本次Coding综合使用的输入来源，包括HTML设计说明书、原始需求、用户确认内容、业务设计Skill、通用设计库、功能点设计和已有代码；不得只依据HTML机械开发。
 - Coding计划必须说明：本次开发页面的导航路径，包括一级菜单、二级菜单、三级菜单、Tab或页面入口；若需要新增路由或复用已有菜单，也要明确写出。
 - Coding计划必须区分：哪些页面由AI全新开发，哪些页面参考已有已开发页面的代码实现，并写明参考页面或模块名称。
 - Coding计划必须列出：页面内哪些功能点会复用已有代码模块、组件、样式、Mock数据或交互逻辑，不重新开发；哪些功能点需要新增实现。
@@ -81,6 +82,7 @@ HTML设计说明书生成后，先提醒用户查看HTML页面内容；如果HTM
 - 页面开发顺序：优先开发父级主页面，再开发由主页面打开的新增、编辑、详情、弹窗或抽屉等子页面，确保入口和跳转链路可运行。
 - 每页完成反馈：每完成一个页面，简要告知用户“已完成 <页面ID-页面名称> 的开发，接下来开发 <页面ID-页面名称>”，并说明已完成的关键界面、交互和状态。
 - 全部完成反馈：所有页面开发完成后，告知用户“Demo已开发完毕，请告知有哪些需要调整的”，并提示用户可以从页面结构、字段、交互、状态、样式或Coding效果上提出修改。
+- 效果回溯：若用户反馈Coding效果不好，先判断问题来源是原始需求理解、HTML设计说明、业务设计规范、代码实现还原还是组件复用策略，再决定回到页面总览、HTML说明书或代码实现环节修正。
 
 ## 使用示例
 
@@ -109,6 +111,7 @@ HTML设计说明书生成后，先提醒用户查看HTML页面内容；如果HTM
 - 工作流规范：见 [references/01-workflow/04-coding-guidelines.md](references/01-workflow/04-coding-guidelines.md)（何时读取：补充搜索筛选、二次确认、状态规则、Mock数据、AI Coding提示词和执行Coding计划时）
 - 工作流规范：见 [references/01-workflow/05-quality-and-rules.md](references/01-workflow/05-quality-and-rules.md)（何时读取：输出前做质量自检或确认禁止事项时）
 - 主题设计库：见 [references/02-theme-patterns/strategy-management.md](references/02-theme-patterns/strategy-management.md)（何时读取：需求涉及策略、规则、白名单、规则组时）
+- 主题设计库：见 [references/02-theme-patterns/task-management.md](references/02-theme-patterns/task-management.md)（何时读取：需求涉及任务管理、升级任务、分发任务、扫描任务、周期执行、定时执行、执行进度或失败重试时）
 - 功能点设计库：见 [references/03-function-patterns/tag-management.md](references/03-function-patterns/tag-management.md)（何时读取：需求涉及标签、打标、标签筛选、标签关联对象时）
 - 功能点设计库：见 [references/03-function-patterns/import.md](references/03-function-patterns/import.md)（何时读取：需求涉及批量导入、模板下载、文件解析、导入校验或失败明细时）
 - 功能点设计库：见 [references/03-function-patterns/export.md](references/03-function-patterns/export.md)（何时读取：需求涉及批量导出、导出范围、导出字段、文件生成或文件下载时）

@@ -57,9 +57,11 @@ def render_tree(nodes):
 
 def render_coding_summary(guide):
     if not guide:
-        return "<p class=\"muted\">暂无总结性Coding指导</p>"
+        guide = {}
     reference_block = optional_list_block("关联设计说明", guide.get("designReferences", []))
-    implementation_block = optional_list_block("编码指引", guide.get("implementationNotes", []))
+    implementation_notes = list(guide.get("implementationNotes", []) or [])
+    implementation_notes.append("目录开发要求：左侧目录用于切换页面内容，不要使用URL hash定位锚点开发目录；应使用路由状态、组件状态或数据驱动的菜单选中态完成切换，避免URL出现#锚点跳转。")
+    implementation_block = optional_list_block("编码指引", implementation_notes)
     return f"""
       <div class="stack">
         {reference_block}
@@ -67,7 +69,7 @@ def render_coding_summary(guide):
         <div><strong>Mock数据要求</strong>{list_html(guide.get('mockData', []))}</div>
         <div><strong>前端逻辑要求</strong>{list_html(guide.get('frontendRules', []))}</div>
         {implementation_block}
-        <div><strong>可复制提示词</strong><p>{esc(guide.get('prompt', '请基于本说明书实现前端Demo，使用Mock数据并完成基础交互逻辑。'))}</p></div>
+        <div><strong>可复制提示词</strong><p>{esc(guide.get('prompt', '请基于本说明书实现前端Demo，使用Mock数据并完成基础交互逻辑；左侧目录切换不要使用URL hash定位锚点。'))}</p></div>
       </div>
     """
 
@@ -158,6 +160,19 @@ def render_block_detail(block):
     if html_text:
         details.append(html_text)
 
+    filter_mode = block.get("filterMode") or block.get("filterType")
+    filter_source = block.get("filterSource")
+    filter_fields = block.get("filterFields") or []
+    if filter_mode or filter_source or filter_fields:
+        filter_intro = []
+        if filter_source:
+            filter_intro.append(f"筛选方式来源：{esc(filter_source)}")
+        if filter_mode:
+            filter_intro.append(f"筛选组件类型：{esc(filter_mode)}")
+        filter_html = optional_list_block("筛选区说明", filter_intro)
+        filter_table = optional_table_block("筛选字段", filter_fields, [("name", "字段名称"), ("component", "组件/筛选方式"), ("mode", "匹配方式"), ("options", "选项范围"), ("default", "默认值"), ("description", "说明")])
+        details.append(filter_html + filter_table)
+
     table_fields = block.get("tableFields") or block.get("columns") or []
     form_fields = block.get("formFields") or []
     legacy_fields = block.get("fields", [])
@@ -201,7 +216,7 @@ def render_page_coding(page):
     return render_coding_summary(guide)
 
 
-def render_navigation_table(page):
+def page_navigation(page, inherited_nav=None):
     nav = page.get("navigation") or {}
     if not nav:
         nav_path = str(page.get("navPath") or "").strip()
@@ -213,6 +228,13 @@ def render_navigation_table(page):
                 "tertiary": parts[2] if len(parts) > 2 else "",
                 "tab": parts[3] if len(parts) > 3 else "",
             }
+    if not nav and inherited_nav:
+        nav = inherited_nav
+    return nav
+
+
+def render_navigation_table(page, inherited_nav=None):
+    nav = page_navigation(page, inherited_nav)
     rows = [{
         "primary": nav.get("primary", ""),
         "secondary": nav.get("secondary", ""),
@@ -223,7 +245,14 @@ def render_navigation_table(page):
     return table_html(rows, columns)
 
 
-def render_page(page):
+def render_restore_requirement(page):
+    requirement = page.get("restoreRequirement") or page.get("pageTypeRestoreRequirement")
+    if not requirement:
+        return ""
+    return f"<h3>页面类型还原要求</h3><p>{esc(requirement)}</p>"
+
+
+def render_page(page, inherited_nav=None):
     sections = []
     for block in page.get("sections", []):
         sections.append(f"""
@@ -237,7 +266,7 @@ def render_page(page):
     <section class="page" id="{esc('page-' + slug(page.get('id', '')))}">
       <h1>{esc(page.get('id', ''))}-{esc(page.get('name', '未命名页面'))}</h1>
       <div class="card"><h2>页面目标</h2><p>{esc(page.get('purpose', ''))}</p></div>
-      <div class="card"><h2>页面基础信息</h2><dl class="meta-list"><dt>页面类型</dt><dd>{esc(page.get('type', ''))}</dd><dt>页面布局</dt><dd>{esc(page.get('layout', ''))}</dd></dl><h3>导航位置</h3>{render_navigation_table(page)}</div>
+      <div class="card"><h2>页面基础信息</h2><dl class="meta-list"><dt>页面类型</dt><dd>{esc(page.get('type', ''))}</dd><dt>页面布局</dt><dd>{esc(page.get('layout', ''))}</dd></dl><h3>导航位置</h3>{render_navigation_table(page, inherited_nav)}{render_restore_requirement(page)}</div>
       <div class="card"><h2>页面内容区块</h2>{''.join(sections) or '<p class="muted">暂无</p>'}</div>
       <div class="card"><h2>底部操作</h2>{list_html(page.get('footerActions', []))}</div>
       <div class="card"><h2>页面级AI Coding指导</h2>{render_page_coding(page)}</div>
@@ -245,11 +274,12 @@ def render_page(page):
     """
 
 
-def flatten_pages(pages):
+def flatten_pages(pages, inherited_nav=None):
     result = []
     for page in pages:
-        result.append(page)
-        result.extend(flatten_pages(page.get("children", []) or []))
+        current_nav = page_navigation(page, inherited_nav)
+        result.append((page, current_nav))
+        result.extend(flatten_pages(page.get("children", []) or [], current_nav))
     return result
 
 
@@ -303,7 +333,7 @@ def main():
 
     title = data.get("title") or "需求设计说明书"
     pages = flatten_pages(data.get("pages", []))
-    content = render_overview(data) + "\n" + "\n".join(render_page(page) for page in pages)
+    content = render_overview(data) + "\n" + "\n".join(render_page(page, inherited_nav) for page, inherited_nav in pages)
     html_text = template.replace("{{TITLE}}", esc(title)).replace("{{NAV}}", build_nav(data)).replace("{{CONTENT}}", content)
 
     output_path.parent.mkdir(parents=True, exist_ok=True)
