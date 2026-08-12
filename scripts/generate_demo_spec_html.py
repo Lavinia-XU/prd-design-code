@@ -252,6 +252,39 @@ def render_restore_requirement(page):
     return f"<h3>页面类型还原要求</h3><p>{esc(requirement)}</p>"
 
 
+def render_wireframe(page):
+    wireframe_data = page.get("wireframe") or page.get("asciiWireframe") or ""
+    if isinstance(wireframe_data, dict):
+        wireframe_text = str(wireframe_data.get("ascii") or wireframe_data.get("text") or "").strip()
+        note = str(wireframe_data.get("note") or wireframe_data.get("description") or page.get("wireframeNote") or page.get("wireframeDescription") or "").strip()
+        layout_source = str(wireframe_data.get("layoutSource") or "").strip()
+        regions = wireframe_data.get("regions") or []
+        if not wireframe_text and not note and not layout_source and not regions:
+            return ""
+        parts = ["<div class=\"wireframe-block\"><h3>Wireframe / ASCII 线框图</h3>"]
+        if note:
+            parts.append(f"<p>{esc(note)}</p>")
+        if layout_source:
+            parts.append(f"<p><strong>线框图结构依据：</strong>{esc(layout_source)}</p>")
+        if regions:
+            parts.append(table_html(regions, [
+                ("区域名称", "name"),
+                ("位置", "position"),
+                ("内容", "content"),
+            ]))
+        if wireframe_text:
+            parts.append(f"<pre>{esc(wireframe_text)}</pre>")
+        parts.append("</div>")
+        return "".join(parts)
+
+    wireframe = str(wireframe_data).strip()
+    if not wireframe:
+        return ""
+    note = str(page.get("wireframeNote") or page.get("wireframeDescription") or "").strip()
+    note_html = f"<p>{esc(note)}</p>" if note else ""
+    return f"<div class=\"wireframe-block\"><h3>Wireframe / ASCII 线框图</h3>{note_html}<pre>{esc(wireframe)}</pre></div>"
+
+
 def render_page(page, inherited_nav=None):
     sections = []
     for block in page.get("sections", []):
@@ -267,6 +300,7 @@ def render_page(page, inherited_nav=None):
       <h1>{esc(page.get('id', ''))}-{esc(page.get('name', '未命名页面'))}</h1>
       <div class="card"><h2>页面目标</h2><p>{esc(page.get('purpose', ''))}</p></div>
       <div class="card"><h2>页面基础信息</h2><dl class="meta-list"><dt>页面类型</dt><dd>{esc(page.get('type', ''))}</dd><dt>页面布局</dt><dd>{esc(page.get('layout', ''))}</dd></dl><h3>导航位置</h3>{render_navigation_table(page, inherited_nav)}{render_restore_requirement(page)}</div>
+      <div class="card"><h2>Wireframe / ASCII 线框图</h2>{render_wireframe(page) or '<p class="muted">暂无</p>'}</div>
       <div class="card"><h2>页面内容区块</h2>{''.join(sections) or '<p class="muted">暂无</p>'}</div>
       <div class="card"><h2>底部操作</h2>{list_html(page.get('footerActions', []))}</div>
       <div class="card"><h2>页面级AI Coding指导</h2>{render_page_coding(page)}</div>
