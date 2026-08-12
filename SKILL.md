@@ -61,6 +61,7 @@ metadata:
 
 用户确认待确认问题后，先判断确认结果是否影响第三步已输出的导航结构和页面总览表；若有影响，必须先按用户确认后的内容重新输出更新版导航结构和页面总览表，再生成HTML说明书。页面总览之后的详细页面内容直接写入HTML说明书，不在对话框展开。待确认问题只放在对话框的页面总览表之后，不写入HTML说明书。
 
+- 生成前先读取 [交互补齐与编码指导规范](references/01-workflow/04-interaction-coding-guidelines.md)，用它约束页面交互补齐、代码复用优先级、页面级AI Coding指导输出格式和Skill执行要求。
 - 确认结果回写：用户对菜单层级、页面容器、页面增删、入口方式、关键业务规则或Coding方式的确认，必须同步更新导航结构、页面总览表和HTML输入JSON，禁止沿用确认前的旧总览。
 - 逐页设计说明：页面类型、页面目标、页面布局、页面内容区块、Wireframe / ASCII线框图和底部操作；生成HTML输入JSON时，每个页面对象必须写入`wireframe`字段，必要时补充`wireframeNote`说明容器关系。
 - 页面级Demo交互与逻辑规则：搜索、筛选、重置、排序、分页、新增、编辑、查看、删除、处置、启用、禁用、二次确认、表单校验等规则必须整合到对应页面的区块说明或底部操作中，不单独生成页面内关键交互章节或页面交互规则章节。
@@ -110,7 +111,7 @@ HTML设计说明书生成后，先提醒用户查看HTML页面内容；HTML是�
 - 工作流规范：见 [references/01-workflow/01-output-templates.md](references/01-workflow/01-output-templates.md)（何时读取：需要按标准结构输出对话框摘要、待确认问题、HTML生成后的说明和Coding执行提示时）
 - 工作流规范：见 [references/01-workflow/02-experience-goal-writing.md](references/01-workflow/02-experience-goal-writing.md)（何时读取：提炼需求分析后撰写体验目标和画面感时）
 - 工作流规范：见 [references/01-workflow/03-demo-design-spec.md](references/01-workflow/03-demo-design-spec.md)（何时读取：生成导航结构、页面总览、逐页设计说明和HTML输入JSON前）
-- 工作流规范：见 [references/01-workflow/04-coding-guidelines.md](references/01-workflow/04-coding-guidelines.md)（何时读取：补充搜索筛选、二次确认、状态规则、Mock数据、AI Coding提示词和执行Coding计划时）
+- 工作流规范：见 [references/01-workflow/04-interaction-coding-guidelines.md](references/01-workflow/04-interaction-coding-guidelines.md)（何时读取：补充搜索筛选、二次确认、状态规则、Mock数据、AI Coding提示词和执行Coding计划时）
 - 工作流规范：见 [references/01-workflow/05-quality-and-rules.md](references/01-workflow/05-quality-and-rules.md)（何时读取：输出前做质量自检或确认禁止事项时）
 - 主题设计库：见 [references/02-theme-patterns/strategy-management.md](references/02-theme-patterns/strategy-management.md)（何时读取：需求涉及策略、规则、白名单、规则组时）
 - 主题设计库：见 [references/02-theme-patterns/task-management.md](references/02-theme-patterns/task-management.md)（何时读取：需求涉及任务管理、升级任务、分发任务、扫描任务、周期执行、定时执行、执行进度或失败重试时）
