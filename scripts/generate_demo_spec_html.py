@@ -55,23 +55,61 @@ def render_tree(nodes):
     return "".join(parts)
 
 
-def render_coding_summary(guide):
+def render_coding_summary(guide, mode="overview"):
     if not guide:
         guide = {}
-    reference_block = optional_list_block("关联设计说明", guide.get("designReferences", []))
-    implementation_notes = list(guide.get("implementationNotes", []) or [])
-    implementation_notes.append("目录开发要求：左侧目录用于切换页面内容，不要使用URL hash定位锚点开发目录；应使用路由状态、组件状态或数据驱动的菜单选中态完成切换，避免URL出现#锚点跳转。")
-    implementation_block = optional_list_block("编码指引", implementation_notes)
-    return f"""
-      <div class="stack">
-        {reference_block}
-        <div><strong>组件建议</strong>{list_html(guide.get('components', []))}</div>
-        <div><strong>Mock数据要求</strong>{list_html(guide.get('mockData', []))}</div>
-        <div><strong>前端逻辑要求</strong>{list_html(guide.get('frontendRules', []))}</div>
-        {implementation_block}
-        <div><strong>可复制提示词</strong><p>{esc(guide.get('prompt', '请基于本说明书实现前端Demo，使用Mock数据并完成基础交互逻辑；左侧目录切换不要使用URL hash定位锚点。'))}</p></div>
-      </div>
-    """
+
+    if mode == "page":
+        items = guide.get("pageItems") or []
+        rows = []
+        for item in items:
+            if isinstance(item, dict):
+                rows.append({
+                    "developmentItem": item.get("developmentItem") or item.get("item") or item.get("label") or "",
+                    "developmentMode": item.get("developmentMode") or item.get("mode") or item.get("way") or "",
+                    "developmentDescription": item.get("developmentDescription") or item.get("description") or item.get("detail") or "",
+                })
+            else:
+                rows.append({"developmentItem": str(item), "developmentMode": "", "developmentDescription": ""})
+
+        parts = []
+        if rows:
+            parts.append(f"<div><strong>开发项编码指导表</strong>{table_html(rows, [('developmentItem', '开发项'), ('developmentMode', '开发方式'), ('developmentDescription', '开发描述')])}</div>")
+
+        mock_data = guide.get("pageMockData") or []
+        if mock_data:
+            parts.append(f"<div><strong>页面级Mock数据要求</strong>{list_html(mock_data)}</div>")
+
+        notes = guide.get("pageNotes") or []
+        if notes:
+            parts.append(f"<div><strong>页面级补充说明</strong>{list_html(notes)}</div>")
+
+        return f"<div class=\"stack\">{''.join(parts) if parts else '<p class=\"muted\">暂无页面级Coding指导</p>'}</div>"
+
+    items = guide.get("overviewItems") or []
+    rows = []
+    for item in items:
+        if isinstance(item, dict):
+            rows.append({
+                "outputItem": item.get("outputItem") or item.get("item") or item.get("label") or "",
+                "description": item.get("description") or item.get("detail") or "",
+            })
+        else:
+            rows.append({"outputItem": str(item), "description": ""})
+
+    parts = []
+    if rows:
+        parts.append(f"<div><strong>总览AI Coding指导</strong>{table_html(rows, [('outputItem', '输出项'), ('description', '说明')])}</div>")
+
+    mock_data = guide.get("overviewMockData") or []
+    if mock_data:
+        parts.append(f"<div><strong>全局Mock数据要求</strong>{list_html(mock_data)}</div>")
+
+    notes = guide.get("overviewNotes") or []
+    if notes:
+        parts.append(f"<div><strong>全局编码约束</strong>{list_html(notes)}</div>")
+
+    return f"<div class=\"stack\">{''.join(parts) if parts else '<p class=\"muted\">暂无总结性AI Coding指导</p>'}</div>"
 
 
 def render_experience_goal(overview):
@@ -213,7 +251,7 @@ def render_page_coding(page):
     guide = page.get("codingGuide", {})
     if not guide:
         return "<p class=\"muted\">暂无页面级Coding指导</p>"
-    return render_coding_summary(guide)
+    return render_coding_summary(guide, mode="page")
 
 
 def page_navigation(page, inherited_nav=None):
