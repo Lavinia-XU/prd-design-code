@@ -133,7 +133,7 @@
 | -------- | ------ | -------- | -------- | -------- | -------- | -------- | -------- | -------- |
 
 ### HTML设计说明书
-- HTML文件：`./<需求名称>-demo-design-spec.html`
+- HTML文件：`./<需求名称>-demo-design-spec.html`，默认直接放在项目根目录下；如果用户明确指定其他目录，也可以按指定路径输出。
 - 说明：逐页设计说明、页面级Demo交互与逻辑规则、页面级Coding指导、Mock数据和总结性AI Coding完整提示词已写入HTML。左侧目录按页面层级展示，点击切换后右侧展示对应页面内容。
 
 ### Coding计划
@@ -158,6 +158,8 @@ HTML设计说明书已生成。请先查看HTML页面内容；如果HTML中有�
 
 ```shell
 python scripts/generate_demo_spec_html.py --input ./demo-spec.json --output ./demo-design-spec.html
+
+注意：`--output` 默认建议写成项目根目录下的文件路径；若用户明确要求其他目录，也可按指定路径输出。
 ```
 
 ### 4.2 JSON结构

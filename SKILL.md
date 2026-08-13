@@ -61,6 +61,9 @@ metadata:
 
 用户确认待确认问题后，先判断确认结果是否影响第三步已输出的导航结构和页面总览表；若有影响，必须先按用户确认后的内容重新输出更新版导航结构和页面总览表，再生成HTML说明书。生成HTML说明书前必须执行页面类型一致性自检：页面总览中的页面类型、页面名称和页面层级必须与HTML说明书保持一致；若用户未明确要求修改，不得擅自更改页面类型、页面结构或页面名称。页面总览之后的详细页面内容直接写入HTML说明书，不在对话框展开。待确认问题只放在对话框的页面总览表之后，不写入HTML说明书。
 
+- 页面结构生成原则：生成HTML设计说明书时，必须以页面类型中已定义的线框图作为页面默认骨架。除内容区外，其余页面结构、布局层级、区块顺序和容器关系一律视为固定，不得新增、删除、拆分、合并或重排。
+- 内容区处理原则：页面生成时，只允许在内容区内补充业务内容、文案、字段、列表、状态与操作说明，不得自行重画整体页面布局。若内容不足，必须保留空态、占位或默认说明，不得自造结构。
+- 特殊说明优先原则：如果页面类型的内容区或页面说明中已明确写有特殊规则，则可按特殊规则进行局部变化，例如某些结构为可选展示项、步骤条允许在已定义的两种位置中切换、标题栏允许在已定义的样式范围内切换。上述变化仅限于页面类型已明确声明的可选范围内，且不得影响整体页面布局的默认固定结构；若未明确写出特殊说明，则一律按默认固定布局处理，不能自由发挥。
 - 生成前先读取 [交互补齐与编码指导规范](references/01-workflow/04-interaction-coding-guidelines.md)，用它约束页面交互补齐、代码复用优先级、页面级AI Coding指导输出格式和Skill执行要求。
 - 确认结果回写：用户对菜单层级、页面容器、页面增删、入口方式、关键业务规则或Coding方式的确认，必须同步更新导航结构、页面总览表和HTML输入JSON，禁止沿用确认前的旧总览。
 - 逐页设计说明：页面类型、页面目标、页面布局、页面内容区块、Wireframe / ASCII线框图和底部操作；生成HTML输入JSON时，每个页面对象必须写入`wireframe`字段，必要时补充`wireframeNote`说明容器关系。
@@ -106,7 +109,7 @@ HTML设计说明书生成后，先提醒用户查看HTML页面内容；HTML是�
 
 ## 资源索引
 
-- 脚本：见 [scripts/generate_demo_spec_html.py](scripts/generate_demo_spec_html.py)（用途与参数：读取结构化Demo设计JSON，生成带左侧目录和右侧切换内容的HTML说明书；参数为`--input`与`--output`）
+- 脚本：见 [scripts/generate_demo_spec_html.py](scripts/generate_demo_spec_html.py)（用途与参数：读取结构化Demo设计JSON，生成带左侧目录和右侧切换内容的HTML说明书；参数为`--input`与`--output`，默认输出到项目根目录下的HTML文件，如`./demo-design-spec.html`；如用户明确指定其他目录，也可按指定路径输出）
 - 资产：见 [assets/demo-spec-template.html](assets/demo-spec-template.html)（用途：HTML说明书模板，由脚本读取并注入设计数据）
 - 工作流规范：见 [references/01-workflow/01-output-templates.md](references/01-workflow/01-output-templates.md)（何时读取：需要按标准结构输出对话框摘要、待确认问题、HTML生成后的说明和Coding执行提示时）
 - 工作流规范：见 [references/01-workflow/02-experience-goal-writing.md](references/01-workflow/02-experience-goal-writing.md)（何时读取：提炼需求分析后撰写体验目标和画面感时）

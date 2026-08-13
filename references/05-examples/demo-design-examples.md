@@ -70,7 +70,7 @@
 | 2 | 事件处置是否需要审批流，还是安全运维人员可直接处置？ | 用户旅程、状态流转、按钮逻辑 | 默认直接处置，无审批 |
 
 ### 3.4 HTML设计说明书
-- HTML文件：`./data-leak-event-demo-design-spec.html`
+- HTML文件：`./data-leak-event-demo-design-spec.html`，直接写在项目根目录下。
 - 说明：逐页设计说明、页面级Demo交互与逻辑规则、页面级Coding指导、Mock数据和总结性AI Coding完整提示词已写入HTML。左侧目录按页面层级展示，点击切换后右侧展示对应页面内容。
 
 ### 3.5 Coding计划确认
