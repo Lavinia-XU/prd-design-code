@@ -72,7 +72,7 @@ Demo设计规格用于把需求转化为可查看、可实现、可指导AI Codi
 3. 业务设计Skill：页面拆解和导航结构设计后，如果存在业务设计Skill，必须优先查阅其中的产品介绍、页面导航结构、页面说明、页面设计规范和同类模块设计规则，校准菜单层级、命名、页面归属、页面类型、容器选择、字段表达、筛选搜索方式和弹窗/抽屉等交互方式；如果业务设计Skill明确规定页面结构、筛选方式或组件方式，优先遵循业务设计Skill。
 4. 主题类设计库：只有业务设计Skill没有覆盖、没有说清楚，或用户没有提供业务设计Skill时，才按需求命中的主题查阅 [02-theme-patterns](../02-theme-patterns/) 中的主题类设计文档；主题类设计用于确定该业务主题的常见页面组合、页面关系和主流程框架，只作为框架参考，必须结合实际业务对页面数量、字段配置、字段展示、操作和状态进行增删减调整。
 5. 功能点设计库：主题类设计没有覆盖或仍未说清楚时，按需读取 [03-function-patterns](../03-function-patterns/) 中的功能点设计文档；功能点设计用于补充局部功能点的交互细节，不得破坏页面类型定义的主结构。轻量功能点融入页面区块说明，中等功能点在页面内容区简述并在页面级Coding建议中给出关联说明，复杂功能点拆为子页面、弹窗或抽屉。
-6. 基础设计库：功能点设计仍未覆盖时，按需读取 [01-page-types.md](../04-design-basics/01-page-types.md)、[02-table-patterns.md](../04-design-basics/02-table-patterns.md)、[03-form-patterns.md](../04-design-basics/03-form-patterns.md)、[04-layout-patterns.md](../04-design-basics/04-layout-patterns.md)、[05-interaction-patterns.md](../04-design-basics/05-interaction-patterns.md)、[06-state-patterns.md](../04-design-basics/06-state-patterns.md)，用于确定页面类型对应的基础布局、区块顺序、组件组合、交互边界和状态边界。页面类型一旦确定，必须继承基础设计库中该页面类型的默认结构。
+6. 基础设计库：功能点设计仍未覆盖时，按需读取 [01-page-types.md](../04-design-basics/01-page-types.md)、[02-navigation-and-hierarchy.md](../04-design-basics/02-navigation-and-hierarchy.md)、[03-table-patterns.md](../04-design-basics/03-table-patterns.md)、[04-form-patterns.md](../04-design-basics/04-form-patterns.md)、[05-interaction-patterns.md](../04-design-basics/05-interaction-patterns.md)、[06-state-patterns.md](../04-design-basics/06-state-patterns.md)、[07-copywriting-terminology.md](../04-design-basics/07-copywriting-terminology.md)，用于确定页面类型对应的基础布局、区块顺序、组件组合、交互边界和状态边界。页面类型一旦确定，必须继承基础设计库中该页面类型的默认结构。
 7. 产品导航索引：仅当缺少业务设计Skill、业务设计Skill未覆盖导航结构，或需要辅助判断产品菜单归属时，按需读取 [navigation-index.md](../06-product-navigation/navigation-index.md)；产品导航索引只辅助判断导航归属、菜单层级和菜单命名风格，不决定页面类型、字段配置、交互组件、功能点细节或Coding实现方式，也不覆盖用户输入、业务设计Skill和Demo代码环境。
 8. AI业务理解：仅用于补足Demo可演示和Coding所需的缺失细节，不得覆盖前面已经明确的依据，不得引入无需求依据的复杂业务能力。
 
@@ -191,7 +191,7 @@ HTML逐页说明中建议在页面基础信息或页面级Coding建议中写明�
 1. 需求资料：提取明确写出的用户操作、业务流程、状态限制、字段联动、审批/处置规则、异常限制和成功结果。
 2. 业务设计Skill：如果识别到业务设计Skill，优先参考既有产品导航、页面说明、页面设计规范、弹窗/抽屉使用习惯、菜单命名和同类功能交互模式。
 3. Demo代码环境：如果存在相关代码，读取已有路由、菜单配置、页面结构、组件组织、表单/表格/抽屉/弹窗实现、Mock数据结构和状态管理方式，校准交互落地方式。
-4. 通用设计库：只有业务设计Skill未覆盖或未说清楚时，先按需求命中的主题查阅 [02-theme-patterns](../02-theme-patterns/) 中的主题类设计文档，获取框架级交互参考；主题类设计不代表必须完全照搬，需结合实际业务对字段、展示、操作和状态做增删减；如果主题类设计没有覆盖，再按需读取 [03-function-patterns](../03-function-patterns/) 中的功能点设计文档；如果功能点设计仍未覆盖，再按需读取 [01-page-types.md](../04-design-basics/01-page-types.md)、[02-table-patterns.md](../04-design-basics/02-table-patterns.md)、[03-form-patterns.md](../04-design-basics/03-form-patterns.md)、[04-layout-patterns.md](../04-design-basics/04-layout-patterns.md)、[05-interaction-patterns.md](../04-design-basics/05-interaction-patterns.md)、[06-state-patterns.md](../04-design-basics/06-state-patterns.md)，用B端常见页面类型、表单、表格、详情、Tab、二次确认、多层级下钻等基础设计手法补齐交互。
+4. 通用设计库：只有业务设计Skill未覆盖或未说清楚时，先按需求命中的主题查阅 [02-theme-patterns](../02-theme-patterns/) 中的主题类设计文档，获取框架级交互参考；主题类设计不代表必须完全照搬，需结合实际业务对字段、展示、操作和状态做增删减；如果主题类设计没有覆盖，再按需读取 [03-function-patterns](../03-function-patterns/) 中的功能点设计文档；如果功能点设计仍未覆盖，再按需读取 [01-page-types.md](../04-design-basics/01-page-types.md)、[02-navigation-and-hierarchy.md](../04-design-basics/02-navigation-and-hierarchy.md)、[03-table-patterns.md](../04-design-basics/03-table-patterns.md)、[04-form-patterns.md](../04-design-basics/04-form-patterns.md)、[05-interaction-patterns.md](../04-design-basics/05-interaction-patterns.md)、[06-state-patterns.md](../04-design-basics/06-state-patterns.md)、[07-copywriting-terminology.md](../04-design-basics/07-copywriting-terminology.md)，用B端常见页面类型、表单、表格、详情、Tab、二次确认、多层级下钻等基础设计手法补齐交互。
 5. AI业务理解：当资料没有明确描述但Demo需要可操作、可演示、可Coding时，基于业务目标、用户任务和页面容器类型合理补齐基础交互，但不得引入无需求依据的复杂业务能力。
 
 关键交互说明至少覆盖：触发入口、触发方式、打开容器、页面反馈、数据变化、表单校验、成功反馈、失败反馈、状态联动、空状态、加载态、无权限态和必要的极端情况。
@@ -455,7 +455,7 @@ HTML逐页页面基础信息中的导航位置表：
 | <字段4> | 图标+文字 | <图标表达含义、文字内容和悬浮说明> |
 
 - 行内操作：<说明操作项顺序和点击结果，如查看打开详情抽屉、编辑打开表单抽屉、删除弹出二次确认；同时说明成功/失败反馈、数据变化和状态联动>
-- 搜索与筛选说明：<先说明筛选方式来源；若业务设计Skill已明确筛选方式，必须写明“沿用业务设计Skill的筛选方式”；若为平铺筛选，写清每个筛选字段对应的组件、选项范围、默认值和匹配方式；若为高级搜索框，写清每个字段的筛选方式，例如单选、多选、模糊搜索、精确搜索或时间范围筛选；如果页面需要生成HTML说明书，左侧目录只用于切换页面内容，不要使用URL hash定位锚点开发目录，该要求属于HTML生成规范，不属于产品Coding实现规范>
+- 搜索与筛选说明：<先说明筛选方式来源；若业务设计Skill已明确筛选方式，必须写明“沿用业务设计Skill的筛选方式”；若为平铺筛选，写清每个筛选字段对应的组件、选项范围、默认值和匹配方式；若为高级搜索框，写清每个字段的筛选方式，例如单选、多选、模糊搜索、精确搜索或时间范围筛选；如果页面需要生成HTML说明书，左侧目录只用于锚点定位，不控制页面内容加载或隐藏，该要求属于HTML生成规范，不属于产品Coding实现规范>
 - 分页与排序：<说明是否分页、默认排序字段、可排序字段和排序后页面反馈>
 - 状态与边界说明：<说明空状态、搜索无结果、加载态、异常态、无权限态、长文本、0值、空字段等在该表格区如何展示>
 
@@ -482,7 +482,7 @@ HTML逐页页面基础信息中的导航位置表：
 
 ## 9. HTML说明书结构
 
-HTML说明书标题必须是“XX需求设计说明书”。左侧为目录，右侧为内容区。Coding实现目录时不要使用URL hash定位锚点；左侧目录只用于切换右侧页面内容，应通过组件状态、路由状态或数据驱动选中态实现。
+HTML说明书标题必须是“XX需求设计说明书”。HTML采用“Markdown源文 + 预览视图”双模式：Markdown源文包含完整设计说明书，所有总览和页面内容默认全部展开；左侧目录只负责锚点定位，不做点击后才加载页面，不隐藏页面主体内容。页面提供“源文/预览”切换按钮，预览视图仅用于人类审阅。
 
 左侧目录只包含：总览和页面目录。禁止在HTML目录中放待确认问题、独立的交互与逻辑规则页或独立的Coding指导页。
 

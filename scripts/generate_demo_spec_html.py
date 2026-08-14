@@ -112,6 +112,81 @@ def render_coding_summary(guide, mode="overview"):
     return f"<div class=\"stack\">{''.join(parts) if parts else '<p class=\"muted\">暂无总结性AI Coding指导</p>'}</div>"
 
 
+def markdown_table(rows, columns):
+    if not rows:
+        return "暂无"
+    header = "| " + " | ".join(label for _, label in columns) + " |"
+    divider = "| " + " | ".join("---" for _ in columns) + " |"
+    lines = [header, divider]
+    for row in rows:
+        values = [str(row.get(key, "")).replace("|", "\\|").replace("\n", "<br>") for key, _ in columns]
+        lines.append("| " + " | ".join(values) + " |")
+    return "\n".join(lines)
+
+
+def markdown_list(items):
+    return "\n".join(f"- {item}" for item in items) if items else "- 暂无"
+
+
+def markdown_coding_guide(guide, mode="overview"):
+    guide = guide or {}
+    if mode == "overview":
+        rows = guide.get("overviewItems") or []
+        normalized = []
+        for item in rows:
+            if isinstance(item, dict):
+                normalized.append({"outputItem": item.get("outputItem") or item.get("item") or item.get("label") or "", "description": item.get("description") or item.get("detail") or ""})
+            else:
+                normalized.append({"outputItem": str(item), "description": ""})
+        parts = ["### 总览 AI Coding指导", markdown_table(normalized, [("outputItem", "输出项"), ("description", "说明")])]
+        if guide.get("overviewMockData"):
+            parts.extend(["#### 全局Mock数据要求", markdown_list(guide.get("overviewMockData"))])
+        if guide.get("overviewNotes"):
+            parts.extend(["#### 全局编码约束", markdown_list(guide.get("overviewNotes"))])
+        return "\n\n".join(parts)
+
+    rows = guide.get("pageItems") or []
+    normalized = []
+    for item in rows:
+        if isinstance(item, dict):
+            normalized.append({"developmentItem": item.get("developmentItem") or item.get("item") or item.get("label") or "", "developmentMode": item.get("developmentMode") or item.get("mode") or item.get("way") or "", "developmentDescription": item.get("developmentDescription") or item.get("description") or item.get("detail") or ""})
+        else:
+            normalized.append({"developmentItem": str(item), "developmentMode": "", "developmentDescription": ""})
+    parts = ["### 页面级 AI Coding指导", markdown_table(normalized, [("developmentItem", "开发项"), ("developmentMode", "开发方式"), ("developmentDescription", "开发描述")])]
+    if guide.get("pageMockData"):
+        parts.extend(["#### 页面级Mock数据要求", markdown_list(guide.get("pageMockData"))])
+    if guide.get("pageNotes"):
+        parts.extend(["#### 页面级补充说明", markdown_list(guide.get("pageNotes"))])
+    return "\n\n".join(parts)
+
+
+def markdown_page(page, inherited_nav=None):
+    nav = page_navigation(page, inherited_nav)
+    lines = [f"## {page_label(page)}", "", f"- 页面目标：{page.get('purpose', '')}", f"- 页面类型：{page.get('type', '')}", f"- 页面布局：{page.get('layout', '')}", "", "### 导航位置", markdown_table([nav], [("primary", "一级导航"), ("secondary", "二级导航"), ("tertiary", "三级导航"), ("tab", "Tab页面")])]
+    restore = page.get("restoreRequirement") or page.get("pageTypeRestoreRequirement")
+    if restore:
+        lines.extend(["", "### 页面类型还原要求", str(restore)])
+    wireframe = page.get("wireframe") or page.get("asciiWireframe")
+    if isinstance(wireframe, dict):
+        wireframe = wireframe.get("ascii") or wireframe.get("text") or ""
+    if wireframe:
+        lines.extend(["", "### Wireframe / ASCII 线框图", "```text", str(wireframe), "```"])
+    lines.extend(["", "### 页面内容区块"])
+    for block in page.get("sections", []):
+        lines.extend([f"#### {block.get('title', '未命名区块')}", str(block.get('description', ''))])
+        for key, label in [("toolbar", "工具栏/筛选搜索"), ("actions", "按钮/可点击操作"), ("displayRules", "展示形式与取值范围"), ("interactionNotes", "交互、反馈与状态说明"), ("validationRules", "校验、联动与边界状态")]:
+            if block.get(key):
+                lines.extend([f"**{label}**", markdown_list(block.get(key))])
+        if block.get("filterFields"):
+            lines.extend(["**筛选字段**", markdown_table(block.get("filterFields"), [("name", "字段名称"), ("component", "组件/筛选方式"), ("mode", "匹配方式"), ("options", "选项范围"), ("default", "默认值"), ("description", "说明")])])
+        if block.get("tableFields") or block.get("columns"):
+            lines.extend(["**表格字段**", markdown_table(block.get("tableFields") or block.get("columns"), [("name", "字段名称"), ("display", "展示形式"), ("description", "说明")])])
+        if block.get("formFields"):
+            lines.extend(["**表单字段**", markdown_table(block.get("formFields"), [("name", "字段名称"), ("component", "组件类型"), ("required", "必填"), ("default", "默认值"), ("rules", "选项/规则"), ("tips", "提示信息或联动关系")])])
+    lines.extend(["", "### 底部操作", markdown_list(page.get("footerActions", [])), "", markdown_coding_guide(page.get("codingGuide", {}), mode="page")])
+    return "\n\n".join(lines)
+
+
 def render_experience_goal(overview):
     goal = overview.get("experienceGoal")
     if isinstance(goal, dict):
@@ -129,6 +204,24 @@ def render_experience_goal(overview):
     if legacy_goal:
         return f"<p>{esc(legacy_goal)}</p>"
     return "<p class=\"muted\">暂无体验目标</p>"
+
+
+def render_markdown_source(data, pages):
+    overview = data.get("overview", {})
+    page_cols = [("module", "业务模块"), ("id", "页面ID"), ("name", "页面名称"), ("type", "页面类型"), ("purpose", "页面用途"), ("entry", "入口方式"), ("interaction", "关键交互"), ("designSource", "设计来源"), ("codingMode", "编码方式")]
+    sections = [("overview", f"# {data.get('title', '需求设计说明书')}\n\n## 概览\n\n### 需求概括\n{overview.get('summary', '')}\n\n### Demo范围判断\n{markdown_table(overview.get('scopeTable', []), [('task', '需求内容 / 任务'), ('scope', '所属范围'), ('include', '是否进入Demo'), ('handling', '处理方式')])}\n\n### 页面总览表\n{markdown_table(overview.get('pageOverview', []), page_cols)}\n\n{markdown_coding_guide(data.get('codingGuide', {}), mode='overview')}")]
+    for page, inherited_nav in pages:
+        base = "page-" + slug(page.get("id", ""))
+        sections.append((base, markdown_page(page, inherited_nav)))
+    return "".join(f'<section class="markdown-section" id="source-{esc(base)}"><pre class="markdown-source">{esc(text)}</pre></section>' for base, text in sections)
+
+
+def render_preview_content(data, pages):
+    return render_overview(data) + "\n" + "\n".join(render_page(page, inherited_nav) for page, inherited_nav in pages)
+
+
+def build_view(content):
+    return f'<div class="view">{content}</div>'
 
 
 def render_overview(data):
@@ -405,8 +498,9 @@ def main():
 
     title = data.get("title") or "需求设计说明书"
     pages = flatten_pages(data.get("pages", []))
-    content = render_overview(data) + "\n" + "\n".join(render_page(page, inherited_nav) for page, inherited_nav in pages)
-    html_text = template.replace("{{TITLE}}", esc(title)).replace("{{NAV}}", build_nav(data)).replace("{{CONTENT}}", content)
+    source_content = render_markdown_source(data, pages)
+    preview_content = render_preview_content(data, pages)
+    html_text = template.replace("{{TITLE}}", esc(title)).replace("{{NAV}}", build_nav(data)).replace("{{SOURCE_CONTENT}}", source_content).replace("{{PREVIEW_CONTENT}}", preview_content)
 
     output_path.parent.mkdir(parents=True, exist_ok=True)
     output_path.write_text(html_text, encoding="utf-8")
