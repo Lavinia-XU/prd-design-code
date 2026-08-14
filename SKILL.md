@@ -105,17 +105,17 @@ metadata:
 
 #### 5.3 生成中：内容、交互与状态补齐
 
-- 页面级Demo交互与逻辑规则：搜索、筛选、重置、排序、分页、新增、编辑、查看、删除、处置、启用、禁用、二次确认、表单校验等规则必须整合到对应页面的区块说明或底部操作中，不单独生成页面内关键交互章节或页面交互规则章节。
-- 状态与极端情况：状态值范围、空状态、搜索无结果、加载态、异常态、无权限态、长文本、0值、空字段、批量选择为空等，按影响对象整合到对应页面区块说明中。
+- 页面级Demo交互与逻辑规则：搜索、筛选、重置、排序、分页、新增、编辑、查看、删除、处置、启用、禁用、二次确认、表单校验等规则必须整合到对应页面的区块说明或底部操作中，不单独生成页面内关键交互章节或页面交互规则章节；当单页筛选项超过4个时，必须使用`IxProSearch`高级搜索组件承载多条件联级筛选，并说明筛选类型、字段联动、查询/重置行为和收藏条件能力。
+- 状态与极端情况：状态值范围、空状态、搜索无结果、加载态、异常态、无权限态、长文本、0值、空字段、批量选择为空等，按影响对象整合到对应页面区块说明中；详情页或日志详情页展示只读字段时，使用`IxProDesc`描述列表：字段较少采用单列，信息较多时根据容器宽度采用2列或3列，并按业务主题增加小标题分类展示。
 - 文案与术语校准：生成HTML输入JSON前，必须按 [产品文案与术语规范](references/04-design-basics/07-copywriting-terminology.md) 对页面名称、按钮文案、操作说明、状态说明、提示语和AI Coding指导做一次术语自检；优先使用规范推荐词，不能只做同义词替换，必须按业务动作区分“新增/添加/移除/删除”、按对象状态区分“启用/禁用”和“开启/关闭”、按控制粒度区分“规则/策略”。
 - 在页面结构确定后、生成详细页面文案前，读取 [产品文案与术语规范](references/04-design-basics/07-copywriting-terminology.md)，用于校准页面名称、模块名称、按钮、操作入口、表单字段、提示语、空状态、异常态、二次确认文案和AI Coding指导中的产品术语；当需求或用户表达中出现“新增/添加/创建/新建”“删除/移除/废弃”“启用/禁用/开启/关闭”“规则/策略”“账号/帐号”“验证码/校验码”“连通性/联通性”等易混词，或用户明确要求润色文案、检查术语、统一按钮文案时，必须优先读取并按规范替换。
 - 自检点：交互规则是否已整合进区块说明；状态与极端情况是否覆盖；术语是否已按规范校准。
 
 #### 5.4 输出：AI Coding 指导
 
-- 生成前先读取 [交互补齐与编码指导规范](references/01-workflow/04-interaction-coding-guidelines.md)，用它约束页面交互补齐、代码复用优先级、页面级AI Coding指导输出格式和Skill执行要求。
-- AI Coding指导：HTML总览页只输出全局AI Coding指导，包含全局复用策略、全局Mock策略、全局编码边界、全局一致性要求和页面开发顺序；每个页面只输出页面级AI Coding指导，且必须按“开发项、开发方式、开发描述”的表格格式填写，页面级说明只写复用对象、复用程度、特殊参数、特殊校验和新增差异，不重复页面区块中的交互、状态和页面表现。
-- 自检点：全局与页面级Coding指导是否分层；页面级是否按“开发项、开发方式、开发描述”表格输出；是否未重复页面区块内容。
+- 生成前先读取 [交互补齐与编码指导规范](references/01-workflow/04-interaction-coding-guidelines.md) 和 [idux组件映射表](references/05-components/idux-component-map.md)，分别约束页面交互补齐、代码复用优先级、页面级AI Coding指导输出格式、Skill执行要求，以及设计语义到具体idux组件名称的映射。
+- AI Coding指导：HTML总览页只输出全局AI Coding指导，包含全局复用策略、全局Mock策略、全局编码边界、全局一致性要求和页面开发顺序；每个页面只输出页面级AI Coding指导，且必须按“开发项、开发方式、开发描述”的表格格式填写。页面级说明只写复用对象、复用程度、具体组件名称、关键参数、特殊校验和新增差异，不重复页面区块中的交互、状态和页面表现。
+- 自检点：全局与页面级Coding指导是否分层；页面级是否按“开发项、开发方式、开发描述”表格输出；涉及通用组件时是否已按组件映射表写明组件名称和关键使用要求；是否未重复页面区块内容。
 
 #### 5.5 收尾：生成 HTML 与最终自检
 
@@ -177,6 +177,7 @@ HTML设计说明书生成后，先提醒用户查看HTML页面内容。最新HTM
 - 基础设计库：见 [references/04-design-basics/05-interaction-patterns.md](references/04-design-basics/05-interaction-patterns.md)（何时读取：设计二次确认、高危操作、反馈和容器使用边界时）
 - 基础设计库：见 [references/04-design-basics/06-state-patterns.md](references/04-design-basics/06-state-patterns.md)（何时读取：补充空状态、加载态、异常态、无权限和极端情况时）
 - 基础设计库：见 [references/04-design-basics/07-copywriting-terminology.md](references/04-design-basics/07-copywriting-terminology.md)（何时读取：生成或校准产品界面文案、按钮文案、术语命名、需求文档表述和AI Coding提示词中的产品术语时）
+- 组件映射表：见 [references/05-components/idux-component-map.md](references/05-components/idux-component-map.md)（何时读取：生成页面级AI Coding指导且涉及idux通用组件、按钮、弹窗、抽屉、搜索筛选等组件调用时）
 - 产品导航索引：见 [references/06-product-navigation/navigation-index.md](references/06-product-navigation/navigation-index.md)（何时读取：缺少业务设计Skill、业务设计Skill未覆盖导航结构，或需要辅助判断产品菜单归属时；仅作低优先级导航兜底参考）
 - 示例：见 [references/05-examples/demo-design-examples.md](references/05-examples/demo-design-examples.md)（何时读取：需要参考HTML说明书输入JSON、页面说明颗粒度或完整输出示例时）
 
