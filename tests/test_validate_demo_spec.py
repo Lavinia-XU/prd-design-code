@@ -713,6 +713,47 @@ class TestValidateDemoSpec(unittest.TestCase):
         self.assertNotEqual(code, 0)
         self.assertIn("CODING_NO_ITEMS", error_codes(report))
 
+    # ---- wireframe 绘制完整性（RULE-32 / RULE-33）----
+    def test_wireframe_ascii_too_short_fails(self):
+        """线框图只有几个字（过短）-> WIREFRAME_ASCII_TOO_SHORT（error）。"""
+        page = base_page()
+        page["wireframe"]["ascii"] = "这是一个表格页"
+        code, report = run_validator(make_spec([page]), strict=True)
+        self.assertNotEqual(code, 0)
+        self.assertIn("WIREFRAME_ASCII_TOO_SHORT", error_codes(report))
+
+    def test_wireframe_ascii_not_drawn_fails(self):
+        """线框图未按模板绘制任何区域 -> WIREFRAME_ASCII_NOT_DRAWN（error）。"""
+        page = base_page()
+        page["wireframe"]["ascii"] = "页面整体布局说明"
+        code, report = run_validator(make_spec([page]), strict=True)
+        self.assertNotEqual(code, 0)
+        self.assertIn("WIREFRAME_ASCII_NOT_DRAWN", error_codes(report))
+
+    def test_wireframe_ascii_region_not_drawn_warns(self):
+        """regions 声明了表格但 ascii 未绘制 -> WIREFRAME_REGION_NOT_DRAWN（warning）。"""
+        page = base_page()
+        page["wireframe"]["ascii"] = "标题栏/筛选/工具栏/分页区"
+        code, report = run_validator(make_spec([page]), strict=True)
+        self.assertEqual(code, 0)
+        self.assertIn("WIREFRAME_REGION_NOT_DRAWN", {e.get("errorCode") for e in report.get("warnings", [])})
+
+    def test_wireframe_ascii_full_drawing_passes(self):
+        """完整字符画线框图 -> 通过。"""
+        page = base_page()
+        page["wireframe"]["ascii"] = (
+            "┌ 标题栏 ─────────────────┐\n"
+            "│ [筛选] [工具栏]        │\n"
+            "├──────────┬─────────────┤\n"
+            "│ 表格列1   │ 表格列2      │\n"
+            "├──────────┴─────────────┤\n"
+            "│ [分页] 上一页 1 2 下一页 │\n"
+            "└────────────────────────┘"
+        )
+        code, report = run_validator(make_spec([page]), strict=True)
+        self.assertEqual(code, 0)
+        self.assertTrue(report.get("valid"))
+
 
 if __name__ == "__main__":
     unittest.main(verbosity=2)

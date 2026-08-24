@@ -415,7 +415,7 @@ HTML逐页页面基础信息中的导航位置表：
 
 每个页面必须同时填写`templateContract`（templateId/baseTemplateId/navigationType/templateSource/requiredRegions/optionalRegions/regionOrder/footerContract/componentContract/wireframeContract/override），与结构化wireframe形成闭环；页面type、templateId、layout、sections、wireframe、footerActions、componentContract和codingGuide必须一致，禁止出现模板结构与线框结构冲突。模板注册表见references/02-template-contracts/common-design-template-registry.json，生成HTML前由scripts/validate_demo_spec.py自动校验，校验失败阻断HTML生成。
 
-HTML说明书中的线框图部分只展示对确认页面结构和指导Coding有用的内容：模板契约（templateId、模板必需区域、实际线框区域、区域一致性、底部操作契约）、ASCII线框图和线框变体；线框变体必须包含对应步骤/Tab的`ascii`线框图才展示，缺少线框图的变体不输出。`regions`数组仅用于模板契约校验与区域一致性检查，不渲染为表格展示；区域对应的组件和内容由页面内容区块（sections）承载。
+HTML说明书中的线框图部分只展示对确认页面结构有用的内容：先展示完整ASCII线框图，线框图下方再补充线框说明（wireframeNote）、线框图结构依据和线框变体；线框变体必须包含对应步骤/Tab的`ascii`线框图才展示，缺少线框图的变体不输出。模板契约（templateId、navigationType、templateSource、模板必需区域、区域顺序、底部操作契约）不属于面向用户的线框图展示内容，移入页面级AI Coding指导作为AI Coding的结构化输入；`regions`数组仅用于模板契约校验与区域一致性检查，不渲染为表格展示；区域对应的组件和内容由页面内容区块（sections）承载。
 
 线框图布局必须参考已读取的Common Design页面模板，以及用户资料、Product Design或已有代码中明确的页面类型结构；仅当已读取规则没有覆盖时，才根据页面目标选择常见B端页面骨架，再补充标题栏、表格工具栏等通用部件，最后填入当前业务元素。底部操作区的位置、按钮顺序和布局必须继承当前页面类型或容器形态对应的Common Design模板；除非PRD、用户确认或匹配Product Design明确覆盖，不得将同一操作区按钮拆分为左右两侧，也不得混用不同容器的布局规则。常见继承关系包括：
 
@@ -523,7 +523,7 @@ HTML说明书中的线框图部分只展示对确认页面结构和指导Coding�
 
 ## 页面级AI Coding指导
 
-<页面级AI Coding指导以开发项为单位输出，使用“编号、开发对象、开发方式、复用与代码映射、实现要求、完成判定”六列表格；开发项必须使用固定JSON结构（id/scope/name/mode/mappingRef/mappingStatus/target/requirements/acceptanceCriteria等），页面codingGuide固定为pageContext+implementationRules+items+mockContract+stateContract+acceptanceCriteria+outOfScope，详细字段规范见Coding指导与执行规范。若该页面有单独实现要求，写组件、Mock数据、状态更新和复用代码建议。总结性AI Coding指导放在HTML总览页。页面级AI Coding指导必须引用页面内容区块说明中的交互、状态值、筛选范围和表单选项，不另起一套规则。>
+<页面级AI Coding指导开头必须先输出该页面的模板契约（templateId、navigationType、templateSource、模板必需区域、区域顺序、底部操作契约），作为AI Coding必须继承的模板结构硬约束；随后以开发项为单位输出，使用“编号、开发对象、开发方式、复用与代码映射、实现要求、完成判定”六列表格；开发项必须使用固定JSON结构（id/scope/name/mode/mappingRef/mappingStatus/target/requirements/acceptanceCriteria等），页面codingGuide固定为pageContext+implementationRules+items+mockContract+stateContract+acceptanceCriteria+outOfScope，详细字段规范见Coding指导与执行规范。若该页面有单独实现要求，写组件、Mock数据、状态更新和复用代码建议。总结性AI Coding指导放在HTML总览页。页面级AI Coding指导必须引用页面内容区块说明中的交互、状态值、筛选范围和表单选项，不另起一套规则。>
 
 如果页面内容区块中简要使用了业务设计Skill或已有代码中的功能点实现，需要在页面级AI Coding指导中补充关联说明，说明命中的设计依据、在当前页面中的使用位置、复用对象、开发方式和编码注意点。页面级AI Coding指导优先从业务设计Skill、业务设计文档或业务相关输入中查找页面、菜单模块、公共组件和功能链路的映射关系，再决定复用对象与开发方式。不要把业务设计文档全文复制进页面内容区；页面内容区只写必要入口、触发效果和展示/校验规则，详细编码指引放在页面级AI Coding指导中。
 ```
@@ -550,7 +550,7 @@ HTML说明书标题必须是“XX需求设计说明书”。HTML采用“Markdow
 - 点击“总览”：展示需求概括、导航结构、页面总览表和总览AI Coding指导。
 - 点击具体页面：以一列结构展示页面目标、页面基础信息、页面内容区块、底部操作和页面级AI Coding指导；页面类型不要作为标题旁标签展示，必须与页面布局放在同一个“页面基础信息”区域，导航位置必须在页面基础信息中用“一级导航、二级导航、三级导航、Tab页面”表格展示。
 - 交互与逻辑规则必须整合到对应页面的内容区块说明中：属于P001的搜索筛选、排序分页、状态值、空状态和列表操作写在P001的表格区或概览区说明中；属于新增弹窗的表单校验、下拉选项、提交反馈和二次确认写在新增弹窗的表单区或底部操作说明中。禁止在页面内再单独生成“页面内关键交互”或“页面交互与逻辑规则”章节。
-- Coding指导按层级放置：总览AI Coding指导写全局复用策略、全局Mock数据、全局编码约束和页面开发顺序；页面级AI Coding指导写单个页面的开发项编码指导表、页面级Mock数据要求和页面级补充说明。
+- Coding指导按层级放置：总览AI Coding指导写全局复用策略、全局Mock数据、全局编码约束和页面开发顺序；页面级AI Coding指导开头输出模板契约（templateId/templateSource/模板必需区域/区域顺序/底部操作契约），随后写单个页面的开发项编码指导表、页面级Mock数据要求和页面级补充说明。
 
 ## 10. 自检规则
 
@@ -681,3 +681,27 @@ HTML说明书标题必须是“XX需求设计说明书”。HTML采用“Markdow
 - error：设计闭环缺失，禁止生成 HTML（strict 模式阻断）。
 - warning：设计质量风险，不阻断 HTML 生成。
 - info：AI 补齐或待核验说明，仅提示。
+
+### 11.6 线框图绘制质量闭环
+
+防止"线框图没有画、只有几个字"或"完全没有按照页面模板绘制"的问题。校验器验证的是结构化 regions，同时必须验证实际绘制的 `ascii` 图：
+
+- `ascii` 必须按模板绘制，禁止用一句话或几个字代替线框图。
+- 绘制完整性（error）：
+  - ascii 内容过短（< 8 字符）-> WIREFRAME_ASCII_TOO_SHORT
+  - ascii 未覆盖模板必需区域（匹配到的区域绘制关键词少于 2 个）-> WIREFRAME_ASCII_NOT_DRAWN
+- 绘制与 regions 一致性（warning）：
+  - regions 声明了内容性区域（筛选、表格、分页、工具栏、表单、概览、步骤、对象摘要、Tab 内容、底部操作等），但 ascii 中没有任何对应绘制痕迹 -> WIREFRAME_REGION_NOT_DRAWN
+- 绘制区域关键词（REGION_ASCII_KEYS）与模板区域对应：标题栏/筛选/工具栏/表格/分页/表单/弹窗/抽屉/摘要/步骤/Tab/底部操作等；纯结构区域（global-navigation、modal-shell、drawer-shell、title-bar）不参与该一致性检查。
+- HTML 生成时若 ascii 过短或无区域绘制痕迹，线框区块渲染提示，提醒检查。
+
+数据示例（合法完整线框图）：
+```text
+┌ 标题栏 ─────────────────┐
+│ [筛选] [工具栏]        │
+├──────────┬─────────────┤
+│ 表格列1   │ 表格列2      │
+├──────────┴─────────────┤
+│ [分页] 上一页 1 2 下一页 │
+└────────────────────────┘
+```

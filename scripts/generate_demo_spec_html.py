@@ -45,6 +45,19 @@ def list_html(items):
     return "<ul>" + "".join(f"<li>{esc(item)}</li>" for item in items) + "</ul>"
 
 
+FOOTER_BUTTON_LABELS = {
+    "cancel": "取消",
+    "confirm": "确定",
+    "close": "关闭",
+    "previous": "上一步",
+    "next-or-complete": "下一步/完成",
+}
+
+
+def footer_button_label(button_id):
+    return FOOTER_BUTTON_LABELS.get(str(button_id), str(button_id))
+
+
 def table_html(rows, columns):
     if not rows:
         return "<p class=\"muted\">暂无</p>"
@@ -286,6 +299,39 @@ def markdown_restore_requirement(restore):
     return str(restore)
 
 
+def markdown_template_contract(page):
+    template_contract = page.get("templateContract") or {}
+    wireframe_data = page.get("wireframe") or page.get("asciiWireframe") or {}
+    if not isinstance(wireframe_data, dict):
+        wireframe_data = {}
+    template_id = str(template_contract.get("templateId") or wireframe_data.get("templateId") or "").strip()
+    if not template_id:
+        return ""
+    navigation_type = str(template_contract.get("navigationType") or wireframe_data.get("navigationType") or "").strip()
+    template_source = str(template_contract.get("templateSource") or wireframe_data.get("layoutSource") or "").strip()
+    template = _TEMPLATE_REGISTRY.get(template_id, {})
+    lines = ["#### 模板契约"]
+    base = f"（custom，base：{template_contract.get('baseTemplateId', '')}）" if template_id == "custom" else ""
+    lines.append(f"- templateId：{template_id}{base}；navigationType：{navigation_type or '-'}")
+    if template_source:
+        lines.append(f"- templateSource：{template_source}")
+    required = template_contract.get("requiredRegions") or template.get("requiredRegions") or []
+    if required:
+        lines.append(f"- 模板必需区域：{'、'.join(required)}")
+    region_order = template_contract.get("regionOrder") or []
+    if region_order:
+        lines.append(f"- 区域顺序：{'、'.join(region_order)}")
+    footer_contract = template.get("footer") or {}
+    if footer_contract:
+        align = footer_contract.get("alignment") or "-"
+        footer_note = f"- 底部操作契约：对齐方式：{align}（{'必填' if footer_contract.get('required') else '可选'}）"
+        button_order = footer_contract.get("buttonOrder") or []
+        if button_order:
+            footer_note += f"；按钮顺序：{'、'.join(footer_button_label(b) for b in button_order)}"
+        lines.append(footer_note)
+    return "\n".join(lines)
+
+
 def markdown_page(page, inherited_nav=None):
     nav = page_navigation(page, inherited_nav)
     lines = [f"## {page_label(page)}", "", f"- 页面目标：{page.get('purpose', '')}", f"- 页面类型：{page.get('type', '')}", f"- 页面布局：{page.get('layout', '')}", "", "### 导航位置", markdown_table([nav], [("primary", "一级导航"), ("secondary", "二级导航"), ("tertiary", "三级导航"), ("tab", "Tab页面")])]
@@ -311,7 +357,11 @@ def markdown_page(page, inherited_nav=None):
             lines.extend(["**表格字段**", markdown_table(normalize_component_rows(block.get("tableFields") or block.get("columns")), [("name", "字段名称"), ("display", "展示形式"), ("iduxComponent", "组件名称"), ("description", "说明")])])
         if block.get("formFields"):
             lines.extend(["**表单字段**", markdown_table(normalize_component_rows(block.get("formFields")), [("name", "字段名称"), ("component", "组件类型"), ("iduxComponent", "iDux组件名称"), ("required", "必填"), ("default", "默认值"), ("rules", "选项/规则"), ("tips", "提示信息或联动关系")])])
-    lines.extend(["", "### 底部操作", markdown_list(page.get("footerActions", [])), "", markdown_coding_guide(page.get("codingGuide", {}), mode="page")])
+    lines.extend(["", "### 底部操作", markdown_list(page.get("footerActions", []))])
+    contract_md = markdown_template_contract(page)
+    if contract_md:
+        lines.extend(["", contract_md])
+    lines.extend(["", markdown_coding_guide(page.get("codingGuide", {}), mode="page")])
     return "\n\n".join(lines)
 
 
@@ -464,11 +514,45 @@ def render_block_detail(block):
     return '<div class="stack">' + "".join(details) + "</div>"
 
 
+def render_template_contract(page):
+    template_contract = page.get("templateContract") or {}
+    wireframe_data = page.get("wireframe") or page.get("asciiWireframe") or {}
+    if not isinstance(wireframe_data, dict):
+        wireframe_data = {}
+    template_id = str(template_contract.get("templateId") or wireframe_data.get("templateId") or "").strip()
+    if not template_id:
+        return ""
+    navigation_type = str(template_contract.get("navigationType") or wireframe_data.get("navigationType") or "").strip()
+    template_source = str(template_contract.get("templateSource") or wireframe_data.get("layoutSource") or "").strip()
+    template = _TEMPLATE_REGISTRY.get(template_id, {})
+    lines = []
+    base = f"（custom，base：{esc(template_contract.get('baseTemplateId', ''))}）" if template_id == "custom" else ""
+    lines.append(f"templateId：{esc(template_id)}{base}；navigationType：{esc(navigation_type or '-')}")
+    if template_source:
+        lines.append(f"templateSource：{esc(template_source)}")
+    required = template_contract.get("requiredRegions") or template.get("requiredRegions") or []
+    if required:
+        lines.append(f"模板必需区域：{esc('、'.join(required))}")
+    region_order = template_contract.get("regionOrder") or []
+    if region_order:
+        lines.append(f"区域顺序：{esc('、'.join(region_order))}")
+    footer_contract = template.get("footer") or {}
+    if footer_contract:
+        align = footer_contract.get("alignment") or "-"
+        footer_note = f"底部操作契约：对齐方式：{align}（{'必填' if footer_contract.get('required') else '可选'}）"
+        button_order = footer_contract.get("buttonOrder") or []
+        if button_order:
+            footer_note += f"；按钮顺序：{esc('、'.join(footer_button_label(b) for b in button_order))}"
+        lines.append(footer_note)
+    return f"<div><strong>模板契约</strong>{list_html(lines)}</div>"
+
+
 def render_page_coding(page):
     guide = page.get("codingGuide", {})
+    contract_html = render_template_contract(page)
     if not guide:
-        return "<p class=\"muted\">暂无页面级Coding指导</p>"
-    return render_coding_summary(guide, mode="page")
+        return contract_html + "<p class=\"muted\">暂无页面级Coding指导</p>"
+    return contract_html + render_coding_summary(guide, mode="page")
 
 
 def page_navigation(page, inherited_nav=None):
@@ -564,48 +648,17 @@ def render_wireframe(page):
         wireframe_text = str(wireframe_data.get("ascii") or wireframe_data.get("text") or "").strip()
         note = str(wireframe_data.get("note") or wireframe_data.get("description") or page.get("wireframeNote") or page.get("wireframeDescription") or "").strip()
         layout_source = str(wireframe_data.get("layoutSource") or "").strip()
-        regions = wireframe_data.get("regions") or []
         variants = wireframe_data.get("variants") or []
-        if not wireframe_text and not note and not layout_source and not regions and not variants:
+        if not wireframe_text and not note and not layout_source and not variants:
             return ""
         parts = ["<div class=\"wireframe-block\"><h3>Wireframe / ASCII 线框图</h3>"]
-        template_contract = page.get("templateContract") or {}
-        template_id = str(template_contract.get("templateId") or wireframe_data.get("templateId") or "").strip()
-        navigation_type = str(template_contract.get("navigationType") or wireframe_data.get("navigationType") or "").strip()
-        template_source = str(template_contract.get("templateSource") or wireframe_data.get("layoutSource") or "").strip()
-        if template_id:
-            template = _TEMPLATE_REGISTRY.get(template_id, {})
-            parts.append("<div class=\"template-contract\"><h4>模板契约</h4>")
-            parts.append(f"<p><strong>templateId：</strong>{esc(template_id)}"
-                         + (f"（custom，base：{esc(template_contract.get('baseTemplateId', ''))}）" if template_id == "custom" else "")
-                         + f"　<strong>navigationType：</strong>{esc(navigation_type or '-')}</p>")
-            if template_source:
-                parts.append(f"<p><strong>templateSource：</strong>{esc(template_source)}</p>")
-            required = template.get("requiredRegions") or []
-            actual_ids = [str(r.get("templateRegion") or r.get("id") or "") for r in regions]
-            missing = [r for r in required if r not in actual_ids]
-            if required:
-                parts.append(f"<p><strong>模板必需区域：</strong>{esc('、'.join(required))}</p>")
-            if regions:
-                parts.append(f"<p><strong>实际线框区域：</strong>{esc('、'.join(actual_ids) if actual_ids else '-')}</p>")
-            consistency = "一致" if not missing else f"缺失：{esc('、'.join(missing))}"
-            style = "color:#c00;font-weight:bold" if missing else "color:#1a7f37;font-weight:bold"
-            parts.append(f"<p><strong>区域一致性：</strong><span style=\"{style}\">{consistency}</span></p>")
-            footer_contract = template.get("footer") or {}
-            footer_actions = page.get("footerActions") or []
-            if footer_contract:
-                align = footer_contract.get("alignment") or "-"
-                footer_note = f"对齐方式：{align}（{'必填' if footer_contract.get('required') else '可选'}）"
-                if footer_actions:
-                    acts = "、".join(str(a.get("label") or a.get("name") or a.get("text") or a.get("type") or "") for a in footer_actions)
-                    footer_note += f"；页面按钮：{acts}"
-                override = (template_contract.get("override") or {}).get("enabled")
-                footer_style = "color:#c00;font-weight:bold" if (footer_contract.get("required") and not footer_actions and not override) else ""
-                parts.append(f"<p><strong>底部操作契约：</strong><span style=\"{footer_style}\">{esc(footer_note)}</span></p>")
-            parts.append("</div>")
+        if wireframe_text:
+            if len(wireframe_text) < 8:
+                parts.append("<p class=\"wireframe-warning\">线框图内容过短，未按页面模板完整绘制，请检查设计说明。</p>")
+            parts.append(f"<pre>{esc(wireframe_text)}</pre>")
         if note:
             parts.append(f"<p>{esc(note)}</p>")
-        if layout_source and not template_source:
+        if layout_source:
             parts.append(f"<p><strong>线框图结构依据：</strong>{esc(layout_source)}</p>")
         if variants:
             rendered_variants = [v for v in variants if str((v or {}).get("ascii") or "").strip()]
@@ -622,8 +675,6 @@ def render_wireframe(page):
                     if var_ascii:
                         parts.append(f"<pre>{var_ascii}</pre>")
                     parts.append("</div>")
-        if wireframe_text:
-            parts.append(f"<pre>{esc(wireframe_text)}</pre>")
         parts.append("</div>")
         return "".join(parts)
 

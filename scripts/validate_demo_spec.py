@@ -63,6 +63,8 @@ RULES = [
     {"ruleId": "RULE-29", "errorCode": "OPERATION_*", "name": "操作目标闭环：open-container 目标存在、容器类型正确、高影响操作二次确认", "check": "check_operation_closure", "source": "references/01-workflow/03-demo-design-spec.md 设计闭环", "tests": "test_operation_target_missing_fails, test_operation_confirm_missing_fails"},
     {"ruleId": "RULE-30", "errorCode": "TABS_*", "name": "Tab 变体闭环：多内容 Tab 页面强制完整变体、公共外壳与内容区、sections 绑定 tabId", "check": "check_tab_variants", "source": "references/01-workflow/03-demo-design-spec.md 设计闭环", "tests": "test_tabs_missing_variants_fails, test_tabs_variant_count_mismatch_fails, test_tabs_orphan_variant_fails, test_tabs_variant_no_shell_fails, test_tabs_variant_no_content_fails"},
     {"ruleId": "RULE-31", "errorCode": "CODING_CLOSURE_*", "name": "页面级 Coding 闭环：pageContext 一致、每页至少一个开发项、无孤立开发项", "check": "check_coding_closure", "source": "references/01-workflow/03-demo-design-spec.md 设计闭环", "tests": "test_coding_page_context_mismatch_fails, test_coding_no_items_fails"},
+    {"ruleId": "RULE-32", "errorCode": "WIREFRAME_ASCII_TOO_SHORT / WIREFRAME_ASCII_NOT_DRAWN", "name": "线框图绘制质量：ascii 必须按模板绘制，禁止只有几个字或一句话", "check": "check_wireframe_drawing_quality", "source": "references/01-workflow/03-demo-design-spec.md 设计闭环", "tests": "test_ascii_too_short_fails, test_ascii_not_drawn_fails"},
+    {"ruleId": "RULE-33", "errorCode": "WIREFRAME_REGION_NOT_DRAWN", "name": "线框图双向一致性：regions 声明的内容性区块必须在 ascii 中有绘制痕迹", "check": "check_wireframe_region_drawn", "source": "references/01-workflow/03-demo-design-spec.md 设计闭环", "tests": "test_ascii_region_not_drawn_warns"},
 ]
 
 # 页面 type（中文）与标准模板的映射
@@ -147,6 +149,39 @@ def has_semantic(regions, keywords):
     """regions 文本中是否出现任一关键词。"""
     text = " ".join(region_text(r) for r in regions)
     return any(k.lower() in text for k in keywords)
+
+
+REGION_ASCII_KEYS = {
+    # 模板区域 -> ascii 线框图中应出现的绘制痕迹关键词（用于检查线框图是否按模板绘制）
+    "global-navigation": ["导航", "侧边栏", "菜单", "global"],
+    "title-bar": ["标题", "页头", "返回", "title"],
+    "toolbar": ["工具栏", "操作栏", "toolbar"],
+    "filter": ["筛选", "查询", "filter"],
+    "table": ["表格", "列表", "table"],
+    "pagination": ["分页", "上一页", "下一页", "pagination"],
+    "form": ["表单", "form"],
+    "form-content": ["表单", "form"],
+    "modal-header": ["弹窗标题", "标题", "关闭"],
+    "modal-footer": ["确定", "取消", "底部"],
+    "drawer-header": ["标题", "关闭"],
+    "object-summary": ["摘要", "概览", "上下文", "summary"],
+    "object-context": ["摘要", "上下文", "context"],
+    "tab-bar": ["tab", "标签页", "页签"],
+    "tab-content": ["内容", "content"],
+    "stepper": ["步骤", "stepper"],
+    "step-content": ["步骤", "内容"],
+    "footer": ["底部", "确定", "取消", "上一步", "下一步"],
+    "drawer-footer": ["确定", "取消", "底部"],
+    "overview": ["概览", "统计", "overview"],
+    "detail-content": ["详情", "detail"],
+    "tree": ["树", "tree"],
+    "search": ["搜索", "search"],
+}
+
+# ascii 线框图绘制完整性检查中跳过纯结构外壳区域（无文字标签预期，避免误报）
+DRAWING_SKIP_REGIONS = {
+    "global-navigation", "modal-shell", "drawer-shell", "shell",
+}
 
 
 def walk_text(obj):
@@ -721,6 +756,65 @@ class Validator:
                                        f"存在 {label} 区块", "缺失",
                                        fix=f"在 sections 或 wireframe.regions 中声明 {label} 区块")
 
+    def check_wireframe_drawing_quality(self):
+        """RULE-32 线框图绘制质量：ascii 必须按模板绘制，禁止只有几个字或一句话。"""
+        for page in self.data.get("pages", []):
+            pid = page.get("id", "")
+            wf = self.page_wireframe(page)
+            if not isinstance(wf, dict):
+                continue
+            ascii_text = str(wf.get("ascii") or "").strip()
+            path = f"$.pages[{self._idx(page)}].wireframe.ascii"
+            if len(ascii_text) < 8:
+                self.add_error(pid, "WIREFRAME_ASCII_TOO_SHORT", "error", path,
+                               "线框图内容过短，未按页面模板绘制完整结构",
+                               "包含标题栏、内容区、底部操作等区块的字符画", f"仅 {len(ascii_text)} 个字符",
+                               fix="按模板 requiredRegions 绘制完整 ASCII 线框图，禁止用一句话替代")
+                continue
+            tid = self.page_template(page)
+            template = (self.registry.get("templates") or {}).get(tid) or {}
+            required = template.get("requiredRegions") or []
+            if not required:
+                continue
+            matched_regions = []
+            for req in required:
+                keys = REGION_ASCII_KEYS.get(req, [])
+                if any(k in ascii_text for k in keys):
+                    matched_regions.append(req)
+            if len(matched_regions) < 2:
+                self.add_error(pid, "WIREFRAME_ASCII_NOT_DRAWN", "error", path,
+                               f"线框图未按模板 {tid} 绘制（应覆盖标题栏/内容区/底部操作等区域）",
+                               f"ascii 中出现 {len(matched_regions)} 个模板区域的绘制痕迹（{', '.join(matched_regions) or '无'}）",
+                               "至少 2 个模板必需区域有绘制痕迹",
+                               fix=f"参考模板 {tid} 的 requiredRegions，绘制包含标题栏、内容区、底部操作区的 ASCII 线框图")
+
+    def check_wireframe_region_drawn(self):
+        """RULE-33 线框图双向一致性：regions 声明的内容性区块，ascii 中必须有绘制痕迹。"""
+        for page in self.data.get("pages", []):
+            pid = page.get("id", "")
+            wf = self.page_wireframe(page)
+            if not isinstance(wf, dict):
+                continue
+            ascii_text = str(wf.get("ascii") or "").strip()
+            regions = wf.get("regions") or []
+            if not isinstance(regions, list) or len(ascii_text) < 8:
+                continue
+            for r in regions:
+                if not isinstance(r, dict):
+                    continue
+                region_name = str(r.get("templateRegion") or r.get("id") or "")
+                if region_name in DRAWING_SKIP_REGIONS:
+                    continue
+                keys = REGION_ASCII_KEYS.get(region_name, [])
+                if not keys:
+                    continue
+                if not any(k in ascii_text for k in keys):
+                    self.add_error(pid, "WIREFRAME_REGION_NOT_DRAWN", "warning",
+                                   f"$.pages[{self._idx(page)}].wireframe.ascii",
+                                   f"regions 声明了 {region_name} 区块，但 ascii 线框图中未绘制对应区域",
+                                   f"regions 含 {region_name}", f"ascii 未出现 {region_name} 相关绘制痕迹",
+                                   fix=f"在 ascii 线框图中补画 {region_name} 区域（或补充对应文字标签）")
+
     def check_coding_item_ids(self):
         for page in self.data.get("pages", []):
             pid = page.get("id", "")
@@ -1105,6 +1199,9 @@ class Validator:
         self.check_operation_closure()
         self.check_tab_variants()
         self.check_coding_closure()
+        # ---- 线框图绘制质量与双向一致性（RULE-32 / RULE-33）----
+        self.check_wireframe_drawing_quality()
+        self.check_wireframe_region_drawn()
 
     def result(self):
         errors = [e for e in self.errors if e["severity"] == "error"]

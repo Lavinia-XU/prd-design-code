@@ -98,6 +98,8 @@
 
 页面级指导只描述当前页面的开发实现，不重复页面内容区块中已经明确的业务说明、交互结果或状态表现。
 
+页面级AI Coding指导开头必须输出当前页面的模板契约：templateId、navigationType、templateSource、模板必需区域（requiredRegions）、区域顺序（regionOrder）和底部操作契约（footer 对齐方式、必填性与按钮顺序）。模板契约来自页面`templateContract`与模板注册表，是AI Coding必须继承的页面结构硬约束；线框图卡片不再展示模板契约，只展示ASCII线框图与线框说明，模板契约仅供AI Coding消费。
+
 ### 3.2 开发项编码指导表
 
 每个页面必须按开发项输出以下表格；不得只写“使用按钮”“使用抽屉”“使用高级搜索”等泛化描述。

@@ -161,6 +161,7 @@ metadata:
 - 绘制HTML线框图前，必须先选择已读取的页面类型模板，再填入业务内容；不得根据页面名称或业务内容自由拼装结构。线框图必须继承当前页面类型或容器形态对应的Common Design页面模板结构，并继承其中的底部操作区位置、按钮顺序和布局规则。底部操作区属于页面模板结构硬约束；除非PRD、用户确认或匹配Product Design明确覆盖，不得将同一操作区按钮拆分为左右两侧，也不得自行混用页面、抽屉、弹窗等不同容器的按钮位置规则。
 - 生成HTML前，对每页执行“页面类型 → 模板结构 → layout → 页面骨架组件映射 → 内容区块 → 筛选/表格/表单字段组件映射 → wireframe → 组件与交互 → 页面级AI Coding指导”一致性校验；任一环节与已选模板不一致时，先修正页面设计或明确覆盖依据，不得直接生成HTML。
 - 生成HTML前必须运行设计闭环自动校验（`python scripts/validate_demo_spec.py --input demo-spec.json --template-registry references/02-template-contracts/common-design-template-registry.json --strict`）：页面清单闭环（RULE-28）、操作目标闭环（RULE-29）、Tab 变体闭环（RULE-30，仅多内容 Tab 页面强制）、页面级 Coding 闭环（RULE-31）；error 级问题禁止生成HTML，warning 级不阻断，info 级仅提示待核验。
+- 线框图必须绘制为符合模板结构的字符画：wireframe.ascii 需按所选页面模板绘制出标题栏、内容区、底部操作区等模板必需区域的布局痕迹，禁止用一句话或几个字代替线框图；ascii 过短或未覆盖模板必需区域会被校验器以 RULE-32 阻断，regions 声明的内容性区域在 ascii 中无绘制痕迹会以 RULE-33 提示。
 - 设计说明书中的复用对象表达必须与代码可用状态一致：
   - `verified`：复用对象尽可能精确到真实页面文件、组件名称、文件路径、关键 Props / Events / Slots 或使用方式、复用类型（直接引用 / 复用框架 / 组件复用）、相对已有实现的新增字段与交互视觉差异、必须保留的页面结构和业务组件。
   - `partial` 或 `unavailable`：只描述设计语义和组件能力（如标准列表容器、业务策略列表框架、业务对象展示组件、标准状态切换组件、标准高风险确认链路），禁止虚构具体文件路径、组件路径、Props、Events 或调用方式；真实代码对象统一标记为“Coding 阶段待核验”。
@@ -277,7 +278,7 @@ metadata:
 # 输出 Contract
 
 - 对话框输出：需求与Demo范围、核心用户与场景、Design Context摘要、导航结构、页面总览表、待确认问题、HTML文件路径、Coding Plan和Coding执行进度。
-- HTML输出：总览页、导航结构、页面总览表、逐页页面目标、页面基础信息、页面内容区块、Wireframe / ASCII线框图、底部操作、页面级AI Coding指导、Mock数据要求。
+- HTML输出：总览页、导航结构、页面总览表、逐页页面目标、页面基础信息、页面内容区块、Wireframe / ASCII线框图（先展示完整线框图，下方补充线框说明与变体）、底部操作、页面级AI Coding指导（开头输出模板契约：templateId/templateSource/模板必需区域/区域顺序/底部操作契约）、Mock数据要求。
 - Coding Plan输出：输入来源、Design Context使用方式、Implementation Mapping Gate映射结果、页面开发顺序、复用对象、新增开发项、风险与确认点。
 - Coding Execution输出：按页开发进度、页面级验证结论、下一页计划、最终完成说明。
 - 禁止在对话框展开HTML逐页详情、完整交互规则、完整Mock数据和完整AI Coding提示词。
