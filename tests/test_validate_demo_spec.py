@@ -754,6 +754,48 @@ class TestValidateDemoSpec(unittest.TestCase):
         self.assertEqual(code, 0)
         self.assertTrue(report.get("valid"))
 
+    def test_wireframe_label_list_fails(self):
+        """区域标签罗列式线框图（每行一个'区域名：内容' + 横线分隔）-> RULE-34 error 阻断。"""
+        page = base_page()
+        page["wireframe"]["ascii"] = (
+            "+----------------------------------------------------------+\n"
+            "| 全局导航：数据资产管理 / 主机资产\n"
+            "+----------------------------------------------------------+\n"
+            "| 页面标题栏：主机资产 [返回] [刷新]\n"
+            "+----------------------------------------------------------+\n"
+            "| 筛选工具栏：高级搜索框 / 关键词\n"
+            "+----------------------------------------------------------+\n"
+            "| 表格列表：主机名 | IP | 状态 | 操作\n"
+            "+----------------------------------------------------------+\n"
+            "| 分页区：上一页 1 2 3 下一页\n"
+            "+----------------------------------------------------------+"
+        )
+        code, report = run_validator(make_spec([page]), strict=True)
+        self.assertEqual(code, 1)
+        self.assertFalse(report.get("valid"))
+        self.assertTrue(any(e.get("errorCode") == "WIREFRAME_ASCII_LABEL_LIST" for e in report.get("errors", [])))
+
+    def test_wireframe_full_layout_passes(self):
+        """完整页面布局字符画（内容行左右竖线闭合、含容器嵌套）-> RULE-34 通过。"""
+        page = base_page()
+        page["wireframe"]["ascii"] = (
+            "┌──────────────────────────────────┐\n"
+            "│ 主机资产                [刷新] [导出] │\n"
+            "├──────────────────────────────────┤\n"
+            "│ [筛选：主机名 关键词]      [查询]  │\n"
+            "│ [新增] [批量编辑] [删除]          │\n"
+            "│ ┌──────────────────────────────┐ │\n"
+            "│ │ 主机名 | IP | 状态 | 操作    │ │\n"
+            "│ │ 主机A   | 1.1.1.1 | 在线 | … │ │\n"
+            "│ └──────────────────────────────┘ │\n"
+            "│ 上一页 1 2 3 下一页               │\n"
+            "└──────────────────────────────────┘"
+        )
+        code, report = run_validator(make_spec([page]), strict=True)
+        self.assertEqual(code, 0)
+        self.assertTrue(report.get("valid"))
+        self.assertFalse(any(e.get("errorCode") == "WIREFRAME_ASCII_LABEL_LIST" for e in report.get("errors", [])))
+
 
 if __name__ == "__main__":
     unittest.main(verbosity=2)

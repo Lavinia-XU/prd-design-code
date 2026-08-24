@@ -158,10 +158,10 @@ metadata:
 - 生成HTML详细设计前，重新检查当前Design Context是否覆盖本阶段实际需要的设计能力，包括页面类型、表格、表单、交互、状态、文案术语、组件映射以及产品级业务组件和复用规则。
 - 若页面总览确定后出现新的设计能力，通过Design Skill Resolver按需补充对应Common Design / Product Design Reference；禁止默认认为Step 2读取的Design Context已经覆盖详细设计阶段全部知识。
 - HTML中的每项页面结构、内容区块、交互规则、状态规则、术语、组件选择和底部操作区布局，都必须可追溯到已读取的Common Design / Product Design Reference、PRD、用户确认、已验证代码或明确标记的AI补齐；不得仅因已识别Common Design就默认其所有规则已被使用。
-- 绘制HTML线框图前，必须先选择已读取的页面类型模板，再填入业务内容；不得根据页面名称或业务内容自由拼装结构。线框图必须继承当前页面类型或容器形态对应的Common Design页面模板结构，并继承其中的底部操作区位置、按钮顺序和布局规则。底部操作区属于页面模板结构硬约束；除非PRD、用户确认或匹配Product Design明确覆盖，不得将同一操作区按钮拆分为左右两侧，也不得自行混用页面、抽屉、弹窗等不同容器的按钮位置规则。
+- 绘制HTML线框图前，必须先选择已读取的页面类型模板，再从该页面类型对应的设计库模板文档读取模板结构与线框样式：匹配Product Design声明了页面模板时按Product Design定义的页面模板（按 00-design-skill-resolver 的覆盖关系），否则按Common Design页面模板文档（如 references/03-design-template/01-page-types.md 的对应模板条目）；线框图参考只来自这两个设计库，本Skill不保存任何页面模板线框图参考。不得根据页面名称或业务内容自由拼装结构。线框图必须继承所选页面模板的布局结构，并继承其中的底部操作区位置、按钮顺序和布局规则。底部操作区属于页面模板结构硬约束；除非PRD、用户确认或匹配Product Design明确覆盖，不得将同一操作区按钮拆分为左右两侧，也不得自行混用页面、抽屉、弹窗等不同容器的按钮位置规则。
 - 生成HTML前，对每页执行“页面类型 → 模板结构 → layout → 页面骨架组件映射 → 内容区块 → 筛选/表格/表单字段组件映射 → wireframe → 组件与交互 → 页面级AI Coding指导”一致性校验；任一环节与已选模板不一致时，先修正页面设计或明确覆盖依据，不得直接生成HTML。
 - 生成HTML前必须运行设计闭环自动校验（`python scripts/validate_demo_spec.py --input demo-spec.json --template-registry references/02-template-contracts/common-design-template-registry.json --strict`）：页面清单闭环（RULE-28）、操作目标闭环（RULE-29）、Tab 变体闭环（RULE-30，仅多内容 Tab 页面强制）、页面级 Coding 闭环（RULE-31）；error 级问题禁止生成HTML，warning 级不阻断，info 级仅提示待核验。
-- 线框图必须绘制为符合模板结构的字符画：wireframe.ascii 需按所选页面模板绘制出标题栏、内容区、底部操作区等模板必需区域的布局痕迹，禁止用一句话或几个字代替线框图；ascii 过短或未覆盖模板必需区域会被校验器以 RULE-32 阻断，regions 声明的内容性区域在 ascii 中无绘制痕迹会以 RULE-33 提示。
+- 线框图必须绘制为严格继承所选模板布局结构的完整页面布局字符画：wireframe.ascii 按所选页面模板的标题栏、内容区、底部操作区等必需区域的位置关系与容器嵌套绘制，只允许替换文案并完善内容区中的具体内容，禁止调整模板布局结构、区块顺序、容器形态或新增模板不存在的区域；禁止用一句话或几个字代替线框图，禁止把线框图画成"每行一个区域名：内容"的标签罗列样式。ascii 过短或未覆盖模板必需区域会被校验器以 RULE-32 阻断，regions 声明的内容性区域在 ascii 中无绘制痕迹会以 RULE-33 提示，区域标签罗列会以 RULE-34 阻断。
 - 设计说明书中的复用对象表达必须与代码可用状态一致：
   - `verified`：复用对象尽可能精确到真实页面文件、组件名称、文件路径、关键 Props / Events / Slots 或使用方式、复用类型（直接引用 / 复用框架 / 组件复用）、相对已有实现的新增字段与交互视觉差异、必须保留的页面结构和业务组件。
   - `partial` 或 `unavailable`：只描述设计语义和组件能力（如标准列表容器、业务策略列表框架、业务对象展示组件、标准状态切换组件、标准高风险确认链路），禁止虚构具体文件路径、组件路径、Props、Events 或调用方式；真实代码对象统一标记为“Coding 阶段待核验”。
@@ -300,7 +300,7 @@ metadata:
 - Implementation Mapping Gate 由 AI 自动执行；输出 Coding Plan 前已输出统一映射表，所有必需复用对象均为“已验证”；必需对象为“阻塞”时未继续输出 Coding Plan；“待核验”只存在于 Gate 执行前，不作为 Gate 完成后的结果。
 - 设计说明书与真实代码的差异已完成分级处理：实现层差异已记录并更新 Coding Plan，设计层差异已修正 HTML 并重新获得用户确认，业务事实缺失已进入待确认问题；未将实现层差异静默改为全新开发。
 - 视觉基线已完成核对：属于已有业务主题或页面体系的需求已对照真实参考页面做视觉回归；功能、交互、组件复用和视觉回归均通过后，才宣称任务完成。
-- 模板契约校验通过后才生成 HTML；HTML 生成成功不代表校验通过，必须明确展示 validationStatus: passed；validationStatus 非 passed 时未进入 Implementation Mapping Gate，wireframe 结构校验失败时未输出 Coding Plan。
+- 模板契约校验通过后才生成 HTML；HTML 生成成功不代表校验通过；校验通过时 HTML 顶部不显示校验横幅，校验失败（含 legacy 兼容模式）时 HTML 顶部显示失败提示横幅，validationStatus 非 passed 时未进入 Implementation Mapping Gate，wireframe 结构校验失败时未输出 Coding Plan。
 - 每个页面已绑定标准 templateId 或 custom 模板（含 baseTemplateId、customReason 与 override.affectedRules）；navigationType 已声明或按 assumed + source 处理；未使用未注册页面类型名称；未在 strict 模式下静默通过 legacy 自由文本线框。
 - Coding Plan逐项映射HTML页面级AI Coding指导，并获得用户确认后才执行。
 - Coding Execution按页面顺序推进，每页完成后做页面级核对；未在共享页面骨架冻结前并发 Coding。

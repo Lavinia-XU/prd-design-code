@@ -379,13 +379,11 @@ def render_preview_content(data, pages, validation_info=None):
     validation_info = validation_info or {}
     banner = ""
     status = validation_info.get("status", "unknown")
-    if status == "passed":
-        banner = "<div class=\"validation-banner\" style=\"background:#e6ffed;border:1px solid #1a7f37;padding:8px 12px;margin-bottom:12px;border-radius:4px;\"><strong>validationStatus: passed</strong> — 模板契约校验通过，本说明书可作为 Coding 基线。</div>"
-    else:
+    if status != "passed":
         if validation_info.get("legacy"):
-            banner = "<div class=\"validation-banner\" style=\"background:#fff8e1;border:1px solid #b45309;padding:8px 12px;margin-bottom:12px;border-radius:4px;\"><strong>validationStatus: warning</strong> — 本说明书使用旧版自由文本线框，未完成模板契约校验，不得作为 Coding 基线。</div>"
+            banner = "<div class=\"validation-banner\" style=\"background:#fff8e1;border:1px solid #b45309;padding:8px 12px;margin-bottom:12px;border-radius:4px;\"><strong>校验未通过</strong> — 本说明书使用旧版自由文本线框，未完成模板契约校验，不得作为 Coding 基线，需修正后再编码。</div>"
         else:
-            banner = "<div class=\"validation-banner\" style=\"background:#fdecea;border:1px solid #c62828;padding:8px 12px;margin-bottom:12px;border-radius:4px;\"><strong>validationStatus: failed</strong> — 模板契约校验未通过，不得作为 Coding 基线。</div>"
+            banner = "<div class=\"validation-banner\" style=\"background:#fdecea;border:1px solid #c62828;padding:8px 12px;margin-bottom:12px;border-radius:4px;\"><strong>校验未通过</strong> — 说明书未通过校验，需修正后再编码。</div>"
     return banner + render_overview(data) + "\n" + "\n".join(render_page(page, inherited_nav) for page, inherited_nav in pages)
 
 

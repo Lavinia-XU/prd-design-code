@@ -113,6 +113,7 @@ Design Skill 的读取采用“索引优先、Reference 按需”的方式。
 | 表格 | 继承（inherit） | 通用表格设计规范 |
 | 表单 | 扩展（extend） | 通用表单设计规范 + 产品表单设计规范 |
 | 状态 | 继承（inherit） | 通用状态设计规范 |
+| 页面模板与线框图 | 按声明（override 时按 Product Design 页面模板，否则按 Common Design 页面模板） | 匹配 Product Design 页面模板文档（如 product-design 的页面模板定义）或 Common Design 页面模板文档（03-design-template/01-page-types.md） |
 
 ---
 

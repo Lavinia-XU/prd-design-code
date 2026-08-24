@@ -65,6 +65,7 @@ RULES = [
     {"ruleId": "RULE-31", "errorCode": "CODING_CLOSURE_*", "name": "页面级 Coding 闭环：pageContext 一致、每页至少一个开发项、无孤立开发项", "check": "check_coding_closure", "source": "references/01-workflow/03-demo-design-spec.md 设计闭环", "tests": "test_coding_page_context_mismatch_fails, test_coding_no_items_fails"},
     {"ruleId": "RULE-32", "errorCode": "WIREFRAME_ASCII_TOO_SHORT / WIREFRAME_ASCII_NOT_DRAWN", "name": "线框图绘制质量：ascii 必须按模板绘制，禁止只有几个字或一句话", "check": "check_wireframe_drawing_quality", "source": "references/01-workflow/03-demo-design-spec.md 设计闭环", "tests": "test_ascii_too_short_fails, test_ascii_not_drawn_fails"},
     {"ruleId": "RULE-33", "errorCode": "WIREFRAME_REGION_NOT_DRAWN", "name": "线框图双向一致性：regions 声明的内容性区块必须在 ascii 中有绘制痕迹", "check": "check_wireframe_region_drawn", "source": "references/01-workflow/03-demo-design-spec.md 设计闭环", "tests": "test_ascii_region_not_drawn_warns"},
+    {"ruleId": "RULE-34", "errorCode": "WIREFRAME_ASCII_LABEL_LIST", "name": "线框图布局完整性：ascii 禁止区域标签罗列，必须绘制为完整页面布局字符画", "check": "check_wireframe_label_list", "source": "references/01-workflow/03-demo-design-spec.md 设计闭环", "tests": "test_wireframe_label_list_fails, test_wireframe_full_layout_passes"},
 ]
 
 # 页面 type（中文）与标准模板的映射
@@ -815,6 +816,38 @@ class Validator:
                                    f"regions 含 {region_name}", f"ascii 未出现 {region_name} 相关绘制痕迹",
                                    fix=f"在 ascii 线框图中补画 {region_name} 区域（或补充对应文字标签）")
 
+    def check_wireframe_label_list(self):
+        """RULE-34 线框图布局完整性：ascii 禁止区域标签罗列（每行一个"区域名：内容"），必须绘制为完整页面布局字符画。"""
+        for page in self.data.get("pages", []):
+            pid = page.get("id", "")
+            wf = self.page_wireframe(page)
+            if not isinstance(wf, dict):
+                continue
+            ascii_text = str(wf.get("ascii") or "").strip()
+            if len(ascii_text) < 8:
+                continue
+            lines = [l.rstrip() for l in ascii_text.splitlines() if l.strip()]
+            if len(lines) < 6:
+                continue
+            # 分隔线行：+---- 或 +----+（无右竖线闭合的纯横线）
+            sep_lines = [l for l in lines if re.fullmatch(r"\+-+\+?", l.strip())]
+            # 内容行：非边框线、非分隔线的行
+            content_lines = [l for l in lines
+                             if not re.match(r"^[+┌└├]", l.strip())
+                             and not re.fullmatch(r"\+-+\+?", l.strip())]
+            if not content_lines:
+                continue
+            # 无右竖线闭合的内容行：以 | 或 │ 开头但不以 | 或 │ 结尾（区域标签罗列特征）
+            unclosed = [l for l in content_lines
+                        if l.strip().startswith(("|", "│")) and not l.strip().endswith(("|", "│"))]
+            if len(unclosed) >= 3 and len(sep_lines) >= 3 and len(unclosed) >= len(content_lines) * 0.4:
+                self.add_error(pid, "WIREFRAME_ASCII_LABEL_LIST", "error",
+                               f"$.pages[{self._idx(page)}].wireframe.ascii",
+                               "线框图是区域标签罗列，未绘制为页面布局图",
+                               "从 Common Design 页面模板文档继承模板布局样式并填入业务内容的完整页面布局字符画",
+                               f"{len(unclosed)} 个内容行无右竖线闭合、{len(sep_lines)} 个分隔行，形似每行一个'区域名：内容'",
+                               fix="读取 Common Design 页面模板文档中该页面类型的模板结构与线框样式，继承模板样式并填入业务内容，禁止逐区域罗列标签")
+
     def check_coding_item_ids(self):
         for page in self.data.get("pages", []):
             pid = page.get("id", "")
@@ -1199,9 +1232,10 @@ class Validator:
         self.check_operation_closure()
         self.check_tab_variants()
         self.check_coding_closure()
-        # ---- 线框图绘制质量与双向一致性（RULE-32 / RULE-33）----
+        # ---- 线框图绘制质量与双向一致性（RULE-32 / RULE-33 / RULE-34）----
         self.check_wireframe_drawing_quality()
         self.check_wireframe_region_drawn()
+        self.check_wireframe_label_list()
 
     def result(self):
         errors = [e for e in self.errors if e["severity"] == "error"]
