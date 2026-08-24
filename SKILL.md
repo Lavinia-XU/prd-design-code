@@ -47,7 +47,7 @@ metadata:
   - 本需求命中的Design Capability；
   - 每项能力的实际知识来源；
   - 若存在Product Design，其Coverage及`inherit / extend / override`关系；
-  - 当前任务代码可用状态（verified / partial / unavailable）及当前代码中已验证的可复用对象；
+  - 当前任务代码可用状态（verified 已核验 / partial 部分可用 / unavailable 不可用）及当前代码中已验证的可复用对象；
   - AI合理补齐项；
   - 仍无明确规则的内容；
   - 关键冲突和待确认业务事实。
@@ -96,9 +96,9 @@ metadata:
 
 设计阶段读取业务代码后，必须为当前任务的代码可用性标记唯一状态，并写入 Design Context：
 
-- `verified`：设计阶段已实际读取并验证相关业务代码，可明确真实页面、组件、路由、交互和数据结构。
-- `partial`：只读取了部分代码，仍有页面、组件或交互未验证。
-- `unavailable`：设计阶段没有可用业务代码，或没有找到相关参考页面。
+- `verified`（已核验）：设计阶段已实际读取并验证相关业务代码，可明确真实页面、组件、路由、交互和数据结构。
+- `partial`（部分可用）：只读取了部分代码，仍有页面、组件或交互未验证。
+- `unavailable`（不可用）：设计阶段没有可用业务代码，或没有找到相关参考页面。
 
 约束：
 
@@ -115,7 +115,7 @@ metadata:
 - 若没有任何需求资料，先要求补充需求内容、Demo范围、代码范围或相关文档，禁止自行生成Demo方案。
 - 过滤Demo范围：仅将平台内展示、平台内操作、可演示前端流程进入Demo设计；线下流程、外部系统、技术实现、商业背景仅作为背景或待确认信息。
 - 若存在Demo代码环境、用户指定代码范围、Design Skill提到参考模块，或用户提到已有模块，读取相关代码作为输入，关注路由、菜单、相似页面、组件组织、Mock数据和已有交互习惯。
-- 读取代码后，必须按“代码可用状态”标记当前任务的代码可用性（verified / partial / unavailable）并写入 Design Context；项目目录存在但未实际读取验证的代码一律视为 `unavailable`。
+- 读取代码后，必须按“代码可用状态”标记当前任务的代码可用性（verified 已核验 / partial 部分可用 / unavailable 不可用）并写入 Design Context；项目目录存在但未实际读取验证的代码一律视为 `unavailable`。
 
 ## Step 2 产品识别 + Design Context
 
@@ -124,7 +124,7 @@ metadata:
 - 先读取Common Design的SKILL.md和Reference Index；若存在匹配Product Design，再读取其SKILL.md、Coverage和Reference Index；按需求命中的能力选择Reference，不递归读取所有Reference。
 - Common Design解析成功后即可进入设计知识装配；必须读取组件映射表和页面模板里的推荐组件，形成当前任务的组件映射基线；若存在匹配Product Design，解析其Coverage中的`inherit / extend / override`关系，并读取产品设计里的特殊组件，明确每项设计能力和组件能力的最终知识来源。
 - 未找到匹配Product Design时，使用Common Design、PRD、用户输入和当前代码环境继续设计；对于页面组织、通用交互、展示字段等可合理推导的设计细节允许AI补齐，但真实业务事实、权限、状态流转、数量限制、业务规则等不可从现有输入确认的信息不得自行编造，必要时进入待确认问题。
-- 形成Design Context并在内部用于后续设计；Design Context 必须包含代码可用状态（verified / partial / unavailable）；仅当产品无法确定、已发现的Product Design存在选择歧义、关键Reference缺失或规则冲突未明确时，进入待确认问题或停止页面拆解。
+- 形成Design Context并在内部用于后续设计；Design Context 必须包含代码可用状态（verified 已核验 / partial 部分可用 / unavailable 不可用）；仅当产品无法确定、已发现的Product Design存在选择歧义、关键Reference缺失或规则冲突未明确时，进入待确认问题或停止页面拆解。
 
 ## Step 3 核心用户、场景、目标
 
@@ -140,7 +140,8 @@ metadata:
 - 输出页面总览前，必须先为每个页面形成内部“页面类型决策表”，记录业务场景、PRD/用户约束、Product Design是否覆盖、Common Design候选模板、已验证代码证据、最终页面类型、决策理由和未决问题；页面类型不确定且会影响用户旅程或页面结构时，进入待确认问题。
 - 页面总览表按导航层级列出一级菜单、二级菜单、三级菜单、Tab页面、详情页、弹窗、抽屉和必要下钻页面。
 - 每个页面必须说明页面ID、页面名称、页面类型、导航路径、打开方式、页面目标、主要内容、关键操作和初步复用方向；初步复用方向仅可写复用已有页面、参考已有框架、新增页面或待详细设计确认。详细开发方式、具体组件和实现差异必须在HTML页面级AI Coding指导中确定。
-- 页面类型必须使用已读取Common Design、匹配Product Design或已验证代码中真实存在的标准类型名称；业务描述不得直接充当页面类型。标准类型无法覆盖时，标记为“自定义页面类型”，并说明继承的基础模板、扩展内容和差异原因。
+- 页面类型必须使用已读取Common Design、匹配Product Design或已验证代码中真实存在的标准类型名称，页面总览表输出时必须使用 Common Design 中文页面类型名（如概览表格页、抽屉表单页），禁止输出模板 ID（如 page-table-overview）；业务描述不得直接充当页面类型。标准类型无法覆盖时，标记为“自定义页面类型”，并说明继承的基础模板、扩展内容和差异原因。
+- 页面总览表即已确认页面/容器清单（manifest）：总览中出现的每个页面、弹窗、抽屉都必须完整落入 demo-spec.json 的 `pages`（含 `children`），页面 ID、名称、类型、容器类型保持一致；弹窗/抽屉必须通过 `operations` 的 open-container 操作或页面内容引用建立入口，禁止出现总览已确认但最终产物缺失的容器（详见 [Demo设计规格 - 设计闭环自动校验](references/01-workflow/03-demo-design-spec.md) 第 11 章）。
 - 对话框主体只输出到页面总览表，禁止继续展开逐页设计、交互细节、Mock数据或完整AI Coding提示词。
 
 ## Step 5 待确认
@@ -159,6 +160,7 @@ metadata:
 - HTML中的每项页面结构、内容区块、交互规则、状态规则、术语、组件选择和底部操作区布局，都必须可追溯到已读取的Common Design / Product Design Reference、PRD、用户确认、已验证代码或明确标记的AI补齐；不得仅因已识别Common Design就默认其所有规则已被使用。
 - 绘制HTML线框图前，必须先选择已读取的页面类型模板，再填入业务内容；不得根据页面名称或业务内容自由拼装结构。线框图必须继承当前页面类型或容器形态对应的Common Design页面模板结构，并继承其中的底部操作区位置、按钮顺序和布局规则。底部操作区属于页面模板结构硬约束；除非PRD、用户确认或匹配Product Design明确覆盖，不得将同一操作区按钮拆分为左右两侧，也不得自行混用页面、抽屉、弹窗等不同容器的按钮位置规则。
 - 生成HTML前，对每页执行“页面类型 → 模板结构 → layout → 页面骨架组件映射 → 内容区块 → 筛选/表格/表单字段组件映射 → wireframe → 组件与交互 → 页面级AI Coding指导”一致性校验；任一环节与已选模板不一致时，先修正页面设计或明确覆盖依据，不得直接生成HTML。
+- 生成HTML前必须运行设计闭环自动校验（`python scripts/validate_demo_spec.py --input demo-spec.json --template-registry references/02-template-contracts/common-design-template-registry.json --strict`）：页面清单闭环（RULE-28）、操作目标闭环（RULE-29）、Tab 变体闭环（RULE-30，仅多内容 Tab 页面强制）、页面级 Coding 闭环（RULE-31）；error 级问题禁止生成HTML，warning 级不阻断，info 级仅提示待核验。
 - 设计说明书中的复用对象表达必须与代码可用状态一致：
   - `verified`：复用对象尽可能精确到真实页面文件、组件名称、文件路径、关键 Props / Events / Slots 或使用方式、复用类型（直接引用 / 复用框架 / 组件复用）、相对已有实现的新增字段与交互视觉差异、必须保留的页面结构和业务组件。
   - `partial` 或 `unavailable`：只描述设计语义和组件能力（如标准列表容器、业务策略列表框架、业务对象展示组件、标准状态切换组件、标准高风险确认链路），禁止虚构具体文件路径、组件路径、Props、Events 或调用方式；真实代码对象统一标记为“Coding 阶段待核验”。
@@ -285,7 +287,7 @@ metadata:
 - Design Skill Resolver已执行，Common Design已识别；若存在匹配Product Design，其Coverage关系已识别。
 - Common Design已完成“查询 → SKILL.md读取 → metadata校验”；不存在Common Design时未进入正式页面设计。
 - Design Context已形成，且每项命中设计能力的知识来源明确。
-- Design Context 包含代码可用状态（verified / partial / unavailable）；`partial` / `unavailable` 状态下未虚构真实文件路径、组件路径、Props 或 Events。
+- Design Context 包含代码可用状态（verified 已核验 / partial 部分可用 / unavailable 不可用）；`partial` / `unavailable` 状态下未虚构真实文件路径、组件路径、Props 或 Events。
 - HTML中的页面级AI Coding指导已在生成HTML前完成组件映射和复用对象判断；Coding Plan未重新改变已确认HTML中的组件、复用对象和开发方式。
 - HTML线框图已校验页面模板结构一致性；页面类型、模板结构、layout、内容区块、wireframe、组件与交互、页面级AI Coding指导均一致；含底部操作区的页面、抽屉、弹窗等容器均继承已读取Common Design中的按钮位置与顺序规则，不存在无依据的左右分置或跨容器规则混用。
 - 每页均已形成页面类型决策记录；页面类型来自已读取的标准类型或已验证代码，自定义页面类型已说明继承模板与差异；声明复用已有页面或参考已有框架的页面已完成容器结构、步骤条、工具栏、底部按钮位置和关键交互的代码参考验收。

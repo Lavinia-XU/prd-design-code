@@ -93,7 +93,7 @@ Demo设计规格用于把需求转化为可查看、可实现、可指导AI Codi
 | Product Design覆盖 | 记录是否存在匹配规则及其`inherit / extend / override`关系；无匹配时明确为“未匹配，使用Common Design模式” |
 | Common Design候选模板 | 仅列出已实际读取的标准页面类型模板 |
 | 代码证据 | 记录已验证的相似页面、组件、路由或容器结构；无证据时明确标注 |
-| 最终页面类型 | 使用标准页面类型名称；不得使用业务描述替代页面类型 |
+| 最终页面类型 | 使用 Common Design 标准页面类型中文名（如概览表格页、抽屉表单页），不得使用业务描述或模板 ID（如 page-table-overview）替代页面类型 |
 | 决策理由 | 说明最终模板如何满足业务场景、PRD约束和已有实现 |
 | 未决问题 | 仅记录会影响页面类型选择的不可推断事实 |
 
@@ -295,9 +295,9 @@ HTML逐页说明中必须在页面基础信息里写明“页面类型还原要�
 
 读取代码后，必须为当前任务标记代码可用状态并写入 Design Context：
 
-- `verified`：已实际读取并验证相关页面、组件、路由、交互和数据结构；
-- `partial`：只读取了部分代码，仍有页面、组件或交互未验证；
-- `unavailable`：没有可用业务代码，或没有找到相关参考页面。
+- `verified`（已核验）：已实际读取并验证相关页面、组件、路由、交互和数据结构；
+- `partial`（部分可用）：只读取了部分代码，仍有页面、组件或交互未验证；
+- `unavailable`（不可用）：没有可用业务代码，或没有找到相关参考页面。
 
 约束：
 
@@ -339,6 +339,8 @@ HTML逐页页面基础信息中的导航位置表：
 
 | 业务模块 | 页面ID | 页面名称 | 页面类型 | 页面用途 | 入口方式 | 关键交互 | 设计来源 | 编码方式 |
 | -------- | ------ | -------- | -------- | -------- | -------- | -------- | -------- | -------- |
+
+页面类型列必须输出 Common Design 中的中文页面类型名（如基础表格页、左树表格页、概览表格页、概览左树表格页、弹窗列表页、抽屉列表页、下钻详情页、抽屉详情页、日志详情页、配置表单页、步骤条配置页、弹窗表单页、抽屉表单页、仪表盘页），禁止输出模板 ID（如 page-table-overview）；templateId 仅用于 HTML JSON 的 templateContract 字段，不展示在页面总览表中。
 
 编码方式应与页面级AI Coding指导保持一致，取值为`复用框架`、`直接引用`、`组件复用`或`全新开发`；页面总览表只填写当前页面的主开发方式，具体开发项细分写在页面级开发项编码指导表中。
 
@@ -412,6 +414,8 @@ HTML逐页页面基础信息中的导航位置表：
 - `variants`：多步骤或Tab页面必须输出主结构图和每个步骤/Tab一张完整变体图，每张变体包含`preserveRegions`（保留公共外壳区域）与`changedRegions`（变化区域）及`ascii`。
 
 每个页面必须同时填写`templateContract`（templateId/baseTemplateId/navigationType/templateSource/requiredRegions/optionalRegions/regionOrder/footerContract/componentContract/wireframeContract/override），与结构化wireframe形成闭环；页面type、templateId、layout、sections、wireframe、footerActions、componentContract和codingGuide必须一致，禁止出现模板结构与线框结构冲突。模板注册表见references/02-template-contracts/common-design-template-registry.json，生成HTML前由scripts/validate_demo_spec.py自动校验，校验失败阻断HTML生成。
+
+HTML说明书中的线框图部分只展示对确认页面结构和指导Coding有用的内容：模板契约（templateId、模板必需区域、实际线框区域、区域一致性、底部操作契约）、ASCII线框图和线框变体；线框变体必须包含对应步骤/Tab的`ascii`线框图才展示，缺少线框图的变体不输出。`regions`数组仅用于模板契约校验与区域一致性检查，不渲染为表格展示；区域对应的组件和内容由页面内容区块（sections）承载。
 
 线框图布局必须参考已读取的Common Design页面模板，以及用户资料、Product Design或已有代码中明确的页面类型结构；仅当已读取规则没有覆盖时，才根据页面目标选择常见B端页面骨架，再补充标题栏、表格工具栏等通用部件，最后填入当前业务元素。底部操作区的位置、按钮顺序和布局必须继承当前页面类型或容器形态对应的Common Design模板；除非PRD、用户确认或匹配Product Design明确覆盖，不得将同一操作区按钮拆分为左右两侧，也不得混用不同容器的布局规则。常见继承关系包括：
 
@@ -554,7 +558,7 @@ HTML说明书标题必须是“XX需求设计说明书”。HTML采用“Markdow
 - Demo范围是否过滤掉线下流程、外部系统、技术实现和商业背景。
 - 用户提到已有模块、参考模块或当前存在Demo代码环境时，是否读取相关代码作为页面拆解、交互说明和Coding指导输入。
 - 待确认问题是否控制在10个以内，且每个问题包含影响范围和当前默认假设。
-- 页面总览表中的页面ID、页面名称、页面类型和HTML逐页说明是否一致。
+- 页面总览表中的页面ID、页面名称、页面类型（Common Design 中文名）和HTML逐页说明是否一致。
 - HTML中每个页面是否包含页面区块、字段展示、按钮、可点击操作和点击结果。
 - HTML中搜索、筛选、重置、分页、排序是否已整合到对应页面的表格区、工具栏或相关内容区块说明中。
 - HTML中新增、编辑、删除、处置、启用、禁用等操作是否已整合到对应页面的区块说明或底部操作中，并写清校验、反馈和状态变化。
@@ -566,3 +570,114 @@ HTML说明书标题必须是“XX需求设计说明书”。HTML采用“Markdow
 - 属于已有业务主题或页面体系时，是否已把真实参考页面作为视觉基线并写入 Design Context 和页面总览。
 - 每个页面是否已绑定标准 templateId（或 custom 模板且含 baseTemplateId、customReason、overrideSource、overrideJustification），并填写 templateContract；是否使用了未注册页面类型名称；页面 type、templateId、layout、sections、wireframe、footerActions、componentContract、codingGuide 是否形成闭环。
 - 结构化 wireframe 是否作为唯一可信来源（templateId/navigationType/shell/regions/variants 完整）；多步骤或 Tab 页面是否包含主结构图和每个步骤/Tab 一张完整变体图，变体是否保留公共页面外壳；footerActions 对齐与按钮顺序是否与模板契约一致或已有 override 记录；纯字符串 wireframe 是否已进入 legacy 警告。
+
+## 11. 设计闭环自动校验
+
+设计闭环用于防止已确认的页面、容器、操作与 Tab 在设计说明书生成过程中丢失，并在 HTML 生成前阻断结构不完整的说明书。校验由 `scripts/validate_demo_spec.py` 执行（RULE-28 ~ RULE-31），生成器 `scripts/generate_demo_spec_html.py` 在 strict 模式下遇到 error 即阻断生成。
+
+### 11.1 页面清单闭环（RULE-28）
+
+- `overview.pageOverview` 是已确认页面/容器清单（manifest），每项可声明 `containerType`（page/modal/drawer）。
+- 页面对象可位于 `pages` 顶层，也可嵌套在 `children` 中；校验展开全部页面（含 children）与 `pageOverview` 对比。
+- 页面对象可通过 `containerType` 显式声明容器类型；未声明时按 templateId 推断（含 `modal` 为弹窗、含 `drawer` 为抽屉、其余为页面）。
+- 校验项（error 阻断 / warning 提示）：
+  - 已确认页面/容器在 pages 缺失 -> MANIFEST_PAGE_MISSING（error）
+  - pages 存在总览未列出的页面 -> MANIFEST_EXTRA_PAGE（error）
+  - 页面总览 ID 重复 -> MANIFEST_DUPLICATE（error）
+  - 同 ID 的 name / type / containerType 不一致 -> MANIFEST_METADATA_MISMATCH（error）
+  - 弹窗/抽屉容器没有任何入口（无 open-container 操作引用且无文本引用）-> ORPHAN_CONTAINER（已确认容器 error，未确认容器 warning）
+
+```json
+"overview": {
+  "pageOverview": [
+    {"id": "P01", "name": "策略列表", "type": "基础表格页", "containerType": "page"}
+  ]
+}
+```
+
+### 11.2 操作目标闭环（RULE-29）
+
+- 页面级 `operations` 数组声明结构化操作，`action` 区分：`open-container`、`confirm`、`download`、`refresh`、`delete`、`batch-delete`、`disable`、`enable`、`revoke`、`submit`、`navigate`、`close`、`other`。
+- `open-container` 必须声明 `targetPageId` 与 `targetContainerType`；目标页面必须存在且容器类型匹配。
+- `delete` / `batch-delete` / `disable` / `enable` / `revoke` 等高风险操作必须 `confirm: true` 并附 `confirmConfig`。
+- 校验项（error 阻断 / warning 提示 / info 说明）：
+  - open-container 缺 targetPageId 或目标页面不存在 -> OPERATION_TARGET_MISSING（error）
+  - targetContainerType 与目标页面实际容器类型不一致 -> OPERATION_CONTAINER_TYPE_MISMATCH（error）
+  - 高风险操作缺少二次确认 -> OPERATION_CONFIRM_MISSING（error）
+  - 未知 action -> OPERATION_ACTION_UNKNOWN（warning）
+  - action 为 other -> OPERATION_ACTION_OTHER（info，需人工核验）
+
+```json
+"operations": [
+  {"id": "OP01", "action": "open-container", "label": "批量编辑主机资产", "trigger": "工具栏按钮",
+   "targetPageId": "P02", "targetContainerType": "modal", "confirm": false},
+  {"id": "OP02", "action": "delete", "label": "删除", "trigger": "行内操作", "confirm": true,
+   "confirmConfig": {"title": "确认删除该策略？", "level": "danger"}}
+]
+```
+
+### 11.3 Tab 变体闭环（RULE-30，条件式）
+
+- 仅当页面显式声明 `tabs` 且数量 >= 2 时强制 Tab 变体闭环；单内容 Tab 页面或普通详情页仍可使用单张 wireframe。
+- 页面级 `tabs` 数组：每项 `tabId` 唯一、`name` 为 Tab 名。
+- `wireframe.variants` 每项通过 `tabId` 关联 Tab；数量必须与 tabs 一致，每个 Tab 有对应 variant，不允许孤立 variant。
+- 每个 variant 必须保留公共页面外壳（preserveRegions 包含 title-bar / drawer-shell / modal-shell / object-summary / tab-bar / footer 等外壳区域），并有非空 `changedRegions` 与足够长度的 ascii 线框图，禁止只有空壳或简单文本。
+- sections 通过 `tabId` 绑定所属 Tab，保证 sections、tabs、variants、wireframe.regions 可互相追踪。
+- 校验项（error 阻断 / warning 提示）：
+  - tabId 缺失 -> TABS_ID_MISSING（error）
+  - tabId 重复 -> TABS_ID_DUPLICATE（error）
+  - variants 数量与 tabs 不一致 -> TABS_VARIANT_COUNT_MISMATCH（error）
+  - Tab 无对应 variant -> TABS_VARIANT_MISSING（error）
+  - variant.tabId 不存在于 tabs -> TABS_ORPHAN_VARIANT（error）
+  - variant 缺少公共页面外壳 -> TABS_VARIANT_NO_SHELL（error）
+  - variant 缺少当前 Tab 内容区 -> TABS_VARIANT_NO_CONTENT（error）
+  - section 绑定不存在的 tabId -> TABS_SECTION_INVALID（error）
+  - 多 Tab 页面 section 未绑定 tabId -> TABS_SECTION_UNBOUND（warning）
+
+```json
+"tabs": [
+  {"tabId": "tab-overview", "name": "概览"},
+  {"tabId": "tab-source", "name": "来源与识别依据"}
+],
+"wireframe": {
+  "templateId": "page-detail-drawer",
+  "variants": [
+    {"tabId": "tab-overview", "preserveRegions": ["title-bar", "object-summary", "tab-bar", "footer"],
+     "changedRegions": ["tab-content"], "ascii": "标题栏/对象摘要/Tab行/概览内容/底部操作"},
+    {"tabId": "tab-source", "preserveRegions": ["title-bar", "object-summary", "tab-bar", "footer"],
+     "changedRegions": ["tab-content"], "ascii": "标题栏/对象摘要/Tab行/来源内容/底部操作"}
+  ]
+},
+"sections": [
+  {"title": "概览", "type": "overview", "tabId": "tab-overview", "description": "对象概览指标"},
+  {"title": "来源与识别依据", "type": "descriptions", "tabId": "tab-source", "description": "识别依据描述列表"}
+]
+```
+
+### 11.4 页面级 Coding 闭环（RULE-31）
+
+- 每个页面的 `codingGuide.pageContext.pageId` 必须等于页面 ID。
+- 每个页面 `codingGuide.pageItems` 至少包含 1 个稳定 Coding item；item 若声明 `pageId` 必须等于所属页面 ID；item ID 在页面内唯一。
+- 校验项（error 阻断）：
+  - pageContext.pageId 与页面 ID 不一致 -> CODING_PAGE_CONTEXT_MISMATCH
+  - 页面无任何 Coding item -> CODING_NO_ITEMS
+  - Coding item ID 重复 -> CODING_ITEM_DUPLICATE
+  - item.pageId 与所属页面不一致 -> CODING_ITEM_ORPHAN
+
+```json
+"codingGuide": {
+  "pageContext": {"pageId": "P01", "summary": "策略列表页 Coding 上下文"},
+  "pageItems": [
+    {"id": "P01-C01", "scope": "table-page", "name": "策略列表", "mode": "reuse-framework",
+     "mappingRef": "M01", "mappingStatus": "verified",
+     "target": {"path": "src/pages/policy/list.vue", "export": "PolicyList"},
+     "requirements": ["保留表格工具栏、表格、分页结构"]}
+  ]
+}
+```
+
+### 11.5 错误码与严重级别
+
+- error：设计闭环缺失，禁止生成 HTML（strict 模式阻断）。
+- warning：设计质量风险，不阻断 HTML 生成。
+- info：AI 补齐或待核验说明，仅提示。

@@ -135,6 +135,95 @@ def make_spec(pages):
     }
 
 
+def modal_regions():
+    return [
+        {"id": "modal-shell", "templateRegion": "modal-shell", "position": "top", "required": True, "content": "弹窗外壳"},
+        {"id": "modal-header", "templateRegion": "modal-header", "position": "top", "required": True, "content": "弹窗标题与关闭入口"},
+        {"id": "form-content", "templateRegion": "form-content", "position": "content", "required": True, "content": "表单主体"},
+        {"id": "modal-footer", "templateRegion": "modal-footer", "position": "bottom", "required": True, "content": "底部操作：取消/确定"},
+    ]
+
+
+def modal_page(**overrides):
+    """合法弹窗表单页（page-form-modal），用于操作目标闭环与孤儿容器测试。"""
+    page = base_page()
+    page.update({
+        "id": "P02",
+        "name": "批量编辑主机资产",
+        "type": "弹窗表单页",
+        "templateContract": {
+            "templateId": "page-form-modal",
+            "baseTemplateId": "",
+            "navigationType": "left-shaped",
+            "templateSource": "common-design/references/03-design-template/01-page-types.md#page-form-modal",
+            "requiredRegions": ["modal-shell", "modal-header", "form-content", "modal-footer"],
+            "optionalRegions": [],
+            "regionOrder": ["modal-shell", "modal-header", "form-content", "modal-footer"],
+            "footerContract": {},
+            "componentContract": {"shell": ["IxModal"], "form": ["IxForm", "IxFormItem"], "footer": ["IxButton"]},
+            "wireframeContract": {},
+            "override": {"enabled": False, "source": "", "reason": "", "affectedRules": []},
+        },
+        "wireframe": {
+            "templateId": "page-form-modal",
+            "navigationType": "left-shaped",
+            "layoutSource": "Common Design page-form-modal",
+            "shell": {
+                "globalNavigation": False,
+                "titleBar": {"required": True, "type": "modal", "component": ""},
+                "contentContainer": {"required": True, "type": "modal-content"},
+                "footer": {"required": True, "alignment": "left", "height": "56px"},
+            },
+            "regions": modal_regions(),
+            "variants": [],
+            "ascii": "弹窗标题/表单主体/取消/确定",
+        },
+        "sections": [
+            {"title": "表单主体", "type": "form", "fields": [{"name": "主机名", "iduxComponent": "IxInput"}]},
+        ],
+        "footerActions": [],
+        "codingGuide": {
+            "pageItems": [
+                {
+                    "id": "P02-C01", "scope": "modal-form", "name": "批量编辑表单", "mode": "reuse-framework",
+                    "mappingRef": "M02", "mappingStatus": "verified",
+                    "target": {"path": "src/pages/policy/batch-edit-modal.vue", "export": "BatchEditModal"},
+                    "requirements": ["保留弹窗外壳、表单、底部操作结构"],
+                    "acceptanceCriteria": ["弹窗结构一致"],
+                }
+            ]
+        },
+    })
+    page.update(overrides)
+    return page
+
+
+def valid_tab_variants(tab_ids):
+    """为每个 tabId 生成合法变体：保留公共外壳、changedRegions 与 ascii 内容区。"""
+    return [
+        {
+            "tabId": tid,
+            "preserveRegions": ["title-bar", "tab-bar", "footer"],
+            "changedRegions": ["tab-content"],
+            "ascii": "标题栏/Tab行/" + tid + "内容区/底部操作",
+        }
+        for tid in tab_ids
+    ]
+
+
+def tabbed_page(tabs, variants, section_tab_ids=None, **overrides):
+    """多内容 Tab 页面：tabs + wireframe.variants + sections.tabId 绑定。"""
+    page = base_page()
+    page["tabs"] = tabs
+    page["wireframe"]["variants"] = variants
+    if section_tab_ids:
+        for i, tid in enumerate(section_tab_ids):
+            if i < len(page["sections"]):
+                page["sections"][i]["tabId"] = tid
+    page.update(overrides)
+    return page
+
+
 class TestValidateDemoSpec(unittest.TestCase):
 
     def test_valid_table_basic_passes(self):
@@ -446,6 +535,183 @@ class TestValidateDemoSpec(unittest.TestCase):
         self.assertEqual(code_lenient, 0)
         self.assertTrue(report_lenient.get("valid"))
         self.assertIn("LEGACY_WIREFRAME", warning_codes(report_lenient))
+
+    # ---- 页面清单闭环（RULE-28）----
+    def test_manifest_page_missing_fails(self):
+        """页面总览确认了批量编辑弹窗，但 pages 缺失 -> MANIFEST_PAGE_MISSING。"""
+        spec = {
+            "title": "测试需求设计说明书",
+            "overview": {
+                "summary": "测试",
+                "pageOverview": [
+                    {"id": "P01", "name": "策略列表", "type": "基础表格页"},
+                    {"id": "P02", "name": "批量编辑主机资产", "type": "弹窗表单页", "containerType": "modal"},
+                ],
+            },
+            "pages": [base_page()],
+        }
+        code, report = run_validator(spec, strict=True)
+        self.assertNotEqual(code, 0)
+        self.assertIn("MANIFEST_PAGE_MISSING", error_codes(report))
+
+    def test_manifest_metadata_mismatch_fails(self):
+        """页面总览与 pages 的页面名称不一致 -> MANIFEST_METADATA_MISMATCH。"""
+        spec = make_spec([base_page()])
+        spec["overview"]["pageOverview"][0]["name"] = "策略列表（改）"
+        code, report = run_validator(spec, strict=True)
+        self.assertNotEqual(code, 0)
+        self.assertIn("MANIFEST_METADATA_MISMATCH", error_codes(report))
+
+    # ---- 操作目标闭环（RULE-29）----
+    def test_operation_target_missing_fails(self):
+        """批量编辑操作 targetPageId 不存在 -> OPERATION_TARGET_MISSING。"""
+        page = base_page(operations=[
+            {"id": "OP01", "action": "open-container", "label": "批量编辑主机资产", "trigger": "工具栏按钮",
+             "targetPageId": "P99", "targetContainerType": "modal", "confirm": False},
+        ])
+        code, report = run_validator(make_spec([page]), strict=True)
+        self.assertNotEqual(code, 0)
+        self.assertIn("OPERATION_TARGET_MISSING", error_codes(report))
+
+    def test_operation_confirm_missing_fails(self):
+        """删除操作缺少二次确认 -> OPERATION_CONFIRM_MISSING。"""
+        page = base_page(operations=[
+            {"id": "OP02", "action": "delete", "label": "删除策略", "trigger": "行内操作", "confirm": False},
+        ])
+        code, report = run_validator(make_spec([page]), strict=True)
+        self.assertNotEqual(code, 0)
+        self.assertIn("OPERATION_CONFIRM_MISSING", error_codes(report))
+
+    def test_operation_closure_passes(self):
+        """合法操作闭环：open-container 指向存在的弹窗 + 删除带二次确认 -> 通过。"""
+        modal = modal_page()
+        page = base_page(operations=[
+            {"id": "OP01", "action": "open-container", "label": "批量编辑主机资产", "trigger": "工具栏按钮",
+             "targetPageId": "P02", "targetContainerType": "modal", "confirm": False,
+             "note": "打开批量编辑弹窗"},
+            {"id": "OP02", "action": "delete", "label": "删除", "trigger": "行内操作", "confirm": True,
+             "confirmConfig": {"title": "确认删除该策略？", "level": "danger"}},
+            {"id": "OP03", "action": "refresh", "label": "刷新", "trigger": "页头"},
+        ])
+        code, report = run_validator(make_spec([page, modal]), strict=True)
+        self.assertEqual(code, 0, f"report={report}")
+        self.assertTrue(report.get("valid"))
+
+    def test_operation_other_info(self):
+        """action=other 输出 info 提示，不阻断生成。"""
+        page = base_page(operations=[
+            {"id": "OP04", "action": "other", "label": "自定义操作", "trigger": "页头"},
+        ])
+        code, report = run_validator(make_spec([page]), strict=True)
+        self.assertEqual(code, 0)
+        self.assertTrue(any(e.get("errorCode") == "OPERATION_ACTION_OTHER" for e in report.get("infos", [])))
+
+    # ---- Tab 变体闭环（RULE-30，条件式）----
+    TABS = [
+        {"tabId": "tab-overview", "name": "概览"},
+        {"tabId": "tab-source", "name": "来源与识别依据"},
+        {"tabId": "tab-log", "name": "操作记录"},
+    ]
+
+    def test_tabs_missing_variants_fails(self):
+        """声明三个内容 Tab 但没有 variants -> TABS_VARIANT_COUNT_MISMATCH + TABS_VARIANT_MISSING。"""
+        page = tabbed_page(tabs=self.TABS, variants=[])
+        code, report = run_validator(make_spec([page]), strict=True)
+        self.assertNotEqual(code, 0)
+        self.assertTrue({"TABS_VARIANT_COUNT_MISMATCH", "TABS_VARIANT_MISSING"} & error_codes(report))
+
+    def test_tabs_variant_count_mismatch_fails(self):
+        """三个 Tab 只有两个 variants -> TABS_VARIANT_COUNT_MISMATCH。"""
+        page = tabbed_page(tabs=self.TABS, variants=valid_tab_variants(["tab-overview", "tab-source"]),
+                           section_tab_ids=["tab-overview", "tab-source"])
+        code, report = run_validator(make_spec([page]), strict=True)
+        self.assertNotEqual(code, 0)
+        self.assertIn("TABS_VARIANT_COUNT_MISMATCH", error_codes(report))
+
+    def test_tabs_orphan_variant_fails(self):
+        """variant.tabId 不存在于 tabs -> TABS_ORPHAN_VARIANT。"""
+        variants = valid_tab_variants(["tab-overview", "tab-source"]) + [{
+            "tabId": "tab-ghost",
+            "preserveRegions": ["title-bar", "tab-bar", "footer"],
+            "changedRegions": ["tab-content"],
+            "ascii": "标题栏/Tab行/幽灵内容区/底部操作",
+        }]
+        page = tabbed_page(tabs=self.TABS[:2], variants=variants, section_tab_ids=["tab-overview", "tab-source"])
+        code, report = run_validator(make_spec([page]), strict=True)
+        self.assertNotEqual(code, 0)
+        self.assertIn("TABS_ORPHAN_VARIANT", error_codes(report))
+
+    def test_tabs_variant_no_shell_fails(self):
+        """variant 缺少公共页面外壳 -> TABS_VARIANT_NO_SHELL。"""
+        variants = [
+            {"tabId": "tab-overview", "preserveRegions": ["content-body"],
+             "changedRegions": ["tab-content"], "ascii": "内容区/概览内容"},
+            {"tabId": "tab-source", "preserveRegions": ["content-body"],
+             "changedRegions": ["tab-content"], "ascii": "内容区/来源内容"},
+        ]
+        page = tabbed_page(tabs=self.TABS[:2], variants=variants, section_tab_ids=["tab-overview", "tab-source"])
+        code, report = run_validator(make_spec([page]), strict=True)
+        self.assertNotEqual(code, 0)
+        self.assertIn("TABS_VARIANT_NO_SHELL", error_codes(report))
+
+    def test_tabs_variant_no_content_fails(self):
+        """variant 缺少当前 Tab 内容区（changedRegions 为空且 ascii 过短）-> TABS_VARIANT_NO_CONTENT。"""
+        variants = [
+            {"tabId": "tab-overview", "preserveRegions": ["title-bar", "tab-bar", "footer"],
+             "changedRegions": [], "ascii": "标题栏"},
+            {"tabId": "tab-source", "preserveRegions": ["title-bar", "tab-bar", "footer"],
+             "changedRegions": ["tab-content"], "ascii": "标题栏/Tab行/来源内容/底部操作"},
+        ]
+        page = tabbed_page(tabs=self.TABS[:2], variants=variants, section_tab_ids=["tab-overview", "tab-source"])
+        code, report = run_validator(make_spec([page]), strict=True)
+        self.assertNotEqual(code, 0)
+        self.assertIn("TABS_VARIANT_NO_CONTENT", error_codes(report))
+
+    def test_tabs_section_invalid_fails(self):
+        """section 绑定不存在的 tabId -> TABS_SECTION_INVALID。"""
+        page = tabbed_page(tabs=self.TABS[:2], variants=valid_tab_variants(["tab-overview", "tab-source"]),
+                           section_tab_ids=["tab-ghost", "tab-source"])
+        code, report = run_validator(make_spec([page]), strict=True)
+        self.assertNotEqual(code, 0)
+        self.assertIn("TABS_SECTION_INVALID", error_codes(report))
+
+    def test_multitab_closure_passes(self):
+        """合法多 Tab 闭环：tabs + 对应 variants + sections.tabId 绑定 -> 通过。"""
+        tabs = [
+            {"tabId": "tab-overview", "name": "概览"},
+            {"tabId": "tab-source", "name": "来源与识别依据"},
+            {"tabId": "tab-log", "name": "操作记录"},
+        ]
+        page = tabbed_page(tabs=tabs, variants=valid_tab_variants([t["tabId"] for t in tabs]),
+                           section_tab_ids=["tab-overview", "tab-source", "tab-log"])
+        code, report = run_validator(make_spec([page]), strict=True)
+        self.assertEqual(code, 0, f"report={report}")
+        self.assertTrue(report.get("valid"))
+
+    # ---- 孤儿容器 ----
+    def test_orphan_container_fails(self):
+        """已确认弹窗没有任何入口 -> ORPHAN_CONTAINER（error）。"""
+        modal = modal_page()
+        code, report = run_validator(make_spec([base_page(), modal]), strict=True)
+        self.assertNotEqual(code, 0)
+        self.assertIn("ORPHAN_CONTAINER", error_codes(report))
+
+    # ---- 页面级 Coding 闭环（RULE-31）----
+    def test_coding_page_context_mismatch_fails(self):
+        """codingGuide.pageContext.pageId 与页面 ID 不一致 -> CODING_PAGE_CONTEXT_MISMATCH。"""
+        page = base_page()
+        page["codingGuide"]["pageContext"] = {"pageId": "P99", "summary": "错误上下文"}
+        code, report = run_validator(make_spec([page]), strict=True)
+        self.assertNotEqual(code, 0)
+        self.assertIn("CODING_PAGE_CONTEXT_MISMATCH", error_codes(report))
+
+    def test_coding_no_items_fails(self):
+        """页面存在但没有页面级 Coding item -> CODING_NO_ITEMS。"""
+        page = base_page()
+        page["codingGuide"]["pageItems"] = []
+        code, report = run_validator(make_spec([page]), strict=True)
+        self.assertNotEqual(code, 0)
+        self.assertIn("CODING_NO_ITEMS", error_codes(report))
 
 
 if __name__ == "__main__":

@@ -38,13 +38,14 @@
 ### 1.4 页面总览检查
 
 - 如果当前有Demo代码环境、用户指定代码范围、业务设计Skill提到参考模块或用户提到已有模块，是否读取相关代码作为输入。
-- 是否已为当前任务标记代码可用状态（verified / partial / unavailable）并写入 Design Context；项目目录存在但未实际读取验证的代码是否未被标记为 `verified`。
+- 是否已为当前任务标记代码可用状态（verified 已核验 / partial 部分可用 / unavailable 不可用）并写入 Design Context；项目目录存在但未实际读取验证的代码是否未被标记为 `verified`。
 - 页面拆解和导航结构设计后，如果存在业务设计Skill，是否优先参考业务设计Skill的产品介绍、页面导航结构、页面说明和页面设计规范。
 - 是否仅在业务设计Skill和已有代码未覆盖时，再基于需求上下文与B端常见模式补齐必要设计。
 - 导航结构是否综合展示本次Demo覆盖范围，不按每个页面、弹窗或抽屉重复输出。
 - 页面总览表是否列清所有页面或容器，并标明初步复用方向；初步复用方向仅为“复用已有页面”“参考已有框架”“新增页面”或“待详细设计确认”，不得提前写死具体组件或开发方式。
 - `partial` / `unavailable` 状态下，页面总览表是否未虚构真实文件路径或组件名称；真实代码对象是否标记为“Coding 阶段待核验”。
 - 页面ID、页面名称、页面类型在总览表、HTML逐页说明和交互规则中是否一致。
+- 页面总览表“页面类型”列是否使用 Common Design 中文页面类型名（如概览表格页、抽屉表单页），是否误输出模板 ID（如 page-table-overview）；templateId 仅用于 HTML JSON 的 templateContract 字段。
 - 页面类型决策表是否在页面总览前形成，是否记录业务场景、PRD/用户约束、Product Design覆盖、Common Design候选模板、代码证据、最终类型、决策理由和未决问题。
 - 页面类型是否来自已读取Common Design、匹配Product Design或已验证代码中的标准类型；业务描述是否未被当作页面类型；自定义类型是否说明继承模板、扩展内容和差异原因。
 
@@ -110,7 +111,7 @@
 
 ### 1.9 代码可用状态与复用表达检查
 
-- 是否已为当前任务标记代码可用状态（verified / partial / unavailable）并写入 Design Context。
+- 是否已为当前任务标记代码可用状态（verified 已核验 / partial 部分可用 / unavailable 不可用）并写入 Design Context。
 - 项目目录存在但未实际读取验证的代码，是否未被标记为 `verified`。
 - `verified` 状态下的复用对象是否精确到真实页面文件、组件名称、文件路径、关键 Props / Events / Slots 或使用方式、复用类型和相对已有实现的新增差异。
 - `partial` / `unavailable` 状态下，是否只写语义级描述（如标准列表容器、业务策略列表框架、业务对象展示组件、标准状态切换组件、标准高风险确认链路），是否未虚构真实文件路径、组件路径、Props、Events 或调用方式。
@@ -159,7 +160,6 @@
 ### 1.14 自动化校验规则登记表与扩展流程
 
 所有 Demo JSON 自动校验规则统一登记在 `scripts/validate_demo_spec.py` 顶部的 `RULES` 表中，按固定流程扩展；禁止为单一校验另建脚本或独立文档。模板/数据类规则（requiredRegions、footer、variants、requiredComponents）直接维护 `references/02-template-contracts/common-design-template-registry.json`，无需改动校验代码。
-
 | 规则 | 校验项 | 数据来源 | 测试覆盖 |
 | --- | --- | --- | --- |
 | RULE-01 | JSON schema 基础结构 | 01-output-templates.md 数据契约 | test_valid_table_basic_passes |
@@ -189,6 +189,10 @@
 | RULE-25 | 禁止 Vue3 专属绑定语法作为实现要求 | 04-interaction-coding-guidelines.md | — |
 | RULE-26 | 非普通文本字段声明组件映射 | 03-demo-design-spec.md | — |
 | RULE-27 | legacy 自由文本线框兼容模式 | SKILL.md 强制模板契约与线框校验（兼容模式） | test_legacy_wireframe_warning_non_strict |
+| RULE-28 | 页面清单闭环：pageOverview(manifest) 与 pages(含 children) 的 ID/名称/类型/容器类型一致；页面遗漏、额外页面、重复页面、孤立容器 | 03-demo-design-spec.md 设计闭环自动校验 | test_manifest_page_missing_fails / test_manifest_metadata_mismatch_fails / test_orphan_container_fails |
+| RULE-29 | 操作目标闭环：open-container 必须存在 targetPageId 且容器类型正确；高影响操作必须二次确认；未知操作类型 warning | 03-demo-design-spec.md 设计闭环自动校验 | test_operation_target_missing_fails / test_operation_confirm_missing_fails / test_operation_closure_passes / test_operation_other_info |
+| RULE-30 | Tab 变体闭环（条件式）：页面显式声明 >=2 个内容 Tab 时，tabs/tabId 唯一、variants 数量与 tab 一一对应、variant 保留公共外壳且有内容区、sections 绑定 tabId | 03-demo-design-spec.md 设计闭环自动校验 | test_tabs_missing_variants_fails / test_tabs_variant_count_mismatch_fails / test_tabs_orphan_variant_fails / test_tabs_variant_no_shell_fails / test_tabs_variant_no_content_fails / test_tabs_section_invalid_fails / test_multitab_closure_passes |
+| RULE-31 | 页面级 Coding 闭环：pageContext.pageId 与页面 ID 一致、每页至少一个 Coding item、无孤立 Coding item | 03-demo-design-spec.md 设计闭环自动校验 | test_coding_page_context_mismatch_fails / test_coding_no_items_fails |
 
 新增校验规则的固定流程：
 
@@ -198,6 +202,15 @@
 4. 在 `tests/test_validate_demo_spec.py` 补充用例；
 5. 在本登记表同步一条；
 6. 若规则涉及 HTML 展示或门禁，同步更新 `generate_demo_spec_html.py` 与 SKILL.md Quality Gate。
+
+### 1.15 设计闭环自动校验检查（RULE-28 ~ RULE-31）
+
+生成 HTML 前必须完成以下设计闭环自检，任一 error 都会阻断 HTML 生成：
+
+- 页面清单闭环：`overview.pageOverview` 中确认的每个页面/容器（含弹窗、抽屉）是否全部出现在 `pages`（含 `children`）；是否存在额外页面、重复页面、ID/名称/类型/容器类型不一致；弹窗/抽屉是否至少有一个入口（open-container 操作或文本引用）。
+- 操作目标闭环：`operations` 中的 `open-container` 操作是否都有存在的 `targetPageId` 且容器类型正确；`delete`/`batch-delete`/`disable`/`enable`/`revoke` 等操作是否带 `confirm: true` 与 `confirmConfig`。
+- Tab 变体闭环（条件式）：页面显式声明 2 个及以上内容 Tab 时，每个 Tab 是否有唯一 `tabId`、对应完整 `wireframe.variants` 变体、变体是否保留公共页面外壳且有非空当前 Tab 内容区；`sections` 是否绑定 `tabId`。
+- 页面级 Coding 闭环：每个页面 `codingGuide.pageContext.pageId` 是否等于页面 ID；每个页面是否至少有一个稳定 Coding item；Coding item 是否可追溯且无孤立项。
 
 ## 2. 禁止事项
 

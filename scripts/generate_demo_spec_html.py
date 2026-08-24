@@ -607,28 +607,21 @@ def render_wireframe(page):
             parts.append(f"<p>{esc(note)}</p>")
         if layout_source and not template_source:
             parts.append(f"<p><strong>线框图结构依据：</strong>{esc(layout_source)}</p>")
-        if regions:
-            parts.append(table_html(regions, [
-                ("区域ID", "id"),
-                ("模板区域", "templateRegion"),
-                ("位置", "position"),
-                ("必需", "required"),
-                ("组件", "component"),
-                ("内容", "content"),
-            ]))
         if variants:
-            parts.append("<h4>线框变体（Wireframe Variants）</h4>")
-            for variant in variants:
-                vid = esc(str(variant.get("id") or ""))
-                preserve = esc("、".join(variant.get("preserveRegions") or []))
-                changed = esc("、".join(variant.get("changedRegions") or []))
-                var_ascii = esc(str(variant.get("ascii") or "").strip())
-                parts.append(f"<div class=\"variant-block\"><p><strong>变体 {vid}</strong>"
-                             + (f"　保留区域：{preserve}" if preserve else "")
-                             + (f"　变化区域：{changed}" if changed else "") + "</p>")
-                if var_ascii:
-                    parts.append(f"<pre>{var_ascii}</pre>")
-                parts.append("</div>")
+            rendered_variants = [v for v in variants if str((v or {}).get("ascii") or "").strip()]
+            if rendered_variants:
+                parts.append("<h4>线框变体（Wireframe Variants）</h4>")
+                for variant in rendered_variants:
+                    vid = esc(str(variant.get("id") or ""))
+                    preserve = esc("、".join(variant.get("preserveRegions") or []))
+                    changed = esc("、".join(variant.get("changedRegions") or []))
+                    var_ascii = esc(str(variant.get("ascii") or "").strip())
+                    parts.append(f"<div class=\"variant-block\"><p><strong>变体 {vid}</strong>"
+                                 + (f"　保留区域：{preserve}" if preserve else "")
+                                 + (f"　变化区域：{changed}" if changed else "") + "</p>")
+                    if var_ascii:
+                        parts.append(f"<pre>{var_ascii}</pre>")
+                    parts.append("</div>")
         if wireframe_text:
             parts.append(f"<pre>{esc(wireframe_text)}</pre>")
         parts.append("</div>")
@@ -721,7 +714,7 @@ def main():
     html_text = html_text.replace("{{SOURCE_CONTENT}}", render_markdown_source(data, pages))
     html_text = html_text.replace("{{PREVIEW_CONTENT}}", render_preview_content(data, pages, validation_info))
     output_path.write_text(html_text, encoding="utf-8")
-    print(json.dumps({"status": "success", "validationStatus": validation_info["status"], "output": str(output_path)}, ensure_ascii=False))
+    print(json.dumps({"status": "success", "validationStatus": validation_info["status"], "warningCount": report.get("warningCount", 0), "infoCount": report.get("infoCount", 0), "output": str(output_path)}, ensure_ascii=False))
 
 
 if __name__ == "__main__":

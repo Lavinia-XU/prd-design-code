@@ -89,7 +89,7 @@
 | 业务模块 | 页面ID | 页面名称 | 页面类型 | 页面用途 | 入口方式 | 关键交互 | 初步复用方向 |
 | -------- | ------ | -------- | -------- | -------- | -------- | -------- | ------------ |
 
-入口方式填写要求：如果页面从导航菜单或Tab进入，写清完整导航路径；如果功能是页面内轻量入口，必须写清所属主页面、触发按钮和打开容器，例如“在策略管理页工具栏点击设置标签，打开抽屉表单页”，不要只写“按钮进入”。页面类型必须来自页面类型决策表中的最终类型，并且该名称必须已存在于实际读取的Common Design、匹配Product Design或已验证代码中；不得自行创造未被依据定义的模板名称。若无匹配模板，统一使用“自定义页面类型”，并注明继承模板和差异原因。关键交互中如包含AI补齐内容，需要标注`基于页面目标闭环补齐`。初步复用方向仅可写`复用已有页面`、`参考已有框架`、`新增页面`或`待详细设计确认`；具体开发方式、组件和实现差异在HTML页面级AI Coding指导中确定。
+入口方式填写要求：如果页面从导航菜单或Tab进入，写清完整导航路径；如果功能是页面内轻量入口，必须写清所属主页面、触发按钮和打开容器，例如“在策略管理页工具栏点击设置标签，打开抽屉表单页”，不要只写“按钮进入”。页面类型必须来自页面类型决策表中的最终类型，并且该名称必须已存在于实际读取的Common Design、匹配Product Design或已验证代码中；页面类型列必须输出 Common Design 中文页面类型名（如概览表格页、抽屉表单页），禁止输出模板 ID（如 page-table-overview）；不得自行创造未被依据定义的模板名称。若无匹配模板，统一使用“自定义页面类型”，并注明继承模板和差异原因。关键交互中如包含AI补齐内容，需要标注`基于页面目标闭环补齐`。初步复用方向仅可写`复用已有页面`、`参考已有框架`、`新增页面`或`待详细设计确认`；具体开发方式、组件和实现差异在HTML页面级AI Coding指导中确定。
 
 ### 3.3 待确认问题
 以下问题会影响Demo设计和AI Coding准确性，建议优先确认：
@@ -148,7 +148,7 @@ python scripts/generate_demo_spec_html.py --input ./demo-spec.json --output ./de
   "overview": {
     "summary": "本Demo用于展示事件分析、筛选定位、详情查看和处置闭环。",
     "pageOverview": [
-      {"module": "事件分析", "id": "P001", "name": "事件列表", "type": "概览表格页", "purpose": "查看和筛选事件", "entry": "菜单进入", "interaction": "查看详情、处置、导出", "designSource": "通用设计Skill", "codingMode": "全新开发"}
+      {"module": "事件分析", "id": "P001", "name": "事件列表", "type": "概览表格页", "containerType": "page", "purpose": "查看和筛选事件", "entry": "菜单进入", "interaction": "查看详情、处置、导出", "designSource": "通用设计Skill", "codingMode": "全新开发"}
     ]
   },
   "navigation": [
@@ -159,9 +159,14 @@ python scripts/generate_demo_spec_html.py --input ./demo-spec.json --output ./de
       "id": "P001",
       "name": "事件列表",
       "type": "概览表格页",
+      "containerType": "page",
       "navigation": {"primary": "数据安全", "secondary": "数据防泄密", "tertiary": "事件分析", "tab": ""},
       "purpose": "帮助安全运维人员查看事件概览并筛选定位风险事件。",
       "layout": "上方概览统计区 + 下方筛选表格区。",
+      "operations": [
+        {"id": "P001-OP01", "action": "delete", "label": "删除", "trigger": "行内操作", "confirm": true, "confirmConfig": {"title": "确认删除该事件？", "level": "danger"}},
+        {"id": "P001-OP02", "action": "refresh", "label": "刷新", "trigger": "页头"}
+      ],
       "templateContract": {
         "templateId": "page-table-overview",
         "baseTemplateId": "",
@@ -203,7 +208,7 @@ python scripts/generate_demo_spec_html.py --input ./demo-spec.json --output ./de
       "footerActions": {"visible": false, "containerType": "page", "alignment": "none", "actions": [], "source": "无底部操作"},
       "codingGuide": {
         "pageContext": {
-          "pageId": "P01",
+          "pageId": "P001",
           "pageType": "标准列表页",
           "route": "/data-security/event-analysis",
           "codeAvailability": "verified",
@@ -241,6 +246,50 @@ python scripts/generate_demo_spec_html.py --input ./demo-spec.json --output ./de
   }
 }
 ```
+
+### 4.1 多内容 Tab 页面示例
+
+页面声明两个及以上内容 Tab 时，必须为每个 Tab 提供对应的 wireframe variant，并通过 tabId 关联；sections 绑定 tabId 便于 sections、tabs、variants、wireframe.regions 互相追踪。校验规则见 03-demo-design-spec.md 第 11.3 节。
+
+```json
+{
+  "id": "P005",
+  "name": "主机详情",
+  "type": "抽屉详情页",
+  "containerType": "drawer",
+  "tabs": [
+    {"tabId": "tab-overview", "name": "概览"},
+    {"tabId": "tab-source", "name": "来源与识别依据"},
+    {"tabId": "tab-log", "name": "操作记录"}
+  ],
+  "operations": [
+    {"id": "OP01", "action": "open-container", "label": "打开详情抽屉", "trigger": "表格行内操作",
+     "targetPageId": "P005", "targetContainerType": "drawer", "confirm": false,
+     "note": "从列表行内操作进入详情抽屉"}
+  ],
+  "wireframe": {
+    "templateId": "page-detail-drawer",
+    "variants": [
+      {"tabId": "tab-overview", "preserveRegions": ["title-bar", "object-summary", "tab-bar", "drawer-footer"],
+       "changedRegions": ["tab-content"], "ascii": "标题栏/对象摘要/Tab行/概览内容区/底部操作"},
+      {"tabId": "tab-source", "preserveRegions": ["title-bar", "object-summary", "tab-bar", "drawer-footer"],
+       "changedRegions": ["tab-content"], "ascii": "标题栏/对象摘要/Tab行/来源内容区/底部操作"},
+      {"tabId": "tab-log", "preserveRegions": ["title-bar", "object-summary", "tab-bar", "drawer-footer"],
+       "changedRegions": ["tab-content"], "ascii": "标题栏/对象摘要/Tab行/操作记录内容区/底部操作"}
+    ]
+  },
+  "sections": [
+    {"title": "概览", "type": "overview", "tabId": "tab-overview", "fields": ["主机名", "IP", "操作系统"]},
+    {"title": "来源与识别依据", "type": "descriptions", "tabId": "tab-source", "fields": ["来源类型", "识别规则"]},
+    {"title": "操作记录", "type": "timeline", "tabId": "tab-log", "fields": ["操作人", "操作时间", "操作内容"]}
+  ]
+}
+```
+
+要点：
+- `tabs` 中 `tabId` 唯一；`variants` 数量与 `tabs` 一致，每个 variant 通过 `tabId` 关联对应 Tab，不允许孤立 variant。
+- 每个 variant 的 `preserveRegions` 必须保留公共页面外壳（标题栏、对象摘要、Tab 行、底部操作区），`changedRegions` 声明当前 Tab 内容区，`ascii` 绘制完整内容区线框图。
+- 单内容 Tab 或普通详情页不要求 variants，仍可使用单张 wireframe。
 
 ## 5. Coding计划执行模板
 

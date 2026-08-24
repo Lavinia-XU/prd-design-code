@@ -59,6 +59,10 @@ RULES = [
     {"ruleId": "RULE-25", "errorCode": "VUE3_SYNTAX", "name": "禁止 Vue3 专属绑定语法作为实现要求", "check": "check_vue3_syntax", "source": "references/01-workflow/04-interaction-coding-guidelines.md", "tests": ""},
     {"ruleId": "RULE-26", "errorCode": "COMPONENT_MAPPING_MISSING", "name": "非普通文本字段声明组件映射", "check": "check_component_mapping", "source": "references/01-workflow/03-demo-design-spec.md", "tests": ""},
     {"ruleId": "RULE-27", "errorCode": "LEGACY_WIREFRAME", "name": "legacy 自由文本线框兼容模式", "check": "check_legacy_wireframe", "source": "SKILL.md 强制模板契约与线框校验（兼容模式）", "tests": "test_legacy_wireframe_warning_non_strict"},
+    {"ruleId": "RULE-28", "errorCode": "MANIFEST_* / ORPHAN_CONTAINER", "name": "页面清单闭环：总览确认页面/容器与 pages（含 children）完整一致", "check": "check_manifest_closure", "source": "references/01-workflow/03-demo-design-spec.md 设计闭环", "tests": "test_manifest_page_missing_fails, test_orphan_container_warns"},
+    {"ruleId": "RULE-29", "errorCode": "OPERATION_*", "name": "操作目标闭环：open-container 目标存在、容器类型正确、高影响操作二次确认", "check": "check_operation_closure", "source": "references/01-workflow/03-demo-design-spec.md 设计闭环", "tests": "test_operation_target_missing_fails, test_operation_confirm_missing_fails"},
+    {"ruleId": "RULE-30", "errorCode": "TABS_*", "name": "Tab 变体闭环：多内容 Tab 页面强制完整变体、公共外壳与内容区、sections 绑定 tabId", "check": "check_tab_variants", "source": "references/01-workflow/03-demo-design-spec.md 设计闭环", "tests": "test_tabs_missing_variants_fails, test_tabs_variant_count_mismatch_fails, test_tabs_orphan_variant_fails, test_tabs_variant_no_shell_fails, test_tabs_variant_no_content_fails"},
+    {"ruleId": "RULE-31", "errorCode": "CODING_CLOSURE_*", "name": "页面级 Coding 闭环：pageContext 一致、每页至少一个开发项、无孤立开发项", "check": "check_coding_closure", "source": "references/01-workflow/03-demo-design-spec.md 设计闭环", "tests": "test_coding_page_context_mismatch_fails, test_coding_no_items_fails"},
 ]
 
 # 页面 type（中文）与标准模板的映射
@@ -159,6 +163,31 @@ def walk_text(obj):
     return texts
 
 
+def _walk_pages(pages, base_path="$.pages"):
+    """递归展开 pages 及其 children，产出 (page, json_path) 序列（设计闭环用）。"""
+    for i, page in enumerate(pages or []):
+        path = f"{base_path}[{i}]"
+        yield page, path
+        yield from _walk_pages(page.get("children") or [], f"{path}.children")
+
+
+# 操作目标闭环：已知操作类型（尽可能结构化）
+KNOWN_ACTIONS = {
+    "open-container", "confirm", "download", "refresh", "delete",
+    "batch-delete", "disable", "enable", "revoke", "submit",
+    "navigate", "close", "other",
+}
+# 高影响操作：必须配置二次确认
+HIGH_RISK_ACTIONS = {"delete", "batch-delete", "disable", "enable", "revoke"}
+# Tab 变体闭环：公共页面外壳区域关键词（preserveRegions 必须至少保留其一）
+SHELL_REGION_KEYS = (
+    "global-navigation", "global-nav", "title-bar", "page-shell",
+    "drawer-shell", "drawer-header", "modal-shell", "modal-header",
+    "object-summary", "object-context", "footer", "stepper",
+    "tab-bar", "tabs", "content-container",
+)
+
+
 class Validator:
     def __init__(self, data, registry, strict=True):
         self.data = data
@@ -217,14 +246,14 @@ class Validator:
                            "pages 必须是数组", "array", type(self.data.get("pages")).__name__)
 
     def check_unique_page_ids(self):
-        for i, page in enumerate(self.data.get("pages", [])):
+        for page, path in self.all_pages:
             pid = str(page.get("id", ""))
             if not pid:
-                self.add_error("-", "PAGE_ID_MISSING", "error", f"$.pages[{i}].id",
+                self.add_error("-", "PAGE_ID_MISSING", "error", f"{path}.id",
                                "页面缺少 id", "非空 id", "空",
                                fix="为每个页面补充唯一 id")
             elif pid in self.page_ids:
-                self.add_error(pid, "DUPLICATE_PAGE_ID", "error", f"$.pages[{i}].id",
+                self.add_error(pid, "DUPLICATE_PAGE_ID", "error", f"{path}.id",
                                f"页面 id 重复: {pid}", "唯一 id", f"重复 {pid}",
                                fix="修改为唯一 id")
             else:
@@ -234,10 +263,10 @@ class Validator:
         overview = self.data.get("overview") or {}
         page_overview = overview.get("pageOverview") or []
         overview_ids = {str(p.get("id", "")) for p in page_overview if p.get("id")}
-        page_ids = set(self.page_ids)
+        page_ids = {str(p.get("id", "")) for p, _ in self.all_pages if p.get("id")}
         if overview_ids != page_ids:
             self.add_error("-", "OVERVIEW_MISMATCH", "error", "$.overview.pageOverview",
-                           "overview.pageOverview 与 pages 不一致",
+                           "overview.pageOverview 与 pages（含 children）不一致",
                            f"页面 id 集合 {sorted(page_ids)}",
                            f"总览 id 集合 {sorted(overview_ids)}",
                            fix="同步 overview.pageOverview 与 pages")
@@ -769,6 +798,268 @@ class Validator:
                                msg, "结构化 wireframe", "自由文本字符串",
                                fix="将 wireframe 重构为结构化对象（templateId/regions/variants）")
 
+    # ---- 设计闭环：页面清单（RULE-28）----
+    def _infer_container_type(self, page):
+        """推断页面容器类型：显式 containerType > templateId 关键词 > page。"""
+        ct = page.get("containerType")
+        if ct in ("page", "modal", "drawer"):
+            return ct
+        tid = self.page_template(page) or ""
+        if "modal" in tid:
+            return "modal"
+        if "drawer" in tid:
+            return "drawer"
+        return "page"
+
+    def _container_has_entry(self, container, all_pages):
+        """容器是否被其他页面的操作 targetPageId 或交互文本引用。"""
+        cid = str(container.get("id", ""))
+        cname = container.get("name") or ""
+        for page in all_pages:
+            if page is container:
+                continue
+            for op in page.get("operations") or []:
+                if str(op.get("targetPageId") or "") == cid:
+                    return True
+            p = {k: v for k, v in page.items() if k != "children"}
+            text = json.dumps(p, ensure_ascii=False)
+            if cid and cid in text:
+                return True
+            if cname and len(cname) >= 2 and cname in text:
+                return True
+        return False
+
+    def check_manifest_closure(self):
+        """页面清单闭环：总览确认的页面/容器必须完整出现在 pages（含 children）。"""
+        overview = (self.data.get("overview") or {}).get("pageOverview") or []
+        all_pages = [p for p, _ in self.all_pages]
+        page_ids = {str(p.get("id", "")) for p in all_pages if p.get("id")}
+        by_id = {str(p.get("id", "")): p for p in all_pages if p.get("id")}
+        # 1) 总览重复 id
+        seen = set()
+        for i, item in enumerate(overview):
+            oid = str(item.get("id", ""))
+            if not oid:
+                continue
+            if oid in seen:
+                self.add_error(oid, "MANIFEST_DUPLICATE", "error",
+                               f"$.overview.pageOverview[{i}].id",
+                               f"页面总览存在重复页面 ID: {oid}",
+                               "页面 ID 唯一", f"{oid} 重复出现",
+                               fix="删除重复的总览条目或修改为唯一 ID")
+            seen.add(oid)
+        overview_ids = {str(i.get("id", "")) for i in overview if i.get("id")}
+        # 2) 已确认但 pages 缺失（生成 HTML 将遗漏）
+        for oid in sorted(overview_ids - page_ids):
+            self.add_error(oid, "MANIFEST_PAGE_MISSING", "error", "$.overview.pageOverview",
+                           f"页面总览已确认页面/容器 {oid} 未出现在 pages（含 children），生成 HTML 将遗漏该页面",
+                           "总览确认的页面必须存在于 pages", f"pages 中缺失 {oid}",
+                           fix=f"在 pages（或对应父页面 children）中补充 {oid} 页面对象及完整设计")
+        # 3) 额外页面（总览未覆盖）
+        for pid in sorted(page_ids - overview_ids):
+            p = by_id.get(pid)
+            self.add_error(pid, "MANIFEST_EXTRA_PAGE", "error",
+                           self.page_path.get(id(p), "$.pages"),
+                           f"页面 {pid} 未出现在页面总览 pageOverview",
+                           "pages 与页面总览一致", "总览缺失该页面",
+                           fix="在 overview.pageOverview 中补充该页面条目（含名称、类型、用途、入口）")
+        # 4) 元数据不一致（名称/类型/容器类型）
+        for item in overview:
+            oid = str(item.get("id", ""))
+            p = by_id.get(oid)
+            if not p:
+                continue
+            if item.get("name") and p.get("name") and item["name"] != p["name"]:
+                self.add_error(oid, "MANIFEST_METADATA_MISMATCH", "error", "$.overview.pageOverview",
+                               f"页面 {oid} 名称在页面总览与 pages 不一致",
+                               f"总览名称={item['name']}", f"pages 名称={p['name']}",
+                               fix="统一页面名称")
+            if item.get("type") and p.get("type") and item["type"] != p["type"]:
+                self.add_error(oid, "MANIFEST_METADATA_MISMATCH", "error", "$.overview.pageOverview",
+                               f"页面 {oid} 页面类型在页面总览与 pages 不一致",
+                               f"总览类型={item['type']}", f"pages 类型={p['type']}",
+                               fix="统一页面类型（使用 Common Design 中文页面类型名）")
+            ov_ct = item.get("containerType")
+            if ov_ct and ov_ct != self._infer_container_type(p):
+                self.add_error(oid, "MANIFEST_CONTAINER_TYPE_MISMATCH", "error", "$.overview.pageOverview",
+                               f"页面 {oid} 容器类型在页面总览与 pages 不一致",
+                               f"总览容器类型={ov_ct}", f"pages 容器类型={self._infer_container_type(p)}",
+                               fix="统一容器类型（page/modal/drawer）")
+        # 5) 孤立容器：弹窗/抽屉没有任何入口引用（已确认容器升级为 error）
+        for p in all_pages:
+            if self._infer_container_type(p) in ("modal", "drawer") \
+                    and not self._container_has_entry(p, all_pages):
+                cid = str(p.get("id", ""))
+                sev = "error" if cid in overview_ids else "warning"
+                self.add_error(cid, "ORPHAN_CONTAINER", sev,
+                               self.page_path.get(id(p), "$.pages"),
+                               f"容器 {p.get('name') or cid} 没有任何页面操作或交互入口指向它",
+                               "弹窗/抽屉应有明确的触发入口", "无入口引用",
+                               fix="在主页面 operations.targetPageId 或关键交互说明中声明该容器入口")
+
+    # ---- 设计闭环：操作目标（RULE-29）----
+    def check_operation_closure(self):
+        """操作目标闭环：结构化操作的目标页面/容器必须存在且类型正确，高影响操作必须二次确认。"""
+        by_id = {str(p.get("id", "")): p for p, _ in self.all_pages if p.get("id")}
+        for page, path in self.all_pages:
+            pid = str(page.get("id", ""))
+            for i, op in enumerate(page.get("operations") or []):
+                opath = f"{path}.operations[{i}]"
+                action = op.get("action") or ""
+                opid = op.get("id") or ""
+                if not opid:
+                    self.add_error(pid, "OPERATION_ID_MISSING", "warning", f"{opath}.id",
+                                   "操作缺少 id，无法稳定追踪到 Coding 项",
+                                   "非空操作 id", "空",
+                                   fix="为操作补充唯一 id（如 OP01）")
+                if action not in KNOWN_ACTIONS:
+                    self.add_error(pid, "OPERATION_ACTION_UNKNOWN", "warning", f"{opath}.action",
+                                   f"未知操作类型: {action or '空'}",
+                                   f"已知类型之一: {sorted(KNOWN_ACTIONS)}", action or "空",
+                                   fix="使用已知操作类型，无法归类时用 other")
+                if action == "other":
+                    self.add_error(pid, "OPERATION_ACTION_OTHER", "info", f"{opath}.action",
+                                   "操作类型为 other，需人工核验其实现语义",
+                                   "明确的操作类型", "other",
+                                   fix="如可归类请改为具体操作类型")
+                if action == "open-container":
+                    target = str(op.get("targetPageId") or "")
+                    if not target:
+                        self.add_error(pid, "OPERATION_TARGET_MISSING", "error", f"{opath}.targetPageId",
+                                       "open-container 操作缺少 targetPageId",
+                                       "目标页面/容器 ID", "空",
+                                       fix="补充 targetPageId 指向目标页面")
+                    elif target not in by_id:
+                        self.add_error(pid, "OPERATION_TARGET_MISSING", "error", f"{opath}.targetPageId",
+                                       f"操作目标页面/容器 {target} 不存在于 pages（含 children）",
+                                       "目标页面存在于 pages", f"{target} 缺失",
+                                       fix=f"在 pages 中补充目标页面 {target}，或修正 targetPageId")
+                    else:
+                        want = op.get("targetContainerType") or ""
+                        got = self._infer_container_type(by_id[target])
+                        if want and want != got:
+                            self.add_error(pid, "OPERATION_CONTAINER_TYPE_MISMATCH", "error",
+                                           f"{opath}.targetContainerType",
+                                           f"操作目标容器类型不匹配: {target} 实际为 {got}",
+                                           want, got,
+                                           fix="修正 targetContainerType 或选择正确的容器页面")
+                if action in HIGH_RISK_ACTIONS and not op.get("confirm"):
+                    self.add_error(pid, "OPERATION_CONFIRM_MISSING", "error", f"{opath}.confirm",
+                                   f"高影响操作 {action} 缺少二次确认配置 confirm=true",
+                                   "confirm=true（建议补充 confirmConfig.title/level）", "未配置二次确认",
+                                   fix="设置 confirm=true 并补充 confirmConfig")
+
+    # ---- 设计闭环：Tab 变体（RULE-30，条件式）----
+    def _is_shell_region(self, region):
+        r = str(region).lower()
+        return any(k in r for k in SHELL_REGION_KEYS)
+
+    def check_tab_variants(self):
+        """Tab 变体闭环：仅当页面显式声明两个及以上内容 Tab 时强制完整变体线框。"""
+        for page, path in self.all_pages:
+            pid = str(page.get("id", ""))
+            wf = self.page_wireframe(page)
+            if not isinstance(wf, dict):
+                continue
+            tabs = page.get("tabs") or []
+            if len(tabs) < 2:
+                continue  # 条件式：普通详情页/单内容页仍可使用单张 wireframe
+            tab_ids = [str(t.get("tabId") or "") for t in tabs]
+            valid_tab_ids = {tid for tid in tab_ids if tid}
+            for i, t in enumerate(tabs):
+                if not t.get("tabId"):
+                    self.add_error(pid, "TABS_ID_MISSING", "error", f"{path}.tabs[{i}].tabId",
+                                   f"内容 Tab 缺少唯一 tabId（共 {len(tabs)} 个 Tab）",
+                                   "每个 Tab 有唯一 tabId", "tabId 为空",
+                                   fix="为每个 Tab 补充唯一 tabId（如 tab-overview）")
+            dup = {tid for tid in tab_ids if tid and tab_ids.count(tid) > 1}
+            if dup:
+                self.add_error(pid, "TABS_ID_DUPLICATE", "error", f"{path}.tabs",
+                               f"内容 Tab tabId 重复: {sorted(dup)}",
+                               "tabId 唯一", f"重复 {sorted(dup)}",
+                               fix="修改重复的 tabId")
+            variants = wf.get("variants") or []
+            if len(variants) != len(tabs):
+                self.add_error(pid, "TABS_VARIANT_COUNT_MISMATCH", "error",
+                               f"{path}.wireframe.variants",
+                               f"多内容 Tab 页面（{len(tabs)} 个 Tab）必须为每个 Tab 提供完整变体线框，当前 variants 数量为 {len(variants)}",
+                               f"{len(tabs)} 个 variant（每个 Tab 一个）", f"{len(variants)} 个 variant",
+                               fix="为每个 Tab 分别绘制一张完整变体线框（公共外壳 + 当前 Tab 内容区）")
+            variant_tab_ids = [str(v.get("tabId") or "") for v in variants]
+            for tid in sorted(valid_tab_ids - set(variant_tab_ids)):
+                self.add_error(pid, "TABS_VARIANT_MISSING", "error", f"{path}.wireframe.variants",
+                               f"内容 Tab {tid} 缺少对应变体线框",
+                               f"存在 tabId={tid} 的 variant", "缺失",
+                               fix=f"为 Tab {tid} 补充 variant（tabId={tid}，含公共外壳与内容区）")
+            for v in variants:
+                vtid = str(v.get("tabId") or "")
+                if vtid and vtid not in valid_tab_ids:
+                    self.add_error(pid, "TABS_ORPHAN_VARIANT", "error", f"{path}.wireframe.variants",
+                                   f"变体 tabId={vtid} 在页面 tabs 中不存在",
+                                   "variant.tabId 属于页面 tabs", vtid,
+                                   fix="删除孤立变体或将 tabId 修正为已声明 Tab")
+                preserve = v.get("preserveRegions") or []
+                if not any(self._is_shell_region(r) for r in preserve):
+                    self.add_error(pid, "TABS_VARIANT_NO_SHELL", "error", f"{path}.wireframe.variants",
+                                   f"变体 {vtid or '(无 tabId)'} 未保留公共页面外壳（如抽屉外壳/标题栏/对象摘要/Tab 行/底部操作区）",
+                                   "preserveRegions 包含公共外壳区域", f"preserveRegions={preserve}",
+                                   fix="变体保留公共外壳区域（如 drawer-shell/title-bar/object-summary/tab-bar/footer），仅替换当前 Tab 内容区")
+                changed = v.get("changedRegions") or []
+                ascii_txt = (v.get("ascii") or "").strip()
+                if not changed or len(ascii_txt) < 10:
+                    self.add_error(pid, "TABS_VARIANT_NO_CONTENT", "error", f"{path}.wireframe.variants",
+                                   f"变体 {vtid or '(无 tabId)'} 缺少当前 Tab 内容区（changedRegions 为空或 ascii 内容为空/过短）",
+                                   "非空 changedRegions 与完整内容区线框图",
+                                   f"changedRegions={changed}, ascii 长度={len(ascii_txt)}",
+                                   fix="在变体中绘制当前 Tab 内容区（表格/表单/描述列表等），并声明 changedRegions")
+            for i, sec in enumerate(page.get("sections") or []):
+                stid = sec.get("tabId")
+                if stid and str(stid) not in valid_tab_ids:
+                    self.add_error(pid, "TABS_SECTION_INVALID", "error", f"{path}.sections[{i}].tabId",
+                                   f"内容区块绑定的 tabId={stid} 不存在于页面 tabs",
+                                   "tabId 属于页面 tabs", stid,
+                                   fix="修正 section.tabId 或补充对应 Tab")
+            unbound = [s for s in page.get("sections") or [] if not s.get("tabId")]
+            if unbound:
+                self.add_error(pid, "TABS_SECTION_UNBOUND", "warning", f"{path}.sections",
+                               f"多内容 Tab 页面存在未绑定 tabId 的内容区块（{len(unbound)} 个）",
+                               "每个内容区块绑定所属 tabId", "未绑定",
+                               fix="为内容区块补充 tabId，确保 sections 与 tabs/variants 可互相追踪")
+
+    # ---- 设计闭环：页面级 Coding（RULE-31）----
+    def check_coding_closure(self):
+        """页面级 Coding 闭环：pageContext 一致、每页至少一个开发项、无孤立开发项。"""
+        for page, path in self.all_pages:
+            pid = str(page.get("id", ""))
+            cg = page.get("codingGuide") or {}
+            pc = cg.get("pageContext") or {}
+            if pc.get("pageId") and str(pc["pageId"]) != pid:
+                self.add_error(pid, "CODING_PAGE_CONTEXT_MISMATCH", "error",
+                               f"{path}.codingGuide.pageContext.pageId",
+                               f"页面级 Coding 指导 pageContext.pageId={pc['pageId']} 与页面 id={pid} 不一致",
+                               f"pageContext.pageId={pid}", str(pc["pageId"]),
+                               fix="将 pageContext.pageId 修正为页面 id")
+            items = cg.get("pageItems") or []
+            if not items:
+                self.add_error(pid, "CODING_NO_ITEMS", "error", f"{path}.codingGuide.pageItems",
+                               f"页面 {page.get('name') or pid} 没有页面级 Coding 开发项（pageItems 为空），HTML 与 Coding 指导将缺失该页面",
+                               "每个页面至少一个稳定 Coding item", "pageItems 为空",
+                               fix="为页面补充页面级 Coding 指导（至少一个开发项）")
+            ids = [str(i.get("id") or "") for i in items]
+            dup = {x for x in ids if x and ids.count(x) > 1}
+            if dup:
+                self.add_error(pid, "CODING_ITEM_DUPLICATE", "error", f"{path}.codingGuide.pageItems",
+                               f"页面级 Coding 开发项 id 重复: {sorted(dup)}",
+                               "开发项 id 唯一", f"重复 {sorted(dup)}",
+                               fix="修改重复的开发项 id")
+            for i, item in enumerate(items):
+                if item.get("pageId") and str(item["pageId"]) != pid:
+                    self.add_error(pid, "CODING_ITEM_ORPHAN", "error",
+                                   f"{path}.codingGuide.pageItems[{i}].pageId",
+                                   f"Coding 开发项 {item.get('id')} 声明的 pageId={item['pageId']} 与所属页面 {pid} 不一致",
+                                   f"pageId={pid}", str(item["pageId"]),
+                                   fix="修正开发项 pageId 或移动到对应页面")
+
     # ---- 执行 ----
     def _idx(self, page):
         for i, p in enumerate(self.data.get("pages", [])):
@@ -782,6 +1073,8 @@ class Validator:
             return
         self._legacy_page_ids = {p.get("id") for p in self.data.get("pages", [])
                                  if isinstance(self.page_wireframe(p), str)}
+        self.all_pages = list(_walk_pages(self.data.get("pages") or []))
+        self.page_path = {id(page): path for page, path in self.all_pages}
         self.check_schema()
         self.check_unique_page_ids()
         self.check_overview_consistency()
@@ -807,19 +1100,27 @@ class Validator:
         self.check_vue3_syntax()
         self.check_component_mapping()
         self.check_legacy_wireframe()
+        # ---- 设计闭环（页面清单 / 操作目标 / Tab 变体 / 页面级 Coding）----
+        self.check_manifest_closure()
+        self.check_operation_closure()
+        self.check_tab_variants()
+        self.check_coding_closure()
 
     def result(self):
         errors = [e for e in self.errors if e["severity"] == "error"]
         warnings = [e for e in self.errors if e["severity"] == "warning"]
+        infos = [e for e in self.errors if e["severity"] == "info"]
         passed = not errors
         return {
             "valid": passed,
             "validationStatus": "passed" if passed else "failed",
             "errorCount": len(errors),
             "warningCount": len(warnings),
+            "infoCount": len(infos),
             "strict": self.strict,
             "errors": errors,
             "warnings": warnings,
+            "infos": infos,
         }
 
 
