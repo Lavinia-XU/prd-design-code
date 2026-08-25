@@ -140,7 +140,7 @@ def modal_regions():
         {"id": "modal-shell", "templateRegion": "modal-shell", "position": "top", "required": True, "content": "弹窗外壳"},
         {"id": "modal-header", "templateRegion": "modal-header", "position": "top", "required": True, "content": "弹窗标题与关闭入口"},
         {"id": "form-content", "templateRegion": "form-content", "position": "content", "required": True, "content": "表单主体"},
-        {"id": "modal-footer", "templateRegion": "modal-footer", "position": "bottom", "required": True, "content": "底部操作：取消/确定"},
+        {"id": "modal-footer", "templateRegion": "modal-footer", "position": "bottom", "required": True, "content": "底部操作：确定/取消"},
     ]
 
 
@@ -176,7 +176,7 @@ def modal_page(**overrides):
             },
             "regions": modal_regions(),
             "variants": [],
-            "ascii": "弹窗标题/表单主体/取消/确定",
+            "ascii": "弹窗标题/表单主体/确定/取消",
         },
         "sections": [
             {"title": "表单主体", "type": "form", "fields": [{"name": "主机名", "iduxComponent": "IxInput"}]},
@@ -285,7 +285,7 @@ class TestValidateDemoSpec(unittest.TestCase):
                 "templateSource": "common-design/references/03-design-template/01-page-types.md#page-list-modal",
                 "requiredRegions": ["modal-shell", "modal-header", "filter", "table", "pagination", "modal-footer"],
                 "optionalRegions": [], "regionOrder": ["modal-shell", "modal-header", "filter", "table", "pagination", "modal-footer"],
-                "footerContract": {"required": True, "alignment": "right", "buttonOrder": ["cancel", "confirm"]},
+                "footerContract": {"required": True, "alignment": "right", "buttonOrder": ["confirm", "cancel"]},
                 "componentContract": {"shell": ["IxModal"], "table": ["IxTable"], "pagination": ["IxPagination"], "footer": ["IxButton"]},
                 "wireframeContract": {}, "override": {"enabled": False, "source": "", "reason": "", "affectedRules": []},
             },
@@ -322,7 +322,7 @@ class TestValidateDemoSpec(unittest.TestCase):
                 "templateSource": "common-design/references/03-design-template/01-page-types.md#page-list-drawer",
                 "requiredRegions": ["drawer-shell", "drawer-header", "object-context", "filter", "table", "pagination", "drawer-footer"],
                 "optionalRegions": [], "regionOrder": ["drawer-shell", "drawer-header", "object-context", "filter", "table", "pagination", "drawer-footer"],
-                "footerContract": {"required": True, "alignment": "left", "buttonOrder": ["cancel", "confirm"]},
+                "footerContract": {"required": True, "alignment": "left", "buttonOrder": ["confirm", "cancel"]},
                 "componentContract": {"shell": ["IxDrawer"], "table": ["IxTable"], "pagination": ["IxPagination"], "footer": ["IxButton"]},
                 "wireframeContract": {}, "override": {"enabled": False, "source": "", "reason": "", "affectedRules": []},
             },
@@ -357,7 +357,7 @@ class TestValidateDemoSpec(unittest.TestCase):
                 "templateSource": "common-design/references/03-design-template/01-page-types.md#page-form-config",
                 "requiredRegions": ["global-navigation", "title-bar", "form-content", "footer"],
                 "optionalRegions": [], "regionOrder": ["global-navigation", "title-bar", "form-content", "footer"],
-                "footerContract": {"required": True, "alignment": "right", "buttonOrder": ["cancel", "confirm"]},
+                "footerContract": {"required": True, "alignment": "right", "buttonOrder": ["confirm", "cancel"]},
                 "componentContract": {"form": ["IxForm", "IxFormItem"], "footer": ["IxButton"]},
                 "wireframeContract": {}, "override": {"enabled": False, "source": "", "reason": "", "affectedRules": []},
             },
@@ -371,14 +371,14 @@ class TestValidateDemoSpec(unittest.TestCase):
                 {"id": "global-nav", "templateRegion": "global-navigation", "position": "top", "required": True, "content": "全局导航"},
                 {"id": "title-bar", "templateRegion": "title-bar", "position": "top", "required": True, "content": "页面标题"},
                 {"id": "form-content", "templateRegion": "form-content", "position": "content", "required": True, "content": "表单内容"},
-                {"id": "footer", "templateRegion": "footer", "position": "bottom", "required": True, "content": "取消/保存"},
+                {"id": "footer", "templateRegion": "footer", "position": "bottom", "required": True, "content": "保存/取消"},
             ],
             "variants": [], "ascii": "标题栏/表单内容/底部按钮",
         }
         page["sections"] = [
             {"title": "表单内容", "type": "form", "formFields": [{"name": "策略名称", "iduxComponent": "IxInput"}]},
         ]
-        page["footerActions"] = [{"label": "取消", "kind": "cancel"}, {"label": "保存", "kind": "confirm"}]
+        page["footerActions"] = [{"label": "保存", "kind": "confirm"}, {"label": "取消", "kind": "cancel"}]
         code, report = run_validator(make_spec([page]), strict=True)
         self.assertNotEqual(code, 0)
         self.assertIn("FOOTER_ALIGNMENT_MISMATCH", error_codes(report))
@@ -795,6 +795,75 @@ class TestValidateDemoSpec(unittest.TestCase):
         self.assertEqual(code, 0)
         self.assertTrue(report.get("valid"))
         self.assertFalse(any(e.get("errorCode") == "WIREFRAME_ASCII_LABEL_LIST" for e in report.get("errors", [])))
+
+    def test_child_page_not_flattened_fails(self):
+        """子容器以完整页面对象内嵌在父页面 children 中 -> RULE-35 CHILD_PAGE_NOT_FLATTENED 阻断。"""
+        page = base_page()
+        modal = modal_page()
+        page["children"] = [modal]
+        code, report = run_validator(make_spec([page]), strict=True)
+        self.assertEqual(code, 1)
+        self.assertFalse(report.get("valid"))
+        self.assertTrue(any(e.get("errorCode") == "CHILD_PAGE_NOT_FLATTENED" for e in report.get("errors", [])))
+
+    def test_child_string_ref_passes(self):
+        """children 使用字符串 ID 引用（子容器为 pages 独立元素）-> RULE-35 通过且不崩溃。"""
+        page = base_page()
+        modal = modal_page()
+        page["children"] = ["P02"]
+        if not page.get("operations"):
+            page["operations"] = []
+        page["operations"].append({"name": "批量编辑", "action": "open-container", "targetPageId": "P02", "description": "打开弹窗"})
+        code, report = run_validator(make_spec([page, modal]), strict=True)
+        self.assertEqual(code, 0)
+        self.assertTrue(report.get("valid"))
+        self.assertFalse(any(e.get("errorCode") == "CHILD_PAGE_NOT_FLATTENED" for e in report.get("errors", [])))
+
+    def test_requirement_field_missing_fails(self):
+        """需求明确字段未落入任何字段数组 -> RULE-36 REQUIRED_FIELD_MISSING 阻断。"""
+        page = base_page()
+        page["requirementFieldNames"] = ["主机名", "IP地址", "操作系统"]
+        code, report = run_validator(make_spec([page]), strict=True)
+        self.assertEqual(code, 1)
+        self.assertTrue(any(e.get("errorCode") == "REQUIRED_FIELD_MISSING" for e in report.get("errors", [])))
+
+    def test_requirement_field_all_covered_passes(self):
+        """需求明确字段全部落入字段数组 -> RULE-36 通过。"""
+        page = base_page()
+        names = []
+        for s in page.get("sections", []):
+            for k in ("tableFields", "formFields", "cardFields", "fields"):
+                for f in s.get(k) or []:
+                    if f.get("name"):
+                        names.append(f["name"])
+        page["requirementFieldNames"] = names
+        code, report = run_validator(make_spec([page]), strict=True)
+        self.assertEqual(code, 0)
+        self.assertFalse(any(e.get("errorCode") == "REQUIRED_FIELD_MISSING" for e in report.get("errors", [])))
+
+    def test_requirement_field_excluded_passes(self):
+        """需求字段未落位但 excludedFields 声明排除原因 -> RULE-36 通过。"""
+        page = base_page()
+        page["requirementFieldNames"] = ["主机名"]
+        page["excludedFields"] = {"主机名": "仅在详情页展示，列表不展示"}
+        code, report = run_validator(make_spec([page]), strict=True)
+        self.assertEqual(code, 0)
+        self.assertFalse(any(e.get("errorCode") == "REQUIRED_FIELD_MISSING" for e in report.get("errors", [])))
+
+    def test_footer_ascii_order_mismatch_fails(self):
+        """线框图中按钮顺序错误（取消在左、确定在右）-> RULE-37 FOOTER_ASCII_ORDER_MISMATCH 阻断。"""
+        page = modal_page()
+        page["wireframe"]["ascii"] = "弹窗标题/表单主体/取消/确定"
+        code, report = run_validator(make_spec([page]), strict=True)
+        self.assertEqual(code, 1)
+        self.assertTrue(any(e.get("errorCode") == "FOOTER_ASCII_ORDER_MISMATCH" for e in report.get("errors", [])))
+
+    def test_footer_ascii_order_passes(self):
+        """线框图中按钮顺序正确（确定在左、取消在右）-> RULE-37 通过。"""
+        page = modal_page()
+        page["wireframe"]["ascii"] = "弹窗标题/表单主体/确定/取消"
+        code, report = run_validator(make_spec([page]), strict=True)
+        self.assertFalse(any(e.get("errorCode") == "FOOTER_ASCII_ORDER_MISMATCH" for e in report.get("errors", [])))
 
 
 if __name__ == "__main__":

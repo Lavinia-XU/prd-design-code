@@ -141,7 +141,8 @@ metadata:
 - 页面总览表按导航层级列出一级菜单、二级菜单、三级菜单、Tab页面、详情页、弹窗、抽屉和必要下钻页面。
 - 每个页面必须说明页面ID、页面名称、页面类型、导航路径、打开方式、页面目标、主要内容、关键操作和初步复用方向；初步复用方向仅可写复用已有页面、参考已有框架、新增页面或待详细设计确认。详细开发方式、具体组件和实现差异必须在HTML页面级AI Coding指导中确定。
 - 页面类型必须使用已读取Common Design、匹配Product Design或已验证代码中真实存在的标准类型名称，页面总览表输出时必须使用 Common Design 中文页面类型名（如概览表格页、抽屉表单页），禁止输出模板 ID（如 page-table-overview）；业务描述不得直接充当页面类型。标准类型无法覆盖时，标记为“自定义页面类型”，并说明继承的基础模板、扩展内容和差异原因。
-- 页面总览表即已确认页面/容器清单（manifest）：总览中出现的每个页面、弹窗、抽屉都必须完整落入 demo-spec.json 的 `pages`（含 `children`），页面 ID、名称、类型、容器类型保持一致；弹窗/抽屉必须通过 `operations` 的 open-container 操作或页面内容引用建立入口，禁止出现总览已确认但最终产物缺失的容器（详见 [Demo设计规格 - 设计闭环自动校验](references/01-workflow/03-demo-design-spec.md) 第 11 章）。
+- 页面总览表即已确认页面/容器清单（manifest）：总览中出现的每个页面、弹窗、抽屉都必须作为 demo-spec.json `pages` 数组的独立页面对象完整呈现，页面 ID、名称、类型、容器类型保持一致；`children` 仅用于表达归属关系，只允许写子容器 ID（字符串），禁止在 `children` 中内嵌完整页面设计对象（生成器按 `pages` 数组逐项渲染，children 不展开；内嵌对象会被校验器以 RULE-35 阻断）。弹窗/抽屉必须通过 `operations` 的 open-container 操作或页面内容引用建立入口，禁止出现总览已确认但最终产物缺失的容器（详见 [Demo设计规格 - 设计闭环自动校验](references/01-workflow/03-demo-design-spec.md) 第 11 章）。
+- 需求或规范中明确列出的字段（表格列、表单项、筛选项、详情描述字段、配置项等）必须逐项落入页面对象对应区块的字段数组（tableFields/formFields/filterFields/cardFields等），不得过滤、合并或仅简述；页面对象写入 requirementFieldNames（需求/规范明确要求的字段名数组）与 excludedFields（字段名到排除原因的映射），缺失的需求字段会被校验器以 RULE-36 阻断（详见 [Demo设计规格 - 设计闭环自动校验](references/01-workflow/03-demo-design-spec.md) 第 11 章）。
 - 对话框主体只输出到页面总览表，禁止继续展开逐页设计、交互细节、Mock数据或完整AI Coding提示词。
 
 ## Step 5 待确认

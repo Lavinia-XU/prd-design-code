@@ -719,6 +719,22 @@ def build_navigation(data, pages):
     return "\n".join(entries)
 
 
+def _flatten_pages(pages, inherited_nav=None):
+    """递归展开 pages 及其 children 中的页面对象，产出 (page, navigation) 序列。
+
+    规范要求每个页面/弹窗/抽屉都是 pages 数组的独立元素，children 只允许子容器 ID 引用（字符串）；
+    本函数作为兜底：若 children 中仍出现页面对象（dict 且含 id），也展开渲染，保证 HTML 不丢页。
+    """
+    result = []
+    for page in pages or []:
+        nav = page.get("navigation") or inherited_nav or {}
+        result.append((page, nav))
+        for child in page.get("children") or []:
+            if isinstance(child, dict) and child.get("id"):
+                result.extend(_flatten_pages([child], nav))
+    return result
+
+
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--input", required=True)
@@ -730,7 +746,7 @@ def main():
     input_path = Path(args.input).resolve()
     output_path = Path(args.output).resolve()
     data = json.loads(input_path.read_text(encoding="utf-8"))
-    pages = [(page, page.get("navigation")) for page in data.get("pages", [])]
+    pages = _flatten_pages(data.get("pages", []))
 
     strict = not args.allow_legacy_wireframe
 

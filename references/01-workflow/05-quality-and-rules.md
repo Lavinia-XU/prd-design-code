@@ -189,12 +189,15 @@
 | RULE-25 | 禁止 Vue3 专属绑定语法作为实现要求 | 04-interaction-coding-guidelines.md | — |
 | RULE-26 | 非普通文本字段声明组件映射 | 03-demo-design-spec.md | — |
 | RULE-27 | legacy 自由文本线框兼容模式 | SKILL.md 强制模板契约与线框校验（兼容模式） | test_legacy_wireframe_warning_non_strict |
-| RULE-28 | 页面清单闭环：pageOverview(manifest) 与 pages(含 children) 的 ID/名称/类型/容器类型一致；页面遗漏、额外页面、重复页面、孤立容器 | 03-demo-design-spec.md 设计闭环自动校验 | test_manifest_page_missing_fails / test_manifest_metadata_mismatch_fails / test_orphan_container_fails |
+| RULE-28 | 页面清单闭环：pageOverview(manifest) 与 pages 数组独立元素（弹窗/抽屉必须作为 pages 独立页面对象，children 仅允许写子容器 ID 字符串引用）的 ID/名称/类型/容器类型一致；页面遗漏、额外页面、重复页面、孤立容器 | 03-demo-design-spec.md 设计闭环自动校验 | test_manifest_page_missing_fails / test_manifest_metadata_mismatch_fails / test_orphan_container_fails |
 | RULE-29 | 操作目标闭环：open-container 必须存在 targetPageId 且容器类型正确；高影响操作必须二次确认；未知操作类型 warning | 03-demo-design-spec.md 设计闭环自动校验 | test_operation_target_missing_fails / test_operation_confirm_missing_fails / test_operation_closure_passes / test_operation_other_info |
 | RULE-30 | Tab 变体闭环（条件式）：页面显式声明 >=2 个内容 Tab 时，tabs/tabId 唯一、variants 数量与 tab 一一对应、variant 保留公共外壳且有内容区、sections 绑定 tabId | 03-demo-design-spec.md 设计闭环自动校验 | test_tabs_missing_variants_fails / test_tabs_variant_count_mismatch_fails / test_tabs_orphan_variant_fails / test_tabs_variant_no_shell_fails / test_tabs_variant_no_content_fails / test_tabs_section_invalid_fails / test_multitab_closure_passes |
 | RULE-31 | 页面级 Coding 闭环：pageContext.pageId 与页面 ID 一致、每页至少一个 Coding item、无孤立 Coding item | 03-demo-design-spec.md 设计闭环自动校验 | test_coding_page_context_mismatch_fails / test_coding_no_items_fails |
 | RULE-32 | 线框图绘制完整性：wireframe.ascii 必须按模板绘制，禁止一句话/几个字代替；ascii 过短或未覆盖模板必需区域即 error | 03-demo-design-spec.md 11.6 线框图绘制质量闭环 | test_wireframe_ascii_too_short_fails / test_wireframe_ascii_not_drawn_fails / test_wireframe_ascii_full_drawing_passes |
 | RULE-33 | 绘制与 regions 一致性：regions 声明的内容性区域在 ascii 中必须有对应绘制痕迹（warning） | 03-demo-design-spec.md 11.6 线框图绘制质量闭环 | test_wireframe_ascii_region_not_drawn_warns |
+| RULE-34 | 线框图布局完整性：ascii 禁止区域标签罗列（每行一个"区域名：内容"），必须绘制为完整页面布局字符画 | 03-demo-design-spec.md 11.6 线框图绘制质量闭环 | test_wireframe_label_list_fails / test_wireframe_full_layout_passes |
+| RULE-35 | 子容器平铺：children 中禁止内嵌完整页面对象，弹窗/抽屉必须作为 pages 数组独立元素，children 仅允许字符串 ID 引用 | 03-demo-design-spec.md 设计闭环自动校验 | test_child_page_not_flattened_fails / test_child_string_ref_passes |
+| RULE-36 | 字段完整性闭环：需求/规范明确要求的字段（表格列、表单项、筛选项、详情字段、配置项）必须逐项落入对应字段数组，未落位且无 excludedFields 排除原因的字段阻断生成 | 01-output-templates.md 字段完整性 / 03-demo-design-spec.md 设计闭环自动校验 | test_requirement_field_missing_fails / test_requirement_field_all_covered_passes / test_requirement_field_excluded_passes |
 
 新增校验规则的固定流程：
 
@@ -209,11 +212,12 @@
 
 生成 HTML 前必须完成以下设计闭环自检，任一 error 都会阻断 HTML 生成：
 
-- 页面清单闭环：`overview.pageOverview` 中确认的每个页面/容器（含弹窗、抽屉）是否全部出现在 `pages`（含 `children`）；是否存在额外页面、重复页面、ID/名称/类型/容器类型不一致；弹窗/抽屉是否至少有一个入口（open-container 操作或文本引用）。
+- 页面清单闭环：`overview.pageOverview` 中确认的每个页面/容器（含弹窗、抽屉）是否全部作为 `pages` 数组独立元素出现（`children` 仅允许字符串 ID 引用，内嵌对象会被 RULE-35 阻断）；是否存在额外页面、重复页面、ID/名称/类型/容器类型不一致；弹窗/抽屉是否至少有一个入口（open-container 操作或文本引用）。
 - 操作目标闭环：`operations` 中的 `open-container` 操作是否都有存在的 `targetPageId` 且容器类型正确；`delete`/`batch-delete`/`disable`/`enable`/`revoke` 等操作是否带 `confirm: true` 与 `confirmConfig`。
 - Tab 变体闭环（条件式）：页面显式声明 2 个及以上内容 Tab 时，每个 Tab 是否有唯一 `tabId`、对应完整 `wireframe.variants` 变体、变体是否保留公共页面外壳且有非空当前 Tab 内容区；`sections` 是否绑定 `tabId`。
 - 页面级 Coding 闭环：每个页面 `codingGuide.pageContext.pageId` 是否等于页面 ID；每个页面是否至少有一个稳定 Coding item；Coding item 是否可追溯且无孤立项。
 - 线框图绘制质量闭环：`wireframe.ascii` 是否按模板绘制（过短或未覆盖模板必需区域会阻断）；regions 声明的内容性区域在 ascii 中是否有绘制痕迹（缺失给 warning）；HTML 生成前校验器拦截"只有几个字"的线框图。
+- 字段完整性闭环：需求/规范明确列出的字段（表格列、表单项、筛选项、详情描述字段、配置项）是否逐项落入对应区块的字段数组（tableFields/formFields/filterFields/cardFields 等）；未落位且无 excludedFields 排除原因的字段会被 RULE-36 阻断，不得为了简洁过滤或合并需求明确字段。
 
 ## 2. 禁止事项
 

@@ -62,7 +62,7 @@
         "pagination": ["IxPagination"],
         "footer": ["IxButton"]
       },
-      "footer": {"required": true, "alignment": "right", "buttonOrder": ["cancel", "confirm"]},
+      "footer": {"required": true, "alignment": "right", "buttonOrder": ["confirm", "cancel"]},
       "variants": {"required": false, "rule": ""}
     },
     "page-list-drawer": {
@@ -75,7 +75,7 @@
         "pagination": ["IxPagination"],
         "footer": ["IxButton"]
       },
-      "footer": {"required": true, "alignment": "right", "buttonOrder": ["cancel", "confirm"]},
+      "footer": {"required": true, "alignment": "right", "buttonOrder": ["confirm", "cancel"]},
       "variants": {"required": false, "rule": ""}
     },
     "page-detail-drilldown": {
@@ -97,7 +97,7 @@
         "shell": ["IxDrawer"],
         "object-summary": ["IxDescriptions"]
       },
-      "footer": {"required": true, "alignment": "right", "buttonOrder": ["close", "confirm"]},
+      "footer": {"required": true, "alignment": "right", "buttonOrder": ["close"]},
       "variants": {"required": false, "rule": ""}
     },
     "page-detail-log": {
@@ -119,7 +119,7 @@
         "form": ["IxForm", "IxFormItem"],
         "footer": ["IxButton"]
       },
-      "footer": {"required": true, "alignment": "left", "buttonOrder": ["cancel", "confirm"]},
+      "footer": {"required": true, "alignment": "left", "buttonOrder": ["confirm", "cancel"]},
       "variants": {"required": false, "rule": ""}
     },
     "page-form-stepper": {
@@ -143,7 +143,7 @@
         "form": ["IxForm", "IxFormItem"],
         "footer": ["IxButton"]
       },
-      "footer": {"required": true, "alignment": "right", "buttonOrder": ["cancel", "confirm"]},
+      "footer": {"required": true, "alignment": "right", "buttonOrder": ["confirm", "cancel"]},
       "variants": {"required": false, "rule": ""}
     },
     "page-form-drawer": {
@@ -155,7 +155,7 @@
         "form": ["IxForm", "IxFormItem"],
         "footer": ["IxButton"]
       },
-      "footer": {"required": true, "alignment": "right", "buttonOrder": ["cancel", "confirm"]},
+      "footer": {"required": true, "alignment": "right", "buttonOrder": ["confirm", "cancel"]},
       "variants": {"required": false, "rule": ""}
     },
     "page-dashboard": {

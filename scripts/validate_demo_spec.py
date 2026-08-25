@@ -66,6 +66,9 @@ RULES = [
     {"ruleId": "RULE-32", "errorCode": "WIREFRAME_ASCII_TOO_SHORT / WIREFRAME_ASCII_NOT_DRAWN", "name": "线框图绘制质量：ascii 必须按模板绘制，禁止只有几个字或一句话", "check": "check_wireframe_drawing_quality", "source": "references/01-workflow/03-demo-design-spec.md 设计闭环", "tests": "test_ascii_too_short_fails, test_ascii_not_drawn_fails"},
     {"ruleId": "RULE-33", "errorCode": "WIREFRAME_REGION_NOT_DRAWN", "name": "线框图双向一致性：regions 声明的内容性区块必须在 ascii 中有绘制痕迹", "check": "check_wireframe_region_drawn", "source": "references/01-workflow/03-demo-design-spec.md 设计闭环", "tests": "test_ascii_region_not_drawn_warns"},
     {"ruleId": "RULE-34", "errorCode": "WIREFRAME_ASCII_LABEL_LIST", "name": "线框图布局完整性：ascii 禁止区域标签罗列，必须绘制为完整页面布局字符画", "check": "check_wireframe_label_list", "source": "references/01-workflow/03-demo-design-spec.md 设计闭环", "tests": "test_wireframe_label_list_fails, test_wireframe_full_layout_passes"},
+    {"ruleId": "RULE-35", "errorCode": "CHILD_PAGE_NOT_FLATTENED", "name": "页面平铺闭环：children 只允许子容器 ID 引用，禁止内嵌完整页面设计对象；子容器必须作为 pages 数组独立元素", "check": "check_child_page_flattened", "source": "references/01-workflow/03-demo-design-spec.md 设计闭环", "tests": "test_child_page_not_flattened_fails, test_child_id_reference_passes"},
+    {"ruleId": "RULE-36", "errorCode": "REQUIRED_FIELD_MISSING", "name": "字段完整性闭环：需求/规范明确要求的字段（表格列、表单项、筛选项、详情描述字段等）必须落入对应字段数组或 excludedFields 排除声明", "check": "check_requirement_fields", "source": "references/01-workflow/01-output-templates.md 字段完整性", "tests": "test_requirement_field_missing_fails, test_requirement_field_all_covered_passes, test_requirement_field_excluded_passes"},
+    {"ruleId": "RULE-37", "errorCode": "FOOTER_ASCII_ORDER_MISMATCH", "name": "线框图按钮顺序：ascii 中按钮出现顺序必须与模板 buttonOrder 一致（主操作在左、次操作在右）", "check": "check_footer_ascii_order", "source": "references/01-workflow/03-demo-design-spec.md 底部操作区", "tests": "test_footer_ascii_order_mismatch_fails, test_footer_ascii_order_passes"},
 ]
 
 # 页面 type（中文）与标准模板的映射
@@ -200,9 +203,12 @@ def walk_text(obj):
 
 
 def _walk_pages(pages, base_path="$.pages"):
-    """递归展开 pages 及其 children，产出 (page, json_path) 序列（设计闭环用）。"""
+    """递归展开 pages 及其 children，产出 (page, json_path) 序列（设计闭环用）。
+    children 支持字符串 ID 引用（跳过）与 dict 页面对象（兼容旧数据，递归展开）。"""
     for i, page in enumerate(pages or []):
         path = f"{base_path}[{i}]"
+        if not isinstance(page, dict):
+            continue
         yield page, path
         yield from _walk_pages(page.get("children") or [], f"{path}.children")
 
@@ -848,6 +854,107 @@ class Validator:
                                f"{len(unclosed)} 个内容行无右竖线闭合、{len(sep_lines)} 个分隔行，形似每行一个'区域名：内容'",
                                fix="读取 Common Design 页面模板文档中该页面类型的模板结构与线框样式，继承模板样式并填入业务内容，禁止逐区域罗列标签")
 
+    def check_child_page_flattened(self):
+        """RULE-35 页面平铺闭环：children 只允许子容器 ID 引用（字符串），禁止内嵌任何页面对象；
+        子容器（弹窗/抽屉等）必须作为 pages 数组的独立元素，否则生成器不会渲染导致漏页。"""
+        for page in self.data.get("pages", []):
+            pid = page.get("id", "")
+            children = page.get("children")
+            if not children:
+                continue
+            path = f"$.pages[{self._idx(page)}].children"
+            if isinstance(children, dict):
+                self.add_error(pid, "CHILD_PAGE_NOT_FLATTENED", "error", path,
+                               "children 内嵌了完整页面设计对象，子容器必须在 pages 数组平铺",
+                               "children 只允许子容器 ID 引用（字符串）或空数组",
+                               "children 为对象，包含页面设计字段",
+                               fix="将该子容器提升为 pages 数组的独立页面对象（含 templateContract/wireframe/sections/codingGuide），父页面 children 只保留其 ID 引用")
+                continue
+            for child in children:
+                if isinstance(child, dict):
+                    self.add_error(pid, "CHILD_PAGE_NOT_FLATTENED", "error", path,
+                                   "children 内嵌了页面对象，子容器必须在 pages 数组平铺，children 只允许字符串 ID 引用",
+                                   "children 只允许子容器 ID 引用（字符串）或空数组",
+                                   f"children 元素为对象（{child.get('id') or '无id'}）",
+                                   fix="将该子容器提升为 pages 数组的独立页面对象（含 templateContract/wireframe/sections/codingGuide），父页面 children 只保留其 ID 引用（字符串）")
+
+    def check_requirement_fields(self):
+        """RULE-36 字段完整性闭环：需求/规范明确要求的字段必须逐项落入对应字段数组（表格列/表单项/筛选项/详情描述字段）或 excludedFields 排除声明。"""
+        for page in self.data.get("pages", []):
+            pid = page.get("id", "")
+            required = page.get("requirementFieldNames") or []
+            if not required:
+                continue
+            excluded = page.get("excludedFields") or {}
+            covered = set()
+            for section in self.page_sections(page):
+                for key in ("tableFields", "formFields", "cardFields", "fields", "filterFields", "detailFields"):
+                    for field in section.get(key) or []:
+                        if isinstance(field, dict) and field.get("name"):
+                            covered.add(str(field["name"]).strip())
+            for key in ("tableFields", "formFields", "filterFields"):
+                for field in page.get(key) or []:
+                    if isinstance(field, dict) and field.get("name"):
+                        covered.add(str(field["name"]).strip())
+            missing = []
+            for name in required:
+                n = str(name).strip()
+                if not n:
+                    continue
+                if n in covered or n in excluded:
+                    continue
+                if any(n in c or c in n for c in covered if len(c) >= 2 and len(n) >= 2):
+                    continue
+                missing.append(n)
+            if missing:
+                self.add_error(pid, "REQUIRED_FIELD_MISSING", "error",
+                               f"$.pages[{self._idx(page)}].requirementFieldNames",
+                               f"需求明确要求的字段未落入设计说明书：{'、'.join(missing)}",
+                               "需求/规范明确列出的每个字段都出现在对应区块的字段数组（表格列/表单项/筛选项/详情字段）中，或写入 excludedFields 并说明排除原因",
+                               f"缺失字段：{'、'.join(missing)}",
+                               fix="将缺失字段补充到对应区块的字段数组（tableFields/formFields/filterFields/cardFields/fields等），若该页面确实不展示则写入 excludedFields 并说明原因")
+
+    def check_footer_ascii_order(self):
+        """RULE-37 线框图按钮顺序：ascii 中底部按钮出现顺序必须与模板 buttonOrder 一致（主操作在左、次操作在右）。"""
+        button_keys = {
+            "previous": ["上一步"],
+            "next-or-complete": ["下一步", "完成"],
+            "cancel": ["取消"],
+            "confirm": ["确定", "确认", "保存"],
+            "close": ["关闭"],
+        }
+        for page in self.data.get("pages", []):
+            pid = page.get("id", "")
+            tid = self.page_template(page)
+            template = (self.registry.get("templates") or {}).get(tid) or {}
+            expected_order = (template.get("footer") or {}).get("buttonOrder") or []
+            if not expected_order:
+                continue
+            wf = self.page_wireframe(page)
+            if not isinstance(wf, dict):
+                continue
+            ascii_text = str(wf.get("ascii") or "")
+            if not ascii_text:
+                continue
+            pos = []
+            for kind in expected_order:
+                idx = -1
+                for key in button_keys.get(kind, []):
+                    i = ascii_text.find(key)
+                    if i != -1 and (idx == -1 or i < idx):
+                        idx = i
+                if idx != -1:
+                    pos.append((idx, kind))
+            pos.sort()
+            actual_order = [k for _, k in pos]
+            if actual_order != expected_order[:len(actual_order)]:
+                self.add_error(pid, "FOOTER_ASCII_ORDER_MISMATCH", "error",
+                               f"$.pages[{self._idx(page)}].wireframe.ascii",
+                               "线框图中底部按钮出现顺序与模板按钮顺序不一致",
+                               f"按 Common Design 模板顺序绘制底部按钮：{' → '.join(expected_order)}（主操作在左、次操作在右）",
+                               f"ascii 中出现顺序：{' → '.join(actual_order)}",
+                               fix="调整 ascii 线框图中按钮的绘制顺序，使主操作（确定/保存）在左、次操作（取消/关闭）在右，与模板 buttonOrder 一致")
+
     def check_coding_item_ids(self):
         for page in self.data.get("pages", []):
             pid = page.get("id", "")
@@ -1236,6 +1343,11 @@ class Validator:
         self.check_wireframe_drawing_quality()
         self.check_wireframe_region_drawn()
         self.check_wireframe_label_list()
+        # ---- 页面平铺闭环（RULE-35）：children 禁止内嵌完整页面设计对象 ----
+        self.check_child_page_flattened()
+        # ---- 字段完整性闭环（RULE-36）：需求明确字段必须落位或排除 ----
+        self.check_requirement_fields()
+        self.check_footer_ascii_order()
 
     def result(self):
         errors = [e for e in self.errors if e["severity"] == "error"]
