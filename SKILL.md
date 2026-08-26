@@ -1,5 +1,5 @@
 ---
-name: prd-design-code-2
+name: prd-design-code
 description: 将B端产品需求转化为符合产品设计规范的Demo设计说明与AI Coding实现；负责识别产品、装配Common Design并在可用时叠加对应Product Design，完成页面拆解、HTML设计规格、Coding计划和代码实现
 metadata:
   skill_type: workflow
@@ -29,7 +29,7 @@ metadata:
 - Common Design：优先识别声明`skill_type: common-design`的Skill，作为通用设计规则来源；若只有一个Common Design，直接使用。Common Design是进入正式页面设计阶段的必需依赖：未查询到Common Design，或查询到但无法成功读取其SKILL.md时，不得使用AI自身通用设计知识模拟Common Design；应停止进入正式页面设计，并提示缺少Common Design。读取Common Design时必须明确读取组件映射表和页面模板里的推荐组件，用于页面骨架、筛选区、表格字段、表单字段和反馈类组件映射。
 - Product Design：作为可选增强依赖。先识别当前需求所属产品或当前可确认的产品范围，再寻找`skill_type: product-design`且`product_id`与其一致的Skill；产品身份必须通过 Product Design 的 metadata、product_id 或 Resolver 结果确定，禁止仅通过Skill名称中是否出现XDR、SASE、DSP等缩写判断，也禁止在本 Skill 内容中硬编码具体产线或产品名称。未找到匹配Product Design属于正常执行状态，不阻断流程、不作为待确认问题，进入Common Design模式继续执行，并结合当前代码环境和AI补齐。只有产品身份会影响导航、业务规则或Product Design选择，且无法根据现有输入确定时，才进入待确认问题；发现多个可能匹配的Product Design且无法判断选择对象时，也进入待确认问题。
 - Product Design 组件映射处理：
-  - 若 Product Design 已提供业务组件映射，prd-design-code-2 应读取并纳入 Design Context。
+  - 若 Product Design 已提供业务组件映射，prd-design-code 应读取并纳入 Design Context。
   - 若 Product Design 未提供某组件映射，设计阶段使用语义级描述；Coding 阶段通过 Implementation Mapping Gate 核验真实组件，将真实路径、Props、Events 和调用方式记录到当前任务的映射结果中；不把这些仓库级实现细节永久写入本 Skill。
 - Resolver只决定设计知识来源，不负责具体页面设计；读取采用“索引优先、Reference按需”的方式：
   - Common Design：先读取SKILL.md及Design Capability Index / Reference Index；

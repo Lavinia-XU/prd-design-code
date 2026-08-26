@@ -13,7 +13,7 @@
 
 ## 1. 定位与边界
 
-本规范用于将已确认的页面设计转化为可执行的Demo Coding指导、Coding Plan和逐页开发任务。它属于`prd-design-code-2`的Workflow执行规则，不维护具体页面布局、交互模式、状态表现或通用组件使用规范。
+本规范用于将已确认的页面设计转化为可执行的Demo Coding指导、Coding Plan和逐页开发任务。它属于`prd-design-code`的Workflow执行规则，不维护具体页面布局、交互模式、状态表现或通用组件使用规范。
 
 页面类型、表格、表单、搜索筛选、操作确认、状态、术语和组件规范必须从已完成“查询 → SKILL.md读取 → metadata校验”的Common Design中按需读取；存在匹配Product Design时，再按Coverage叠加其产品规则。未实际读取的Design Skill或Reference不得被描述为设计依据。
 
