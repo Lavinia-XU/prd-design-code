@@ -69,6 +69,7 @@ RULES = [
     {"ruleId": "RULE-35", "errorCode": "CHILD_PAGE_NOT_FLATTENED", "name": "页面平铺闭环：children 只允许子容器 ID 引用，禁止内嵌完整页面设计对象；子容器必须作为 pages 数组独立元素", "check": "check_child_page_flattened", "source": "references/01-workflow/03-demo-design-spec.md 设计闭环", "tests": "test_child_page_not_flattened_fails, test_child_id_reference_passes"},
     {"ruleId": "RULE-36", "errorCode": "REQUIRED_FIELD_MISSING", "name": "字段完整性闭环：需求/规范明确要求的字段（表格列、表单项、筛选项、详情描述字段等）必须落入对应字段数组或 excludedFields 排除声明", "check": "check_requirement_fields", "source": "references/01-workflow/01-output-templates.md 字段完整性", "tests": "test_requirement_field_missing_fails, test_requirement_field_all_covered_passes, test_requirement_field_excluded_passes"},
     {"ruleId": "RULE-37", "errorCode": "FOOTER_ASCII_ORDER_MISMATCH", "name": "线框图按钮顺序：ascii 中按钮出现顺序必须与模板 buttonOrder 一致（主操作在左、次操作在右）", "check": "check_footer_ascii_order", "source": "references/01-workflow/03-demo-design-spec.md 底部操作区", "tests": "test_footer_ascii_order_mismatch_fails, test_footer_ascii_order_passes"},
+    {"ruleId": "RULE-38", "errorCode": "TABLE_DETAIL_FIELD_MISMATCH", "name": "表格与详情字段一致性：表格页展示的每个字段必须在对应详情容器中存在（Common Design 表格与详情字段一致规则兜底）", "check": "check_table_detail_field_consistency", "source": "Common Design 表格与详情字段一致规则 / references/01-workflow/05-quality-and-rules.md", "tests": "test_table_detail_field_mismatch_fails, test_table_detail_field_consistent_passes, test_table_detail_without_detail_skips, test_table_detail_via_children_fails"},
 ]
 
 # 页面 type（中文）与标准模板的映射
@@ -914,6 +915,96 @@ class Validator:
                                f"缺失字段：{'、'.join(missing)}",
                                fix="将缺失字段补充到对应区块的字段数组（tableFields/formFields/filterFields/cardFields/fields等），若该页面确实不展示则写入 excludedFields 并说明原因")
 
+    def _table_field_names(self, page):
+        """表格页展示的字段名（sections 中 tableFields + 页面级 tableFields）。"""
+        names = []
+        for section in self.page_sections(page):
+            for field in section.get("tableFields") or []:
+                if isinstance(field, dict) and field.get("name"):
+                    names.append(str(field["name"]).strip())
+        for field in page.get("tableFields") or []:
+            if isinstance(field, dict) and field.get("name"):
+                names.append(str(field["name"]).strip())
+        return names
+
+    def _detail_field_names(self, page):
+        """详情容器页展示的字段名（sections 与页面级各字段数组：详情描述字段/卡片/表格/表单等）。"""
+        names = set()
+        keys = ("tableFields", "formFields", "cardFields", "fields", "filterFields", "detailFields")
+        for section in self.page_sections(page):
+            for key in keys:
+                for field in section.get(key) or []:
+                    if isinstance(field, dict) and field.get("name"):
+                        names.add(str(field["name"]).strip())
+        for key in keys:
+            for field in page.get(key) or []:
+                if isinstance(field, dict) and field.get("name"):
+                    names.add(str(field["name"]).strip())
+        return names
+
+    def _linked_detail_ids(self, page, by_id):
+        """表格页关联的详情容器 ID：open-container 操作指向详情类容器 + children 挂载的详情容器。"""
+        candidates = []
+        for op in page.get("operations") or []:
+            if op.get("action") == "open-container" and op.get("targetPageId"):
+                candidates.append(str(op["targetPageId"]))
+        for child in page.get("children") or []:
+            if isinstance(child, str):
+                candidates.append(child)
+            elif isinstance(child, dict) and child.get("id"):
+                candidates.append(str(child["id"]))
+        ids = []
+        for cid in candidates:
+            target = by_id.get(cid)
+            if target is None or cid in ids:
+                continue
+            tid = self.page_template(target)
+            ptype = str(target.get("type", ""))
+            if (tid and tid.startswith("page-detail")) or "详情" in ptype:
+                ids.append(cid)
+        return ids
+
+    def check_table_detail_field_consistency(self):
+        """RULE-38 表格与详情字段一致性：表格页展示的字段必须在对应详情容器中存在。
+
+        场景：表格展示部分字段、详情抽屉展示完整字段。Common Design 已明确
+        “表格展示的字段与详情抽屉字段保持一致”规则，本校验兜底：表格页 tableFields
+        中每个字段都必须在关联详情容器（open-container 目标或 children 挂载的详情类容器）
+        的字段数组（detailFields/cardFields/fields/tableFields 等）中找到对应项。
+        表格无详情容器时不校验（非“表格有详情”场景）。
+        """
+        by_id = {str(p.get("id", "")): p for p, _ in self.all_pages if p.get("id")}
+        for page, path in self.all_pages:
+            pid = str(page.get("id", ""))
+            table_fields = self._table_field_names(page)
+            if not table_fields:
+                continue
+            detail_ids = self._linked_detail_ids(page, by_id)
+            if not detail_ids:
+                continue
+            detail_names = set()
+            for did in detail_ids:
+                detail_names |= self._detail_field_names(by_id[did])
+            norm_detail = {norm(n) for n in detail_names if norm(n)}
+            missing = []
+            for name in table_fields:
+                n = norm(name)
+                if not n:
+                    continue
+                if n in norm_detail:
+                    continue
+                if any(len(n) >= 2 and len(nd) >= 2 and (n in nd or nd in n) for nd in norm_detail):
+                    continue
+                missing.append(name)
+            if missing:
+                self.add_error(pid, "TABLE_DETAIL_FIELD_MISMATCH", "error",
+                               f"{path}.sections.tableFields",
+                               f"表格展示的字段与详情不一致，以下表格字段在详情容器（{'、'.join(detail_ids)}）中不存在：{'、'.join(missing)}",
+                               "表格展示的每个字段都能在对应详情容器中找到（Common Design 表格与详情字段一致规则）",
+                               f"缺失字段：{'、'.join(missing)}",
+                               source_ref="Common Design 表格与详情字段一致规则",
+                               fix="将表格中展示的字段补充到对应详情容器的字段数组（detailFields/cardFields/fields/tableFields），或从表格移除该字段")
+
     def check_footer_ascii_order(self):
         """RULE-37 线框图按钮顺序：ascii 中底部按钮出现顺序必须与模板 buttonOrder 一致（主操作在左、次操作在右）。"""
         button_keys = {
@@ -1347,6 +1438,8 @@ class Validator:
         self.check_child_page_flattened()
         # ---- 字段完整性闭环（RULE-36）：需求明确字段必须落位或排除 ----
         self.check_requirement_fields()
+        # ---- 表格与详情字段一致性闭环（RULE-38）：表格展示字段必须在对应详情容器中存在 ----
+        self.check_table_detail_field_consistency()
         self.check_footer_ascii_order()
 
     def result(self):

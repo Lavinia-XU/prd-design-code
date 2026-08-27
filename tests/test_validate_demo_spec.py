@@ -224,6 +224,68 @@ def tabbed_page(tabs, variants, section_tab_ids=None, **overrides):
     return page
 
 
+def drawer_detail_page(**overrides):
+    """合法抽屉详情页（page-detail-drawer），用于表格与详情字段一致性（RULE-38）测试。"""
+    page = base_page()
+    page.update({
+        "id": "D01",
+        "name": "策略详情",
+        "type": "抽屉详情页",
+        "templateContract": {
+            "templateId": "page-detail-drawer",
+            "baseTemplateId": "",
+            "navigationType": "",
+            "templateSource": "common-design/references/03-design-template/01-page-types.md#page-detail-drawer",
+            "requiredRegions": ["drawer-shell", "drawer-header", "object-summary", "detail-content", "drawer-footer"],
+            "optionalRegions": [],
+            "regionOrder": ["drawer-shell", "drawer-header", "object-summary", "detail-content", "drawer-footer"],
+            "footerContract": {"required": True, "alignment": "right", "buttonOrder": ["close"]},
+            "componentContract": {"shell": ["IxDrawer"], "object-summary": ["IxDescriptions"]},
+            "wireframeContract": {},
+            "override": {"enabled": False, "source": "", "reason": "", "affectedRules": []},
+        },
+        "wireframe": {
+            "templateId": "page-detail-drawer",
+            "navigationType": "",
+            "layoutSource": "Common Design page-detail-drawer",
+            "shell": {
+                "globalNavigation": False,
+                "titleBar": {"required": True, "type": "drawer", "component": ""},
+                "contentContainer": {"required": True, "type": "drawer-content"},
+                "footer": {"required": True, "alignment": "right", "height": "56px"},
+            },
+            "regions": [
+                {"id": "drawer-shell", "templateRegion": "drawer-shell", "position": "top", "required": True, "content": "抽屉外壳"},
+                {"id": "drawer-header", "templateRegion": "drawer-header", "position": "top", "required": True, "content": "抽屉标题与关闭入口"},
+                {"id": "object-summary", "templateRegion": "object-summary", "position": "content-top", "required": True, "content": "对象摘要"},
+                {"id": "detail-content", "templateRegion": "detail-content", "position": "content", "required": True, "content": "详情描述列表"},
+                {"id": "drawer-footer", "templateRegion": "drawer-footer", "position": "bottom", "required": True, "content": "底部操作：关闭"},
+            ],
+            "variants": [],
+            "ascii": "抽屉标题/对象摘要/详情描述列表/底部关闭",
+        },
+        "sections": [
+            {"title": "基本信息", "type": "detail",
+             "detailFields": [{"name": "策略名称", "iduxComponent": "IxText"},
+                              {"name": "描述", "iduxComponent": "IxText"}]},
+        ],
+        "footerActions": [],
+        "codingGuide": {
+            "pageItems": [
+                {
+                    "id": "D01-C01", "scope": "drawer-detail", "name": "详情抽屉", "mode": "reuse-framework",
+                    "mappingRef": "M03", "mappingStatus": "verified",
+                    "target": {"path": "src/pages/policy/detail-drawer.vue", "export": "PolicyDetailDrawer"},
+                    "requirements": ["保留抽屉外壳、对象摘要、详情描述列表结构"],
+                    "acceptanceCriteria": ["抽屉结构一致"],
+                }
+            ]
+        },
+    })
+    page.update(overrides)
+    return page
+
+
 class TestValidateDemoSpec(unittest.TestCase):
 
     def test_valid_table_basic_passes(self):
@@ -864,6 +926,56 @@ class TestValidateDemoSpec(unittest.TestCase):
         page["wireframe"]["ascii"] = "弹窗标题/表单主体/确定/取消"
         code, report = run_validator(make_spec([page]), strict=True)
         self.assertFalse(any(e.get("errorCode") == "FOOTER_ASCII_ORDER_MISMATCH" for e in report.get("errors", [])))
+
+    # ---- 表格与详情字段一致性（RULE-38）----
+    def test_table_detail_field_mismatch_fails(self):
+        """表格字段在详情容器中缺失 -> RULE-38 TABLE_DETAIL_FIELD_MISMATCH 阻断。"""
+        table = base_page()
+        table["operations"] = [
+            {"id": "OP01", "action": "open-container", "label": "查看详情", "trigger": "行内操作",
+             "targetPageId": "D01", "targetContainerType": "drawer", "confirm": False},
+        ]
+        detail = drawer_detail_page()
+        detail["sections"] = [
+            {"title": "基本信息", "type": "detail",
+             "detailFields": [{"name": "描述", "iduxComponent": "IxText"}]},
+        ]  # 详情缺少表格字段“策略名称”
+        code, report = run_validator(make_spec([table, detail]), strict=True)
+        self.assertEqual(code, 1)
+        self.assertTrue(any(e.get("errorCode") == "TABLE_DETAIL_FIELD_MISMATCH" for e in report.get("errors", [])))
+
+    def test_table_detail_field_consistent_passes(self):
+        """表格字段全部能在详情容器中找到 -> RULE-38 通过。"""
+        table = base_page()
+        table["operations"] = [
+            {"id": "OP01", "action": "open-container", "label": "查看详情", "trigger": "行内操作",
+             "targetPageId": "D01", "targetContainerType": "drawer", "confirm": False},
+        ]
+        detail = drawer_detail_page()  # 详情包含表格字段“策略名称”
+        code, report = run_validator(make_spec([table, detail]), strict=True)
+        self.assertEqual(code, 0)
+        self.assertTrue(report.get("valid"))
+        self.assertFalse(any(e.get("errorCode") == "TABLE_DETAIL_FIELD_MISMATCH" for e in report.get("errors", [])))
+
+    def test_table_detail_without_detail_skips(self):
+        """表格页没有关联详情容器（非“表格有详情”场景）-> RULE-38 不校验。"""
+        code, report = run_validator(make_spec([base_page()]), strict=True)
+        self.assertEqual(code, 0)
+        self.assertTrue(report.get("valid"))
+        self.assertFalse(any(e.get("errorCode") == "TABLE_DETAIL_FIELD_MISMATCH" for e in report.get("errors", [])))
+
+    def test_table_detail_via_children_fails(self):
+        """详情容器通过 children 字符串 ID 挂载时同样校验 -> 字段缺失阻断。"""
+        table = base_page()
+        table["children"] = ["D01"]
+        detail = drawer_detail_page()
+        detail["sections"] = [
+            {"title": "基本信息", "type": "detail",
+             "detailFields": [{"name": "描述", "iduxComponent": "IxText"}]},
+        ]  # 详情缺少表格字段“策略名称”
+        code, report = run_validator(make_spec([table, detail]), strict=True)
+        self.assertEqual(code, 1)
+        self.assertTrue(any(e.get("errorCode") == "TABLE_DETAIL_FIELD_MISMATCH" for e in report.get("errors", [])))
 
 
 if __name__ == "__main__":

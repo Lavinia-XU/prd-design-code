@@ -575,7 +575,7 @@ HTML说明书标题必须是“XX需求设计说明书”。HTML采用“Markdow
 
 ## 11. 设计闭环自动校验
 
-设计闭环用于防止已确认的页面、容器、操作与 Tab 在设计说明书生成过程中丢失，并在 HTML 生成前阻断结构不完整的说明书。校验由 `scripts/validate_demo_spec.py` 执行（RULE-28 ~ RULE-31），生成器 `scripts/generate_demo_spec_html.py` 在 strict 模式下遇到 error 即阻断生成。
+设计闭环用于防止已确认的页面、容器、操作与 Tab 在设计说明书生成过程中丢失，并在 HTML 生成前阻断结构不完整的说明书。校验由 `scripts/validate_demo_spec.py` 执行（RULE-28 ~ RULE-38，含字段完整性 RULE-36 与表格详情字段一致性 RULE-38），生成器 `scripts/generate_demo_spec_html.py` 在 strict 模式下遇到 error 即阻断生成。
 
 ### 11.1 页面清单闭环（RULE-28）
 
@@ -713,3 +713,21 @@ HTML说明书标题必须是“XX需求设计说明书”。HTML采用“Markdow
 │ 上一页 1 2 3 下一页            │
 └──────────────────────────────┘
 ```
+
+### 11.7 表格与详情字段一致性闭环（RULE-38）
+
+表格展示部分字段、详情展示完整字段时，表格字段与详情字段必须保持一致：表格页 `tableFields` 中展示的每个字段，都必须在对应详情容器页的字段数组（`detailFields`/`cardFields`/`fields`/`tableFields` 等）中存在对应项，防止"表格有、详情没有"或表格与详情字段对不上的情况。Common Design 已明确"表格展示的字段与详情抽屉字段保持一致"规则，本校验作为自动兜底。
+
+- 详情容器识别：表格页 `operations` 中 `action=open-container` 且目标为详情类容器（页面 type 含"详情"或 templateId 以 `page-detail` 开头），以及 `children` 挂载的详情容器；表格页无详情容器时不校验（非"表格有详情"场景）。
+- 字段匹配：字段名去除空格/下划线/括号等符号后精确匹配，或一方包含另一方（双方长度 >= 2）视为对应。
+- 校验项（error 阻断）：
+  - 表格展示的字段在关联详情容器中不存在 -> TABLE_DETAIL_FIELD_MISMATCH（error，RULE-38）
+
+```json
+"operations": [
+  {"id": "OP01", "action": "open-container", "label": "查看详情", "trigger": "行内操作",
+   "targetPageId": "D01", "targetContainerType": "drawer", "confirm": false}
+]
+```
+
+表格页 `tableFields` 中展示的每个字段必须能在 D01 的 `detailFields`/`cardFields`/`fields`/`tableFields` 中找到对应；缺失时阻断 HTML 生成。

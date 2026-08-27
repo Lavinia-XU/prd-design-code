@@ -198,6 +198,7 @@
 | RULE-34 | 线框图布局完整性：ascii 禁止区域标签罗列（每行一个"区域名：内容"），必须绘制为完整页面布局字符画 | 03-demo-design-spec.md 11.6 线框图绘制质量闭环 | test_wireframe_label_list_fails / test_wireframe_full_layout_passes |
 | RULE-35 | 子容器平铺：children 中禁止内嵌完整页面对象，弹窗/抽屉必须作为 pages 数组独立元素，children 仅允许字符串 ID 引用 | 03-demo-design-spec.md 设计闭环自动校验 | test_child_page_not_flattened_fails / test_child_string_ref_passes |
 | RULE-36 | 字段完整性闭环：需求/规范明确要求的字段（表格列、表单项、筛选项、详情字段、配置项）必须逐项落入对应字段数组，未落位且无 excludedFields 排除原因的字段阻断生成 | 01-output-templates.md 字段完整性 / 03-demo-design-spec.md 设计闭环自动校验 | test_requirement_field_missing_fails / test_requirement_field_all_covered_passes / test_requirement_field_excluded_passes |
+| RULE-38 | 表格与详情字段一致性：表格有详情容器时，表格页 tableFields 展示的每个字段必须在对应详情容器字段数组（detailFields/cardFields/fields/tableFields 等）中存在对应项（Common Design 表格与详情字段一致规则兜底） | Common Design 表格与详情字段一致规则 / 03-demo-design-spec.md 11.7 表格与详情字段一致性闭环 | test_table_detail_field_mismatch_fails / test_table_detail_field_consistent_passes / test_table_detail_without_detail_skips / test_table_detail_via_children_fails |
 
 新增校验规则的固定流程：
 
@@ -218,6 +219,7 @@
 - 页面级 Coding 闭环：每个页面 `codingGuide.pageContext.pageId` 是否等于页面 ID；每个页面是否至少有一个稳定 Coding item；Coding item 是否可追溯且无孤立项。
 - 线框图绘制质量闭环：`wireframe.ascii` 是否按模板绘制（过短或未覆盖模板必需区域会阻断）；regions 声明的内容性区域在 ascii 中是否有绘制痕迹（缺失给 warning）；HTML 生成前校验器拦截"只有几个字"的线框图。
 - 字段完整性闭环：需求/规范明确列出的字段（表格列、表单项、筛选项、详情描述字段、配置项）是否逐项落入对应区块的字段数组（tableFields/formFields/filterFields/cardFields 等）；未落位且无 excludedFields 排除原因的字段会被 RULE-36 阻断，不得为了简洁过滤或合并需求明确字段。
+- 表格与详情字段一致性闭环：表格有详情容器（open-container 指向详情类容器或 children 挂载的详情容器）时，表格页 tableFields 展示的每个字段是否都能在对应详情容器字段数组（detailFields/cardFields/fields/tableFields 等）中找到对应；缺失会被 RULE-38 阻断，表格无详情容器时不校验。
 
 ## 2. 禁止事项
 
