@@ -119,12 +119,12 @@ metadata:
 
 ## Step 2 产品识别 + Design Context
 
-- 识别当前需求所属产品、业务域、页面所属模块和可能命中的设计能力。
+- 识别当前需求所属产品、业务域、页面所属模块和可能命中的设计能力；对照 [Design Skill Resolver](references/01-workflow/00-design-skill-resolver.md) 的能力识别参考框架（Theme 主题框架 / Template 页面模板 / Feature 业务功能 / Pattern 交互模式 / Component 组件映射）自查防漏：命中才读，未命中的层记录原因但不产生读取，禁止将五层当作全量读取清单。
 - 调用Design Skill Resolver识别Common Design；若存在匹配Product Design，则同时识别并读取。
 - 先读取Common Design的SKILL.md和Reference Index；若存在匹配Product Design，再读取其SKILL.md、Coverage和Reference Index；按需求命中的能力选择Reference，不递归读取所有Reference。
 - Common Design解析成功后即可进入设计知识装配；必须读取组件映射表和页面模板里的推荐组件，形成当前任务的组件映射基线；若存在匹配Product Design，解析其Coverage中的`inherit / extend / override`关系，并读取产品设计里的特殊组件，明确每项设计能力和组件能力的最终知识来源。
 - 未找到匹配Product Design时，使用Common Design、PRD、用户输入和当前代码环境继续设计；对于页面组织、通用交互、展示字段等可合理推导的设计细节允许AI补齐，但真实业务事实、权限、状态流转、数量限制、业务规则等不可从现有输入确认的信息不得自行编造，必要时进入待确认问题。
-- 形成Design Context并在内部用于后续设计；Design Context 必须包含代码可用状态（verified 已核验 / partial 部分可用 / unavailable 不可用）；仅当产品无法确定、已发现的Product Design存在选择歧义、关键Reference缺失或规则冲突未明确时，进入待确认问题或停止页面拆解。
+- 形成Design Context并在内部用于后续设计；Design Context 必须包含代码可用状态（verified 已核验 / partial 部分可用 / unavailable 不可用）、命中能力清单（每项能力及其知识来源）和未命中说明（未命中的层记录“未命中/不适用”及原因）；仅当产品无法确定、已发现的Product Design存在选择歧义、关键Reference缺失或规则冲突未明确时，进入待确认问题或停止页面拆解。
 
 ## Step 3 核心用户、场景、目标
 
@@ -135,14 +135,14 @@ metadata:
 
 ## Step 4 页面导航 + 页面总览
 
-- 读取 [Demo设计规格](references/01-workflow/03-demo-design-spec.md)，基于Design Context拆解页面导航和页面总览。
+- 读取 [Demo页面拆解](references/01-workflow/03-demo-page-decomposition.md)，基于Design Context拆解页面导航和页面总览。
 - 先判断功能属于独立业务旅程、菜单级能力、Tab级能力，还是依附于已有页面的轻量入口。
 - 输出页面总览前，必须先为每个页面形成内部“页面类型决策表”，记录业务场景、PRD/用户约束、Product Design是否覆盖、Common Design候选模板、已验证代码证据、最终页面类型、决策理由和未决问题；页面类型不确定且会影响用户旅程或页面结构时，进入待确认问题。
 - 页面总览表按导航层级列出一级菜单、二级菜单、三级菜单、Tab页面、详情页、弹窗、抽屉和必要下钻页面。
 - 每个页面必须说明页面ID、页面名称、页面类型、导航路径、打开方式、页面目标、主要内容、关键操作和初步复用方向；初步复用方向仅可写复用已有页面、参考已有框架、新增页面或待详细设计确认。详细开发方式、具体组件和实现差异必须在HTML页面级AI Coding指导中确定。
 - 页面类型必须使用已读取Common Design、匹配Product Design或已验证代码中真实存在的标准类型名称，页面总览表输出时必须使用 Common Design 中文页面类型名（如概览表格页、抽屉表单页），禁止输出模板 ID（如 page-table-overview）；业务描述不得直接充当页面类型。标准类型无法覆盖时，标记为“自定义页面类型”，并说明继承的基础模板、扩展内容和差异原因。
-- 页面总览表即已确认页面/容器清单（manifest）：总览中出现的每个页面、弹窗、抽屉都必须作为 demo-spec.json `pages` 数组的独立页面对象完整呈现，页面 ID、名称、类型、容器类型保持一致；`children` 仅用于表达归属关系，只允许写子容器 ID（字符串），禁止在 `children` 中内嵌完整页面设计对象（生成器按 `pages` 数组逐项渲染，children 不展开；内嵌对象会被校验器以 RULE-35 阻断）。弹窗/抽屉必须通过 `operations` 的 open-container 操作或页面内容引用建立入口，禁止出现总览已确认但最终产物缺失的容器（详见 [Demo设计规格 - 设计闭环自动校验](references/01-workflow/03-demo-design-spec.md) 第 11 章）。
-- 需求或规范中明确列出的字段（表格列、表单项、筛选项、详情描述字段、配置项等）必须逐项落入页面对象对应区块的字段数组（tableFields/formFields/filterFields/cardFields等），不得过滤、合并或仅简述；页面对象写入 requirementFieldNames（需求/规范明确要求的字段名数组）与 excludedFields（字段名到排除原因的映射），缺失的需求字段会被校验器以 RULE-36 阻断（详见 [Demo设计规格 - 设计闭环自动校验](references/01-workflow/03-demo-design-spec.md) 第 11 章）。
+- 页面总览表即已确认页面/容器清单（manifest）：总览中出现的每个页面、弹窗、抽屉都必须作为 demo-spec.json `pages` 数组的独立页面对象完整呈现，页面 ID、名称、类型、容器类型保持一致；`children` 仅用于表达归属关系，只允许写子容器 ID（字符串），禁止在 `children` 中内嵌完整页面设计对象（生成器按 `pages` 数组逐项渲染，children 不展开；内嵌对象会被校验器以 RULE-35 阻断）。弹窗/抽屉必须通过 `operations` 的 open-container 操作或页面内容引用建立入口，禁止出现总览已确认但最终产物缺失的容器（详见 [Demo输出规格 - 设计闭环自动校验](references/01-workflow/04-demo-output-spec.md) 第 11 章）。
+- 需求或规范中明确列出的字段（表格列、表单项、筛选项、详情描述字段、配置项等）必须逐项落入页面对象对应区块的字段数组（tableFields/formFields/filterFields/cardFields等），不得过滤、合并或仅简述；页面对象写入 requirementFieldNames（需求/规范明确要求的字段名数组）与 excludedFields（字段名到排除原因的映射），缺失的需求字段会被校验器以 RULE-36 阻断（详见 [Demo输出规格 - 设计闭环自动校验](references/01-workflow/04-demo-output-spec.md) 第 11 章）。
 - 对话框主体只输出到页面总览表，禁止继续展开逐页设计、交互细节、Mock数据或完整AI Coding提示词。
 
 ## Step 5 待确认
@@ -161,13 +161,14 @@ metadata:
 - HTML中的每项页面结构、内容区块、交互规则、状态规则、术语、组件选择和底部操作区布局，都必须可追溯到已读取的Common Design / Product Design Reference、PRD、用户确认、已验证代码或明确标记的AI补齐；不得仅因已识别Common Design就默认其所有规则已被使用。
 - 绘制HTML线框图前，必须先选择已读取的页面类型模板，再从该页面类型对应的设计库模板文档读取模板结构与线框样式：匹配Product Design声明了页面模板时按Product Design定义的页面模板（按 00-design-skill-resolver 的覆盖关系），否则按Common Design页面模板文档（如 references/03-design-template/01-page-types.md 的对应模板条目）；线框图参考只来自这两个设计库，本Skill不保存任何页面模板线框图参考。不得根据页面名称或业务内容自由拼装结构。线框图必须继承所选页面模板的布局结构，并继承其中的底部操作区位置、按钮顺序和布局规则。底部操作区属于页面模板结构硬约束；除非PRD、用户确认或匹配Product Design明确覆盖，不得将同一操作区按钮拆分为左右两侧，也不得自行混用页面、抽屉、弹窗等不同容器的按钮位置规则。
 - 生成HTML前，对每页执行“页面类型 → 模板结构 → layout → 页面骨架组件映射 → 内容区块 → 筛选/表格/表单字段组件映射 → wireframe → 组件与交互 → 页面级AI Coding指导”一致性校验；任一环节与已选模板不一致时，先修正页面设计或明确覆盖依据，不得直接生成HTML。
-- 生成HTML前必须运行设计闭环自动校验（`python scripts/validate_demo_spec.py --input demo-spec.json --template-registry references/02-template-contracts/common-design-template-registry.json --strict`）：页面清单闭环（RULE-28）、操作目标闭环（RULE-29）、Tab 变体闭环（RULE-30，仅多内容 Tab 页面强制）、页面级 Coding 闭环（RULE-31）、表格与详情字段一致性闭环（RULE-38，表格有详情容器时表格展示字段必须能在详情中找到）；error 级问题禁止生成HTML，warning 级不阻断，info 级仅提示待核验。
+- 生成HTML前，将每页设计决策的知识来源登记到页面内`codingGuide.designReferences`（`source`取`common-design`/`product-design`/`code`/`ai-fill`，`ref`为来源标识）；声称引用 Product Design 或 Common Design 的决策必须有对应登记，无来源的决策须标记为 `ai-fill`，不得伪装成 Design Skill 规则（校验器以 RULE-40 提示，warning 级）。
+- 生成HTML前必须运行设计闭环自动校验（`python scripts/validate_demo_spec.py --input demo-spec.json --template-registry references/02-template-contracts/common-design-template-registry.json --strict`）：页面清单闭环（RULE-28）、操作目标闭环（RULE-29）、Tab 变体闭环（RULE-30，仅多内容 Tab 页面强制）、页面级 Coding 闭环（RULE-31）、表格与详情字段一致性闭环（RULE-38，表格有详情容器时表格展示字段必须能在详情中找到）、表格标签使用约束闭环（RULE-39，同一表格内标签不超过 5 个，深色/icon/点状标签各仅允许 1 次、浅色标签最多 2 次，中性描述字段不占用标签配额）；error 级问题禁止生成HTML，warning 级不阻断，info 级仅提示待核验。
 - 线框图必须绘制为严格继承所选模板布局结构的完整页面布局字符画：wireframe.ascii 按所选页面模板的标题栏、内容区、底部操作区等必需区域的位置关系与容器嵌套绘制，只允许替换文案并完善内容区中的具体内容，禁止调整模板布局结构、区块顺序、容器形态或新增模板不存在的区域；禁止用一句话或几个字代替线框图，禁止把线框图画成"每行一个区域名：内容"的标签罗列样式。ascii 过短或未覆盖模板必需区域会被校验器以 RULE-32 阻断，regions 声明的内容性区域在 ascii 中无绘制痕迹会以 RULE-33 提示，区域标签罗列会以 RULE-34 阻断。
 - 设计说明书中的复用对象表达必须与代码可用状态一致：
   - `verified`：复用对象尽可能精确到真实页面文件、组件名称、文件路径、关键 Props / Events / Slots 或使用方式、复用类型（直接引用 / 复用框架 / 组件复用）、相对已有实现的新增字段与交互视觉差异、必须保留的页面结构和业务组件。
   - `partial` 或 `unavailable`：只描述设计语义和组件能力（如标准列表容器、业务策略列表框架、业务对象展示组件、标准状态切换组件、标准高风险确认链路），禁止虚构具体文件路径、组件路径、Props、Events 或调用方式；真实代码对象统一标记为“Coding 阶段待核验”。
-- 生成页面级AI Coding指导前，读取 [Coding指导与执行规范](references/01-workflow/04-interaction-coding-guidelines.md) 中的Coding输出规则，并基于Design Context确定具体组件、复用对象和开发方式。
-- 页面级AI Coding指导必须使用结构化开发项：HTML 展示“编号、开发对象、开发方式、复用与代码映射、实现要求、完成判定”六列表格，JSON 使用固定字段（id/scope/name/mode/mappingRef/mappingStatus/target/sourceRefs/dependencies/requirements/states/mockContract/acceptanceCriteria/prohibitedChanges），页面 codingGuide 固定为 pageContext + implementationRules + items + mockContract + stateContract + acceptanceCriteria + outOfScope，字段规范详见 [Coding指导与执行规范](references/01-workflow/04-interaction-coding-guidelines.md)；开发项须有稳定 ID，Coding Plan、Coding Execution 和 Verification 使用相同 ID 追踪，不得改名、合并或遗漏。不重复罗列字段级组件明细，但必须写明组件使用规则：严格按照页面区块、表格字段、表单字段中标注的组件名称开发，不得用原生HTML或其他组件替代；页面模板中已指定的标题栏、筛选区、表格、分页、弹窗、抽屉等组件，应按模板组件骨架实现；字段表中标注为标签、链接按钮、状态徽标、下拉选择、日期范围、开关等组件的内容，必须使用对应iDux或公司封装组件实现；未标注组件名称的普通文本/数字字段，可按常规文本渲染，如实现时发现交互含义，应回查Common Design组件映射表补齐。涉及已有页面、模块或业务组件时明确复用对象。
+- 生成页面级AI Coding指导前，读取 [Coding指导与执行规范](references/01-workflow/05-interaction-coding-guidelines.md) 中的Coding输出规则，并基于Design Context确定具体组件、复用对象和开发方式。
+- 页面级AI Coding指导必须使用结构化开发项：HTML 展示“编号、开发对象、开发方式、复用与代码映射、实现要求、完成判定”六列表格，JSON 使用固定字段（id/scope/name/mode/mappingRef/mappingStatus/target/sourceRefs/dependencies/requirements/states/mockContract/acceptanceCriteria/prohibitedChanges），页面 codingGuide 固定为 pageContext + implementationRules + items + mockContract + stateContract + acceptanceCriteria + outOfScope，字段规范详见 [Coding指导与执行规范](references/01-workflow/05-interaction-coding-guidelines.md)；开发项须有稳定 ID，Coding Plan、Coding Execution 和 Verification 使用相同 ID 追踪，不得改名、合并或遗漏。不重复罗列字段级组件明细，但必须写明组件使用规则：严格按照页面区块、表格字段、表单字段中标注的组件名称开发，不得用原生HTML或其他组件替代；页面模板中已指定的标题栏、筛选区、表格、分页、弹窗、抽屉等组件，应按模板组件骨架实现；字段表中标注为标签、链接按钮、状态徽标、下拉选择、日期范围、开关等组件的内容，必须使用对应iDux或公司封装组件实现；未标注组件名称的普通文本/数字字段，可按常规文本渲染，如实现时发现交互含义，应回查Common Design组件映射表补齐。涉及已有页面、模块或业务组件时明确复用对象。
 - 将逐页设计说明、页面内容区块、交互逻辑、状态规则、Mock数据和AI Coding指导整理为结构化JSON。
 - 调用脚本生成HTML：`python scripts/generate_demo_spec_html.py --input ./demo-spec.json --output ./demo-design-spec.html --template-registry references/02-template-contracts/common-design-template-registry.json`。生成器默认 strict 模式，生成前自动执行模板契约校验，校验失败禁止写入 HTML；仅兼容旧 JSON 时使用 `--allow-legacy-wireframe`。
 - HTML默认直接输出到项目根目录，禁止写入已有文件夹；仅当用户明确指定其他位置时才使用指定路径。
@@ -228,7 +229,7 @@ metadata:
 
 ## Step 9 Verification
 
-- 读取 [质量自检机制与规则](references/01-workflow/05-quality-and-rules.md)，执行输出边界、Design Context、页面总览、HTML说明书、Coding Plan和Coding结果检查。
+- 读取 [质量自检机制与规则](references/01-workflow/06-quality-and-rules.md)，执行输出边界、Design Context、页面总览、HTML说明书、Coding Plan和Coding结果检查。
 - 验证HTML说明书是否生成在项目根目录、页面总览与HTML逐页说明是否一致、页面结构与Design Context是否一致。
 - 验证Coding实现是否落实HTML页面级开发项、复用策略、页面结构、关键字段、操作、状态、边界和Mock数据。
 - 验证视觉基线：属于已有业务主题或已有页面体系的需求，必须对照真实参考页面做视觉回归，覆盖页面容器、页面标题层级、Tab 结构、筛选区、工具栏、表格容器、表格字段展示、状态组件、操作列、按钮位置和顺序、间距边界和空状态、高风险确认链路；功能行为、组件复用、页面结构和视觉基线回归均通过后，才可宣称 Demo 完整交付。
@@ -268,10 +269,10 @@ metadata:
 每个页面必须绑定标准页面模板，结构化 wireframe 是唯一可信来源；未通过模板契约校验不得生成 HTML，不得进入 Implementation Mapping Gate 和 Coding。
 
 - 页面类型与模板绑定：
-  - 每个页面必须绑定标准页面模板 templateId，禁止只写业务自定义名称。允许的 templateId：page-table-basic、page-table-tree、page-table-overview、page-table-overview-tree、page-list-modal、page-list-drawer、page-detail-drilldown、page-detail-drawer、page-detail-log、page-form-config、page-form-stepper、page-form-modal、page-form-drawer、page-dashboard。
+  - 每个页面必须绑定标准页面模板 templateId，禁止只写业务自定义名称。允许的 templateId 清单与模板定义以模板注册表为准（见 [common-design-template-registry.json](references/02-template-contracts/common-design-template-registry.json)），禁止凭 AI 经验新增或修改模板结构。
   - 需求无法匹配标准模板时，使用 `templateId: custom` + `baseTemplateId`（某个标准模板）+ `customReason` + `override.source`（用户确认 / PRD / Product Design / 已有代码）+ `override.affectedRules`（overrideJustification，说明覆盖了哪些模板约束）。不能仅通过 type 字段写“下钻配置表单页”这类未注册页面类型。
 - 导航类型：每个需要区分导航的页面必须填写 navigationType（left-shaped / l-shaped）；没有明确依据时默认 left-shaped，但必须写 navigationTypeStatus: assumed、navigationTypeSource: AI 补齐、navigationTypeNote: 当前默认依据。
-- 模板契约 templateContract：每个页面必须填写，至少包含 templateId、baseTemplateId、navigationType、templateSource、requiredRegions、optionalRegions、regionOrder、footerContract、componentContract、wireframeContract、override（enabled/source/reason/affectedRules）。字段规范与示例见 [HTML输出模板](references/01-workflow/01-output-templates.md) 与 [HTML逐页设计说明](references/01-workflow/03-demo-design-spec.md)。
+- 模板契约 templateContract：每个页面必须填写，至少包含 templateId、baseTemplateId、navigationType、templateSource、requiredRegions、optionalRegions、regionOrder、footerContract、componentContract、wireframeContract、override（enabled/source/reason/affectedRules）。字段规范与示例见 [HTML输出模板](references/01-workflow/01-output-templates.md) 与 [HTML逐页设计说明](references/01-workflow/04-demo-output-spec.md)。
 - 闭环要求：页面类型、模板结构、layout、sections、wireframe、footerActions、组件映射、codingGuide 必须形成闭环。禁止以下情况：页面 type 与 templateId 不一致；基础表格页没有 Toolbar/Table/Pagination；弹窗列表页没有 Modal 外壳、关闭入口和列表主体；抽屉列表页没有 Drawer 外壳、对象上下文、Toolbar、Table；步骤条配置页没有 Stepper；多步骤页面只有一张总线框图；存在 footerActions 但 wireframe 没有底部操作区；wireframe 出现的区块没有 sections 或 templateContract 依据；sections 声明的必需区块没有出现在 wireframe；footer 对齐与模板不一致且无 override 记录。
 - 生成门禁：HTML 生成前自动执行 [validate_demo_spec.py](scripts/validate_demo_spec.py) 模板契约校验；校验失败禁止写入 HTML；validationStatus 非 passed 时不得进入 Implementation Mapping Gate，wireframe 结构校验失败时不得输出 Coding Plan。校验规则与错误码由校验脚本输出，模板注册表见 [common-design-template-registry.json](references/02-template-contracts/common-design-template-registry.json)。
 - legacy 兼容：纯字符串 wireframe 只允许作为 legacy 输入，必须进入兼容模式警告；strict 模式下不得生成 HTML，`--allow-legacy-wireframe` 仅用于兼容旧 JSON，且 HTML 顶部必须显示“本说明书使用旧版自由文本线框，未完成模板契约校验，不得作为 Coding 基线”。
@@ -309,15 +310,16 @@ metadata:
 # 本 Skill 自有资源
 
 - HTML generator：见 [scripts/generate_demo_spec_html.py](scripts/generate_demo_spec_html.py)，读取结构化Demo设计JSON并生成HTML说明书；参数为`--input`、`--output`和`--template-registry`，默认 strict 模式，生成前自动执行模板契约校验，校验失败禁止写入 HTML；`--allow-legacy-wireframe` 仅用于兼容旧 JSON。
-- Template validator：见 [scripts/validate_demo_spec.py](scripts/validate_demo_spec.py)，校验模板契约与线框结构（25 项规则），输出结构化 JSON 错误与修复建议；参数为`--input`、`--template-registry`和`--strict`，校验失败返回非 0 exit code。
+- Template validator：见 [scripts/validate_demo_spec.py](scripts/validate_demo_spec.py)，校验模板契约与线框结构（40 项规则），输出结构化 JSON 错误与修复建议；参数为`--input`、`--template-registry`和`--strict`，校验失败返回非 0 exit code。
 - Template registry：见 [references/02-template-contracts/common-design-template-registry.json](references/02-template-contracts/common-design-template-registry.json)，14 个标准页面模板的必需区域、必需组件、footer 契约与变体规则，规则来源于 Common Design。
 - HTML template：见 [assets/demo-spec-template.html](assets/demo-spec-template.html)，HTML说明书模板，由脚本读取并注入设计数据。
 - workflow/output schemas：
   - [references/01-workflow/00-design-skill-resolver.md](references/01-workflow/00-design-skill-resolver.md)：识别、选择和装配Common Design与Product Design。
   - [references/01-workflow/01-output-templates.md](references/01-workflow/01-output-templates.md)：对话框输出、HTML JSON和Coding计划模板。
   - [references/01-workflow/02-experience-goal-writing.md](references/01-workflow/02-experience-goal-writing.md)：已保留为历史参考，不再用于HTML输出生成。
-  - [references/01-workflow/03-demo-design-spec.md](references/01-workflow/03-demo-design-spec.md)：页面拆解、页面总览和HTML逐页设计规格。
-  - [references/01-workflow/04-interaction-coding-guidelines.md](references/01-workflow/04-interaction-coding-guidelines.md)：代码环境核验、Implementation Mapping Gate、Mock数据、Coding指导和逐页执行规则。
-  - [references/01-workflow/05-quality-and-rules.md](references/01-workflow/05-quality-and-rules.md)：质量自检、禁止事项和Coding执行检查。
+  - [references/01-workflow/03-demo-page-decomposition.md](references/01-workflow/03-demo-page-decomposition.md)：页面拆解、页面总览和Demo范围过滤。
+  - [references/01-workflow/04-demo-output-spec.md](references/01-workflow/04-demo-output-spec.md)：HTML逐页设计说明、说明书结构和设计闭环自动校验。
+  - [references/01-workflow/05-interaction-coding-guidelines.md](references/01-workflow/05-interaction-coding-guidelines.md)：代码环境核验、Implementation Mapping Gate、Mock数据、Coding指导和逐页执行规则。
+  - [references/01-workflow/06-quality-and-rules.md](references/01-workflow/06-quality-and-rules.md)：质量自检、禁止事项和Coding执行检查。
   - [references/05-examples/demo-design-examples.md](references/05-examples/demo-design-examples.md)：HTML说明书输入JSON与页面说明示例。
-- Tests：见 [tests/test_validate_demo_spec.py](tests/test_validate_demo_spec.py)，模板契约校验器的 15 个回归用例（合法页面通过、缺分页/标题栏/关闭入口、footer 对齐、Stepper 组件、步骤变体、custom override、未注册类型、section 一致性、partial 路径、legacy 警告），运行方式 `python3 -m unittest discover -s tests`。
+- Tests：见 [tests/test_validate_demo_spec.py](tests/test_validate_demo_spec.py)，模板契约校验器的 58 个回归用例（合法页面通过、缺分页/标题栏/关闭入口、footer 对齐、Stepper 组件、步骤变体、custom override、未注册类型、section 一致性、partial 路径、legacy 警告、设计闭环、表格详情一致性、表格标签使用约束、设计依据可追溯），运行方式 `python3 -m unittest discover -s tests`。

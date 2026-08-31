@@ -1,0 +1,365 @@
+# Demo输出规格
+
+## 目录
+
+1. [HTML逐页设计说明](#8-html逐页设计说明)
+2. [HTML说明书结构](#9-html说明书结构)
+3. [自检规则](#10-自检规则)
+4. [设计闭环自动校验](#11-设计闭环自动校验)
+
+## 8. HTML逐页设计说明
+
+### 8.1 逐页内容描述
+
+每个页面按以下结构写入HTML说明书。HTML视觉层级必须明确：页面标题使用24号；页面目标、页面基础信息、页面内容区块、底部操作、页面级AI Coding指导等一级小标题使用18号；页面内容区块名称使用16号；字段、按钮/可点击操作、展示形式与取值范围、交互反馈、校验边界等三级小标题使用14号；正文、列表、表格内容使用12号。
+
+```markdown
+## 页面ID-页面名称
+
+## 页面类型
+
+<填写页面类型，如基础表格页、抽屉表单页、自定义页面类型等>
+
+## 页面内容区块
+
+先整体说明页面内不同内容区块之间的位置关系，并遵守该页面类型已定义好的方位位置，不要自行组合新的上下左右关系，避免把页面结构弄混。若页面内有明显白色卡片承载内容，按卡片划分；若没有明显卡片，按业务内容模块划分。若页面有多个内容区块，按先上后下、先左后右逐个描述区块，让读者通过区块描述即可看出页面设计结构关系。
+
+实际输出时应根据页面结构完整列出所有区块，不限于表格区和表单区；常见区块还包括概览区、详情信息区、图表区、操作区、步骤条、提示说明区等。区块划分要确保业务完整性，不要为了套格式把同一个业务对象的工具栏、筛选和列表拆散。以下仅为区块描述格式示例，不代表页面只能包含这些区块。生成HTML的JSON中，表格字段必须使用`tableFields`数组，表单字段必须使用`formFields`数组，脚本会将二者渲染为HTML表格；不要把表格字段或表单字段只写成普通`fields`文本列表。需求或规范中明确列出的字段（表格列、表单项、筛选项、详情描述字段、配置项等）必须逐项落入对应区块的字段数组，不得过滤、合并或仅简述；页面对象写入`requirementFieldNames`（需求/规范明确要求的字段名数组）与`excludedFields`（字段名到排除原因的映射），校验器以 RULE-36 检查需求字段是否全部落位，缺失字段阻断生成。
+
+### Wireframe / ASCII 线框图
+
+每个页面在页面内容区块之后，必须补充`Wireframe / ASCII 线框图`，用于表达页面整体结构、主要区块、展示元素和操作区域。线框图不是视觉稿，不要求像素级精确，但必须让AI Coding能看懂页面容器关系、布局层级、关键字段、状态信息和按钮位置。若页面存在多个内容切换Tab，必须按每个Tab分别绘制对应内容区块的线框图，不要只画一个总图；如果页面同时存在步骤条等内容切换控件，也按同样方式处理，按每个步骤分别绘制对应内容区块的线框图。若是标题栏里的分层Tabs页标题，Tab仍然必须和标题同一行展示，不能下沉到内容区。
+
+生成HTML的JSON中，wireframe必须使用结构化对象作为唯一可信来源，不能只写自由文本；纯字符串wireframe仅作为legacy输入，进入兼容模式警告，strict模式下禁止生成HTML。结构化wireframe至少包含：
+
+- `templateId`、`navigationType`、`layoutSource`：绑定标准页面模板与导航类型；
+- `shell`：`globalNavigation`、`titleBar`（required/type/component）、`contentContainer`、`footer`（required/alignment/height）等页面外壳属性；
+- `regions`：区域数组，每项包含`id`、`templateRegion`（对应模板必需区域）、`position`、`required`、`component`、`content`；
+- `variants`：多步骤或Tab页面必须输出主结构图和每个步骤/Tab一张完整变体图，每张变体包含`preserveRegions`（保留公共外壳区域）与`changedRegions`（变化区域）及`ascii`。
+
+每个页面必须同时填写`templateContract`（templateId/baseTemplateId/navigationType/templateSource/requiredRegions/optionalRegions/regionOrder/footerContract/componentContract/wireframeContract/override），与结构化wireframe形成闭环；页面type、templateId、layout、sections、wireframe、footerActions、componentContract和codingGuide必须一致，禁止出现模板结构与线框结构冲突。模板注册表见references/02-template-contracts/common-design-template-registry.json，生成HTML前由scripts/validate_demo_spec.py自动校验，校验失败阻断HTML生成。
+
+HTML说明书中的线框图部分只展示对确认页面结构有用的内容：先展示完整ASCII线框图，线框图下方再补充线框说明（wireframeNote）、线框图结构依据和线框变体；线框变体必须包含对应步骤/Tab的`ascii`线框图才展示，缺少线框图的变体不输出。模板契约（templateId、navigationType、templateSource、模板必需区域、区域顺序、底部操作契约）不属于面向用户的线框图展示内容，移入页面级AI Coding指导作为AI Coding的结构化输入；`regions`数组仅用于模板契约校验与区域一致性检查，不渲染为表格展示；区域对应的组件和内容由页面内容区块（sections）承载。
+
+线框图布局必须参考已读取的Common Design页面模板，以及用户资料、Product Design或已有代码中明确的页面类型结构；仅当已读取规则没有覆盖时，才根据页面目标选择常见B端页面骨架，再补充标题栏、表格工具栏等通用部件，最后填入当前业务元素。底部操作区的位置、按钮顺序和布局必须继承当前页面类型或容器形态对应的Common Design模板；除非PRD、用户确认或匹配Product Design明确覆盖，不得将同一操作区按钮拆分为左右两侧，也不得混用不同容器的布局规则。按钮顺序、必需区域、区域顺序、容器形态等具体设计规则一律以已读取的 Common Design 页面模板及模板注册表为准（见 references/02-template-contracts/common-design-template-registry.json），本 Skill 不保存按钮顺序与模板结构细节。
+
+线框图必须包含：
+
+- 顶部标题栏：页面标题、状态徽标、页面级快捷操作；标题栏必须根据页面进入方式和页面层级选择基础标题栏、下钻页标题栏或分层 Tabs 页标题。
+- 中间内容区：筛选区、工具栏、表单分区、表格字段、状态展示、描述列表、概览卡片、提示说明、主要按钮。
+- 底部按钮区：保存、取消、提交、下一步、关闭等页面级操作；若为页面级sticky操作栏，需要与内容区分离。
+- 必要的层级说明：尤其是Tab、卡片、弹窗、抽屉、下钻页、底部固定栏等容易混淆的容器关系。
+
+生成HTML的JSON中，页面级线框图写入页面对象的`wireframe`字段；如需解释容器关系，写入`wireframeNote`字段。脚本会将其渲染为HTML里的“Wireframe / ASCII 线框图”卡片。
+
+#### 示例：Tab配置表单页线框图
+
+层级说明：该示例按配置表单页结构绘制，标题栏采用分层Tabs页标题；页面标题、纵向分割线和Tab在同一行展示；Tab下方内容区为独立容器，内容区不嵌套在Tab容器内；表单配置内容区与底部按钮区属于同一个配置表单页主容器，底部按钮区高度约56px且按钮左对齐，默认按钮示例为[保存]。
+
+```text
+┌──────────┬──────────────────────────────────────────────────────────────┐
+│          │ 分层 Tabs 页标题（同一行，紧贴左侧导航）                      │
+│          │ LDAP 企业身份 │ 连接配置   组织树   人员导入                  │
+│  左侧    ├──────────────────────────────────────────────────────────────┤
+│  深色    │ ↓ 间距 8px                                                   │
+│  导航    │ ┌────────────────────────────────────────────────────────┐  │
+│          │ │ 表单配置内容区                                         │  │
+│          │ │ (左右 20px + 卡片 12px = 视觉总间距 32px)              │  │
+│          │ │                                                        │  │
+│          │ │ 分区标题# 服务器配置                                   │  │
+│          │ │ 配置名称      [________________________](带字数计数)   │  │
+│          │ │ 服务器地址    [________________________ *]             │  │
+│          │ │ 端口          [____]  连接协议 LDAPv3● LDAPv2○ LDAPSv3○│  │
+│          │ │ 企业目录根范围 [________________________________ *]    │  │
+│          │ │ 用户查询范围   [________________________________ *]    │  │
+│          │ │ OU 查询范围    [________________________________ *]    │  │
+│          │ │ 连接账号      [________________________ *]             │  │
+│          │ │ 连接凭证      [•••••••••] [重置]                       │  │
+│          │ │               [测试连接]                               │  │
+│          │ │                                                        │  │
+│          │ │ ↓ 间距 8px                                             │  │
+│          │ │ 分区标题# 同步设置                                     │  │
+│          │ │ 自动全量同步周期 [ 6 ] 小时                            │  │
+│          │ │ 启用/禁用        [开关]                                │  │
+│          │ │ 最近一次同步     ●成功 2026-08-05 14:32:00 [查看原因]  │  │
+│          │ │ 手动同步         [手动同步]（同步中显示进度）           │  │
+│          │ │                                                        │  │
+│          │ │ 说明：平台仅支持一个外部身份源 / LDAP只读不回写         │  │
+│          │ ├────────────────────────────────────────────────────────┤  │
+│          │ │ 底部按钮区 (56px，按钮左对齐)                          │  │
+│          │ │ [保存]                                                 │  │
+│          │ └────────────────────────────────────────────────────────┘  │
+│          │         ← 12px →                              ← 12px →     │
+└──────────┴──────────────────────────────────────────────────────────────┘
+```
+
+### 示例：表格区
+
+先说明表格区在页面中的相对位置、承载对象和主要操作，再按以下格式描述表格。表格上方的按钮区、筛选区和搜索区通常属于表格工具栏 toolbar，不单独拆成多个区块，而是跟随表格作为一个表格区描述。表格不仅要说明字段，还要说明每个字段的展示形式；默认展示形式为普通文本，也可以根据字段含义使用单标签、多标签、数字、可点击文本、可点击数字、图标+文字等形式。
+
+- 表格工具栏：<按从左到右顺序说明按钮、筛选项和搜索项，如新增、批量删除、状态下拉单选、时间范围选择器、关键字输入框>
+- 筛选区说明：先判断筛选方式来源，再判断筛选组件类型并描述筛选字段。
+  - 如果Product Design中已经明确该业务、该页面或相似模块使用的筛选方式，必须以Product Design为准，不得自行改成其他筛选方式。
+  - 如果Product Design没有说明，再根据页面复杂度判断使用平铺筛选或高级搜索框。
+  - 平铺筛选：适合筛选项较少或需要高频操作的列表页；在筛选区组件说明中统一列出各独立组件名称（组件名称与用法以已读取 Common Design 组件映射表为准），筛选字段表格不再单独标注iDux组件名称，但需说明选项范围、默认值和匹配方式。
+  - 高级搜索框：适合筛选项较多、不适合全部平铺展示的列表页；必须说明使用一个高级搜索组件（组件名以已读取 Common Design 组件映射表为准）承载整体筛选；内部字段不展开控件外观，筛选字段表格不再单独标注iDux组件名称，只需说明每个字段的筛选方式，例如单选、多选、模糊搜索、精确搜索、时间范围筛选。
+  - 当需求没有明确筛选条件时，优先根据表格字段语义自动补充查询区；不要因为需求未提到筛选条件就默认不设置筛选。自动补齐的筛选项控件类型以已读取 Common Design 组件映射表为准，本 Skill 不枚举组件映射规则；若字段不足以明确判断，至少补齐名称搜索、状态筛选和时间筛选。对于这类自动补齐的筛选项，需要在页面说明和页面级Coding指导里写明补齐的字段、控件类型和补齐依据，避免被误认为遗漏。若筛选项较多或需要组合管理，应在页面说明中直接使用“高级搜索框”整体描述，不要逐项展开内部筛选字段。
+- 表格字段：
+
+| 字段名称 | 展示形式 | 组件名称 | 说明 |
+| -------- | -------- | -------- | ---- |
+| <字段1> | 普通文本 |  | <普通文本或数字可不写组件名称；说明字段含义、取值范围、是否可排序或空值展示规则> |
+| <字段2> | 单标签/多标签 | <组件名，以已读取 Common Design 组件映射表为准> | <状态值范围、标签颜色、状态含义或标签数量规则，例如在线/离线/告警> |
+| <字段3> | 可点击文本/可点击数字 | <组件名，以已读取 Common Design 组件映射表为准> | <点击后跳转详情、打开抽屉或打开明细列表，并说明打开容器和页面反馈> |
+| <字段4> | 图标+文字 | <对应图标/徽标组件> | <图标表达含义、文字内容和悬浮说明> |
+
+- 行内操作：<说明操作项顺序和点击结果，如查看打开详情抽屉、编辑打开表单抽屉、删除弹出二次确认；同时说明成功/失败反馈、数据变化和状态联动>
+- 搜索与筛选说明：<先说明筛选方式来源；若Product Design已明确筛选方式，必须写明“沿用Product Design的筛选方式”；若为平铺筛选，在筛选区组件说明中统一列出各独立组件名称，筛选字段表格写清选项范围、默认值和匹配方式；若为高级搜索框，写清每个字段的筛选方式，例如单选、多选、模糊搜索、精确搜索或时间范围筛选；如果页面需要生成HTML说明书，左侧目录只用于锚点定位，不控制页面内容加载或隐藏，该要求属于HTML生成规范，不属于产品Coding实现规范>
+- 分页与排序：<说明是否分页、默认排序字段、可排序字段和排序后页面反馈>
+- 状态与边界说明：<说明空状态、搜索无结果、加载态、异常态、无权限态、长文本、0值、空字段等在该表格区如何展示>
+
+### 示例：表单区
+
+先说明表单区在页面中的相对位置、承载目标和字段分组，再按以下格式逐项描述字段。表单类区块必须说明每个字段对应的组件，不能只列字段名称。
+
+| 字段名称 | 组件类型 | iDux组件名称 | 必填 | 默认值 | 选项/规则 | 提示信息或联动关系 |
+| -------- | -------- | ------------ | ---- | ------ | --------- | ------------------ |
+| <字段1> | 输入框/文本域 | <组件名，以已读取 Common Design 组件映射表为准> | 是/否 | <默认值> | <长度、格式或校验规则> | <占位提示、错误提示、提交失败反馈或说明文案> |
+| <字段2> | 单选框/复选框/下拉单选/下拉多选 | <组件名，以已读取 Common Design 组件映射表为准> | 是/否 | <默认选项> | <具体选项；如支持下拉搜索，说明可搜索对象和匹配方式> | <选中后是否出现子配置项、影响其他字段或改变可选范围> |
+| <字段3> | 开关/日期选择器/数字输入框/人员选择器/单选卡片 | <组件名，以已读取 Common Design 组件映射表为准> | 是/否 | <默认值> | <取值范围、候选来源、状态值或可选值> | <联动关系、子配置面板、禁用条件或辅助说明> |
+
+## 底部操作
+
+如果有底部按钮，说明按钮文案、用途和点击反馈；提交类按钮需要说明校验规则、提交中状态、成功反馈、失败反馈和数据变化；取消或关闭按钮需要说明是否触发未保存离开确认。如果没有底部按钮，可以不输出本小节。
+
+## 页面级AI Coding指导
+
+<页面级AI Coding指导开头必须先输出该页面的模板契约（templateId、navigationType、templateSource、模板必需区域、区域顺序、底部操作契约），作为AI Coding必须继承的模板结构硬约束；随后以开发项为单位输出，使用“编号、开发对象、开发方式、复用与代码映射、实现要求、完成判定”六列表格；开发项必须使用固定JSON结构（id/scope/name/mode/mappingRef/mappingStatus/target/requirements/acceptanceCriteria等），页面codingGuide固定为pageContext+implementationRules+items+mockContract+stateContract+acceptanceCriteria+outOfScope，详细字段规范见Coding指导与执行规范。若该页面有单独实现要求，写组件、Mock数据、状态更新和复用代码建议。总结性AI Coding指导放在HTML总览页。页面级AI Coding指导必须引用页面内容区块说明中的交互、状态值、筛选范围和表单选项，不另起一套规则。>
+
+如果页面内容区块中简要使用了Product Design或已有代码中的功能点实现，需要在页面级AI Coding指导中补充关联说明，说明命中的设计依据、在当前页面中的使用位置、复用对象、开发方式和编码注意点。页面级AI Coding指导优先从Product Design、业务设计文档或业务相关输入中查找页面、菜单模块、公共组件和功能链路的映射关系，再决定复用对象与开发方式。不要把业务设计文档全文复制进页面内容区；页面内容区只写必要入口、触发效果和展示/校验规则，详细编码指引放在页面级AI Coding指导中。
+```
+
+## 9. HTML说明书结构
+
+HTML说明书标题必须是“XX需求设计说明书”。HTML采用“Markdown源文 + 预览视图”双模式：Markdown源文包含完整设计说明书，所有总览和页面内容默认全部展开；左侧目录只负责锚点定位，不做点击后才加载页面，不隐藏页面主体内容。页面提供“源文/预览”切换按钮，预览视图仅用于人类审阅。
+
+左侧目录只包含：总览和页面目录。禁止在HTML目录中放待确认问题、独立的交互与逻辑规则页或独立的Coding指导页。
+
+页面目录必须按页面层级结构展示，而不是扁平罗列；页面名称必须带页面ID，格式为`页面ID-页面名称`。例如：
+
+```text
+- 总览
+- P001-防火墙策略管理
+  - P002-新增防火墙策略
+- P003-防火墙规则组
+  - P004-新增防火墙规则组
+    - P005-新增防火墙规则
+```
+
+右侧内容规则：
+
+- 点击“总览”：展示需求概括、导航结构、页面总览表和总览AI Coding指导。
+- 点击具体页面：以一列结构展示页面目标、页面基础信息、页面内容区块、底部操作和页面级AI Coding指导；页面类型不要作为标题旁标签展示，必须与页面布局放在同一个“页面基础信息”区域，导航位置必须在页面基础信息中用“一级导航、二级导航、三级导航、Tab页面”表格展示。
+- 交互与逻辑规则必须整合到对应页面的内容区块说明中：属于P001的搜索筛选、排序分页、状态值、空状态和列表操作写在P001的表格区或概览区说明中；属于新增弹窗的表单校验、下拉选项、提交反馈和二次确认写在新增弹窗的表单区或底部操作说明中。禁止在页面内再单独生成“页面内关键交互”或“页面交互与逻辑规则”章节。
+- Coding指导按层级放置：总览AI Coding指导写全局复用策略、全局Mock数据、全局编码约束和页面开发顺序；页面级AI Coding指导开头输出模板契约（templateId/templateSource/模板必需区域/区域顺序/底部操作契约），随后写单个页面的开发项编码指导表、页面级Mock数据要求和页面级补充说明。
+
+## 10. 自检规则
+
+- 对话框主体是否只输出到页面总览表，之后只给待确认问题、HTML文件路径和简短说明。
+- Demo范围是否过滤掉线下流程、外部系统、技术实现和商业背景。
+- 用户提到已有模块、参考模块或当前存在Demo代码环境时，是否读取相关代码作为页面拆解、交互说明和Coding指导输入。
+- 待确认问题是否控制在10个以内，且每个问题包含影响范围和当前默认假设。
+- 页面总览表中的页面ID、页面名称、页面类型（Common Design 中文名）和HTML逐页说明是否一致。
+- HTML中每个页面是否包含页面区块、字段展示、按钮、可点击操作和点击结果。
+- HTML中搜索、筛选、重置、分页、排序是否已整合到对应页面的表格区、工具栏或相关内容区块说明中。
+- HTML中新增、编辑、删除、处置、启用、禁用等操作是否已整合到对应页面的区块说明或底部操作中，并写清校验、反馈和状态变化。
+- HTML中高影响操作是否有二次确认。
+- HTML中空状态、加载态、异常态、无权限态和极端数据是否覆盖。
+- HTML中Mock数据是否覆盖主要状态和边界情况。
+- HTML说明书是否包含标题、左侧目录、总览页和按页面层级组织的逐页内容；是否没有把待确认问题、全局交互规则页或独立Coding指导页放入HTML目录。
+- 代码可用状态是否标记并写入 Design Context；`partial` / `unavailable` 状态下是否未虚构真实代码对象，语义级对象是否标记“Coding 阶段待核验”。
+- 属于已有业务主题或页面体系时，是否已把真实参考页面作为视觉基线并写入 Design Context 和页面总览。
+- 每个页面是否已绑定标准 templateId（或 custom 模板且含 baseTemplateId、customReason、overrideSource、overrideJustification），并填写 templateContract；是否使用了未注册页面类型名称；页面 type、templateId、layout、sections、wireframe、footerActions、componentContract、codingGuide 是否形成闭环。
+- 结构化 wireframe 是否作为唯一可信来源（templateId/navigationType/shell/regions/variants 完整）；多步骤或 Tab 页面是否包含主结构图和每个步骤/Tab 一张完整变体图，变体是否保留公共页面外壳；footerActions 对齐与按钮顺序是否与模板契约一致或已有 override 记录；纯字符串 wireframe 是否已进入 legacy 警告。
+
+## 11. 设计闭环自动校验
+
+设计闭环用于防止已确认的页面、容器、操作与 Tab 在设计说明书生成过程中丢失，并在 HTML 生成前阻断结构不完整的说明书。校验由 `scripts/validate_demo_spec.py` 执行（RULE-28 ~ RULE-39，含字段完整性 RULE-36、表格详情字段一致性 RULE-38 与表格标签使用约束 RULE-39），生成器 `scripts/generate_demo_spec_html.py` 在 strict 模式下遇到 error 即阻断生成。
+
+### 11.1 页面清单闭环（RULE-28）
+
+- `overview.pageOverview` 是已确认页面/容器清单（manifest），每项可声明 `containerType`（page/modal/drawer）。
+- 页面对象必须位于 `pages` 顶层，每个页面、弹窗、抽屉都是 `pages` 数组的独立元素；`children` 仅用于表达归属关系，只允许写子容器 ID（字符串），禁止在 `children` 中内嵌完整页面设计对象（内嵌对象会被 RULE-35 阻断）；校验展开全部 `pages` 元素与 `pageOverview` 对比。
+- 页面对象可通过 `containerType` 显式声明容器类型；未声明时按 templateId 推断（含 `modal` 为弹窗、含 `drawer` 为抽屉、其余为页面）。
+- 校验项（error 阻断 / warning 提示）：
+  - 已确认页面/容器在 pages 缺失 -> MANIFEST_PAGE_MISSING（error）
+  - pages 存在总览未列出的页面 -> MANIFEST_EXTRA_PAGE（error）
+  - 页面总览 ID 重复 -> MANIFEST_DUPLICATE（error）
+  - 同 ID 的 name / type / containerType 不一致 -> MANIFEST_METADATA_MISMATCH（error）
+  - 弹窗/抽屉容器没有任何入口（无 open-container 操作引用且无文本引用）-> ORPHAN_CONTAINER（已确认容器 error，未确认容器 warning）
+  - 需求/规范明确列出的字段（requirementFieldNames）未落入对应区块字段数组（tableFields/formFields/filterFields/cardFields 等）且无 excludedFields 排除原因 -> REQUIRED_FIELD_MISSING（error，RULE-36）
+
+```json
+"overview": {
+  "pageOverview": [
+    {"id": "P01", "name": "策略列表", "type": "基础表格页", "containerType": "page"}
+  ]
+}
+```
+
+### 11.2 操作目标闭环（RULE-29）
+
+- 页面级 `operations` 数组声明结构化操作，`action` 区分：`open-container`、`confirm`、`download`、`refresh`、`delete`、`batch-delete`、`disable`、`enable`、`revoke`、`submit`、`navigate`、`close`、`other`。
+- `open-container` 必须声明 `targetPageId` 与 `targetContainerType`；目标页面必须存在且容器类型匹配。
+- `delete` / `batch-delete` / `disable` / `enable` / `revoke` 等高风险操作必须 `confirm: true` 并附 `confirmConfig`。
+- 校验项（error 阻断 / warning 提示 / info 说明）：
+  - open-container 缺 targetPageId 或目标页面不存在 -> OPERATION_TARGET_MISSING（error）
+  - targetContainerType 与目标页面实际容器类型不一致 -> OPERATION_CONTAINER_TYPE_MISMATCH（error）
+  - 高风险操作缺少二次确认 -> OPERATION_CONFIRM_MISSING（error）
+  - 未知 action -> OPERATION_ACTION_UNKNOWN（warning）
+  - action 为 other -> OPERATION_ACTION_OTHER（info，需人工核验）
+
+```json
+"operations": [
+  {"id": "OP01", "action": "open-container", "label": "批量编辑主机资产", "trigger": "工具栏按钮",
+   "targetPageId": "P02", "targetContainerType": "modal", "confirm": false},
+  {"id": "OP02", "action": "delete", "label": "删除", "trigger": "行内操作", "confirm": true,
+   "confirmConfig": {"title": "确认删除该策略？", "level": "danger"}}
+]
+```
+
+### 11.3 Tab 变体闭环（RULE-30，条件式）
+
+- 仅当页面显式声明 `tabs` 且数量 >= 2 时强制 Tab 变体闭环；单内容 Tab 页面或普通详情页仍可使用单张 wireframe。
+- 页面级 `tabs` 数组：每项 `tabId` 唯一、`name` 为 Tab 名。
+- `wireframe.variants` 每项通过 `tabId` 关联 Tab；数量必须与 tabs 一致，每个 Tab 有对应 variant，不允许孤立 variant。
+- 每个 variant 必须保留公共页面外壳（preserveRegions 包含 title-bar / drawer-shell / modal-shell / object-summary / tab-bar / footer 等外壳区域），并有非空 `changedRegions` 与足够长度的 ascii 线框图，禁止只有空壳或简单文本。
+- sections 通过 `tabId` 绑定所属 Tab，保证 sections、tabs、variants、wireframe.regions 可互相追踪。
+- 校验项（error 阻断 / warning 提示）：
+  - tabId 缺失 -> TABS_ID_MISSING（error）
+  - tabId 重复 -> TABS_ID_DUPLICATE（error）
+  - variants 数量与 tabs 不一致 -> TABS_VARIANT_COUNT_MISMATCH（error）
+  - Tab 无对应 variant -> TABS_VARIANT_MISSING（error）
+  - variant.tabId 不存在于 tabs -> TABS_ORPHAN_VARIANT（error）
+  - variant 缺少公共页面外壳 -> TABS_VARIANT_NO_SHELL（error）
+  - variant 缺少当前 Tab 内容区 -> TABS_VARIANT_NO_CONTENT（error）
+  - section 绑定不存在的 tabId -> TABS_SECTION_INVALID（error）
+  - 多 Tab 页面 section 未绑定 tabId -> TABS_SECTION_UNBOUND（warning）
+
+```json
+"tabs": [
+  {"tabId": "tab-overview", "name": "概览"},
+  {"tabId": "tab-source", "name": "来源与识别依据"}
+],
+"wireframe": {
+  "templateId": "page-detail-drawer",
+  "variants": [
+    {"tabId": "tab-overview", "preserveRegions": ["title-bar", "object-summary", "tab-bar", "footer"],
+     "changedRegions": ["tab-content"], "ascii": "┌────────────────────────────┐\n│ 标题栏：对象详情     [关闭] │\n├────────────────────────────┤\n│ 对象摘要：对象A 关键属性    │\n├────────────────────────────┤\n│ Tab行：概览 | 来源          │\n├────────────────────────────┤\n│ 概览内容：                  │\n│ 字段1  值1                 │\n│ 字段2  值2                 │\n├────────────────────────────┤\n│                [关闭]│\n└────────────────────────────┘"},
+    {"tabId": "tab-source", "preserveRegions": ["title-bar", "object-summary", "tab-bar", "footer"],
+     "changedRegions": ["tab-content"], "ascii": "┌────────────────────────────┐\n│ 标题栏：对象详情     [关闭] │\n├────────────────────────────┤\n│ 对象摘要：对象A 关键属性    │\n├────────────────────────────┤\n│ Tab行：概览 | 来源          │\n├────────────────────────────┤\n│ 来源内容：                  │\n│ 来源类型  自动识别          │\n├────────────────────────────┤\n│                [关闭]│\n└────────────────────────────┘"}
+  ]
+},
+"sections": [
+  {"title": "概览", "type": "overview", "tabId": "tab-overview", "description": "对象概览指标"},
+  {"title": "来源与识别依据", "type": "descriptions", "tabId": "tab-source", "description": "识别依据描述列表"}
+]
+```
+
+### 11.4 页面级 Coding 闭环（RULE-31）
+
+- 每个页面的 `codingGuide.pageContext.pageId` 必须等于页面 ID。
+- 每个页面 `codingGuide.pageItems` 至少包含 1 个稳定 Coding item；item 若声明 `pageId` 必须等于所属页面 ID；item ID 在页面内唯一。
+- 校验项（error 阻断）：
+  - pageContext.pageId 与页面 ID 不一致 -> CODING_PAGE_CONTEXT_MISMATCH
+  - 页面无任何 Coding item -> CODING_NO_ITEMS
+  - Coding item ID 重复 -> CODING_ITEM_DUPLICATE
+  - item.pageId 与所属页面不一致 -> CODING_ITEM_ORPHAN
+
+```json
+"codingGuide": {
+  "pageContext": {"pageId": "P01", "summary": "策略列表页 Coding 上下文"},
+  "pageItems": [
+    {"id": "P01-C01", "scope": "table-page", "name": "策略列表", "mode": "reuse-framework",
+     "mappingRef": "M01", "mappingStatus": "verified",
+     "target": {"path": "src/pages/policy/list.vue", "export": "PolicyList"},
+     "requirements": ["保留表格工具栏、表格、分页结构"]}
+  ]
+}
+```
+
+### 11.5 错误码与严重级别
+
+- error：设计闭环缺失，禁止生成 HTML（strict 模式阻断）。
+- warning：设计质量风险，不阻断 HTML 生成。
+- info：AI 补齐或待核验说明，仅提示。
+
+### 11.6 线框图绘制质量闭环
+
+防止"线框图没有画、只有几个字"或"完全没有按照页面模板绘制"的问题。校验器验证的是结构化 regions，同时必须验证实际绘制的 `ascii` 图：
+
+- `ascii` 必须按模板绘制，禁止用一句话或几个字代替线框图。
+- 绘制完整性（error）：
+  - ascii 内容过短（< 8 字符）-> WIREFRAME_ASCII_TOO_SHORT
+  - ascii 未覆盖模板必需区域（匹配到的区域绘制关键词少于 2 个）-> WIREFRAME_ASCII_NOT_DRAWN
+  - ascii 是区域标签罗列（每行一个"区域名：内容"、无右竖线闭合、大量分隔线）-> WIREFRAME_ASCII_LABEL_LIST
+- 绘制与 regions 一致性（warning）：
+  - regions 声明了内容性区域（筛选、表格、分页、工具栏、表单、概览、步骤、对象摘要、Tab 内容、底部操作等），但 ascii 中没有任何对应绘制痕迹 -> WIREFRAME_REGION_NOT_DRAWN
+- 绘制区域关键词（REGION_ASCII_KEYS）与模板区域对应：标题栏/筛选/工具栏/表格/分页/表单/弹窗/抽屉/摘要/步骤/Tab/底部操作等；纯结构区域（global-navigation、modal-shell、drawer-shell、title-bar）不参与该一致性检查。
+- HTML 生成时若 ascii 过短或无区域绘制痕迹，线框区块渲染提示，提醒检查。
+- 线框图样式来源：模板结构与线框样式一律以运行时可读取的 Common Design 页面模板文档（如 03-design-template/01-page-types.md）为准，本 Skill 不保存页面模板线框图参考。
+
+数据示例（合法完整线框图）：
+```text
+┌──────────────────────────────┐
+│ 标题栏：事件分析   [导出][刷新]│
+├──────────────────────────────┤
+│ [筛选] 风险等级 时间范围 [查询]│
+│ ┌──────────────────────────┐ │
+│ │ 事件名称 | 风险等级 | 操作 │ │
+│ │ 事件A    | 高       | 详情 │ │
+│ └──────────────────────────┘ │
+│ 上一页 1 2 3 下一页            │
+└──────────────────────────────┘
+```
+
+### 11.7 表格与详情字段一致性闭环（RULE-38）
+
+表格展示部分字段、详情展示完整字段时，表格字段与详情字段必须保持一致：表格页 `tableFields` 中展示的每个字段，都必须在对应详情容器页的字段数组（`detailFields`/`cardFields`/`fields`/`tableFields` 等）中存在对应项，防止"表格有、详情没有"或表格与详情字段对不上的情况。Common Design 已明确"表格展示的字段与详情抽屉字段保持一致"规则，本校验作为自动兜底。
+
+- 详情容器识别：表格页 `operations` 中 `action=open-container` 且目标为详情类容器（页面 type 含"详情"或 templateId 以 `page-detail` 开头），以及 `children` 挂载的详情容器；表格页无详情容器时不校验（非"表格有详情"场景）。
+- 字段匹配：字段名去除空格/下划线/括号等符号后精确匹配，或一方包含另一方（双方长度 >= 2）视为对应。
+- 校验项（error 阻断）：
+  - 表格展示的字段在关联详情容器中不存在 -> TABLE_DETAIL_FIELD_MISMATCH（error，RULE-38）
+
+```json
+"operations": [
+  {"id": "OP01", "action": "open-container", "label": "查看详情", "trigger": "行内操作",
+   "targetPageId": "D01", "targetContainerType": "drawer", "confirm": false}
+]
+```
+
+表格页 `tableFields` 中展示的每个字段必须能在 D01 的 `detailFields`/`cardFields`/`fields`/`tableFields` 中找到对应；缺失时阻断 HTML 生成。
+
+### 11.8 表格标签使用约束闭环（RULE-39）
+
+Common Design 已明确标签（IxTag）样式使用约束：同一个表格内标签使用数量受限、样式需克制，配额优先留给需要凸显的重要业务状态。本校验作为自动兜底（双重检查），按"表格区块"（sections 中带 `tableFields` 的区块 + 页面级 `tableFields`）逐块统计：
+
+- 标签字段识别：字段 `iduxComponent` 为 `IxTag`（含 `IxBadge/IxTag` 等组合，排除选择类组件），或 `component`/`display` 含"标签"（如"单标签/多标签"）。
+- 标签样式识别：从字段 `display`/`description`/`style`/`tagType`/`tagStyle` 文本中匹配样式关键词——"深色/dark"为深色标签、"icon/图标/带图标"为 icon 标签、"点状/状态点/dot"为点状标签、"浅色/light"为浅色标签。
+- 校验项（error 阻断）：
+  - 同一表格内标签使用数量 > 5 -> TABLE_TAG_COUNT_EXCEEDED（error，RULE-39）
+  - 深色/icon/点状标签各自出现次数 > 1 -> TABLE_TAG_STYLE_OVERUSED（error，RULE-39）
+  - 浅色标签出现次数 > 2 -> TABLE_TAG_STYLE_OVERUSED（error，RULE-39）
+- 校验项（warning 提示，双重检查盲区与配额优先级）：
+  - 同一表格内存在 >= 2 个标签字段且样式未标注 -> TABLE_TAG_STYLE_UNSPECIFIED（warning，RULE-39），提示补充样式标注以便自动校验"同一样式仅允许 1 次"
+  - 中性描述字段（如资产类型、IP、域名、端口、路径、地址、主机、编号等）使用标签组件 -> TABLE_TAG_NEUTRAL_FIELD（warning，RULE-39），提示标签配额优先留给风险等级、处置状态/启用禁用状态、本身命名为"标签"的字段，中性字段改用普通文本或等宽文本
+
+```json
+"tableFields": [
+  {"name": "风险等级", "display": "深色标签", "iduxComponent": "IxTag", "description": "高/中/低"},
+  {"name": "处置状态", "display": "状态点+文字", "iduxComponent": "IxBadge/IxTag", "description": "待处置/处理中/已处置"}
+]
+```
+
+同一表格内深色标签仅 1 个、点状标签仅 1 个，未超过配额；若再增加深色或点状标签字段，会被 RULE-39 阻断。

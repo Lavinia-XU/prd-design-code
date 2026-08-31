@@ -286,6 +286,18 @@ def drawer_detail_page(**overrides):
     return page
 
 
+def tag_page(table_fields, **overrides):
+    """基础表格页，表格主体区块使用指定标签字段（RULE-39 测试）。"""
+    page = base_page()
+    page["sections"] = [
+        {"title": "筛选区", "type": "filter", "filterFields": [{"name": "策略名称", "iduxComponent": "IxInput"}]},
+        {"title": "工具栏", "type": "toolbar"},
+        {"title": "表格主体", "type": "table", "tableFields": table_fields},
+    ]
+    page.update(overrides)
+    return page
+
+
 class TestValidateDemoSpec(unittest.TestCase):
 
     def test_valid_table_basic_passes(self):
@@ -976,6 +988,109 @@ class TestValidateDemoSpec(unittest.TestCase):
         code, report = run_validator(make_spec([table, detail]), strict=True)
         self.assertEqual(code, 1)
         self.assertTrue(any(e.get("errorCode") == "TABLE_DETAIL_FIELD_MISMATCH" for e in report.get("errors", [])))
+
+    # ---- 表格标签使用约束（RULE-39）----
+    def test_table_tag_count_exceeded_fails(self):
+        """同一表格内标签数量超过 5 -> RULE-39 TABLE_TAG_COUNT_EXCEEDED 阻断。"""
+        fields = [{"name": f"状态字段{i}", "display": "浅色标签", "iduxComponent": "IxTag"} for i in range(6)]
+        code, report = run_validator(make_spec([tag_page(fields)]), strict=True)
+        self.assertEqual(code, 1)
+        self.assertTrue(any(e.get("errorCode") == "TABLE_TAG_COUNT_EXCEEDED" for e in report.get("errors", [])))
+
+    def test_table_tag_style_overused_fails(self):
+        """深色标签出现 2 次 -> RULE-39 TABLE_TAG_STYLE_OVERUSED 阻断。"""
+        fields = [
+            {"name": "风险等级", "display": "深色标签", "iduxComponent": "IxTag", "description": "高/中/低"},
+            {"name": "处置状态", "display": "深色标签", "iduxComponent": "IxTag", "description": "待处置/已处置"},
+        ]
+        code, report = run_validator(make_spec([tag_page(fields)]), strict=True)
+        self.assertEqual(code, 1)
+        self.assertTrue(any(e.get("errorCode") == "TABLE_TAG_STYLE_OVERUSED" for e in report.get("errors", [])))
+
+    def test_table_tag_style_unspecified_warns(self):
+        """多个标签字段样式未标注 -> RULE-39 TABLE_TAG_STYLE_UNSPECIFIED warning（不阻断）。"""
+        fields = [
+            {"name": "风险等级", "display": "单标签", "iduxComponent": "IxTag"},
+            {"name": "处置状态", "display": "单标签", "iduxComponent": "IxTag"},
+        ]
+        code, report = run_validator(make_spec([tag_page(fields)]), strict=True)
+        self.assertEqual(code, 0)
+        self.assertTrue(any(w.get("errorCode") == "TABLE_TAG_STYLE_UNSPECIFIED" for w in report.get("warnings", [])))
+
+    def test_table_tag_neutral_field_warns(self):
+        """中性描述字段使用标签 -> RULE-39 TABLE_TAG_NEUTRAL_FIELD warning（不阻断）。"""
+        fields = [
+            {"name": "资产类型", "display": "单标签", "iduxComponent": "IxTag"},
+            {"name": "风险等级", "display": "浅色标签", "iduxComponent": "IxTag", "description": "高/中/低"},
+        ]
+        code, report = run_validator(make_spec([tag_page(fields)]), strict=True)
+        self.assertEqual(code, 0)
+        self.assertTrue(any(w.get("errorCode") == "TABLE_TAG_NEUTRAL_FIELD" for w in report.get("warnings", [])))
+
+    def test_table_tag_usage_passes(self):
+        """标签总数与样式均符合配额 -> RULE-39 通过，无 TABLE_TAG_* 错误或警告。"""
+        fields = [
+            {"name": "风险等级", "display": "深色标签", "iduxComponent": "IxTag", "description": "高/中/低"},
+            {"name": "处置状态", "display": "状态点+文字", "iduxComponent": "IxBadge/IxTag", "description": "待处置/处理中/已处置"},
+            {"name": "标签", "display": "浅色标签", "iduxComponent": "IxTag", "description": "自定义标签"},
+            {"name": "启用状态", "display": "浅色标签", "iduxComponent": "IxTag", "description": "启用/禁用"},
+        ]
+        code, report = run_validator(make_spec([tag_page(fields)]), strict=True)
+        self.assertEqual(code, 0)
+        self.assertTrue(report.get("valid"))
+        self.assertFalse(any(e.get("errorCode", "").startswith("TABLE_TAG_") for e in report.get("errors", [])))
+        self.assertFalse(any(w.get("errorCode", "").startswith("TABLE_TAG_") for w in report.get("warnings", [])))
+
+    # ---- 设计依据可追溯（RULE-40）----
+    def _page_claiming_design(self, refs=None, claimed_source="Product Design: 策略配置主题框架"):
+        """构造声称引用 Product Design 的页面；refs 为 None 表示不写 designReferences。"""
+        tc = base_page()["templateContract"]
+        tc["override"] = {"enabled": True, "source": claimed_source, "reason": "业务覆盖", "affectedRules": []}
+        page = base_page(templateContract=tc)
+        if refs is not None:
+            page["codingGuide"]["designReferences"] = refs
+        return page
+
+    def test_design_ref_missing_warns(self):
+        """页面声称引用 Product Design 但无 designReferences -> RULE-40 DESIGN_REF_MISSING warning（不阻断）。"""
+        page = self._page_claiming_design(refs=None)
+        code, report = run_validator(make_spec([page]), strict=True)
+        self.assertEqual(code, 0)
+        self.assertTrue(any(w.get("errorCode") == "DESIGN_REF_MISSING" for w in report.get("warnings", [])))
+
+    def test_design_ref_invalid_source_warns(self):
+        """designReferences 的 source 非法 -> RULE-40 DESIGN_REF_SOURCE warning。"""
+        page = self._page_claiming_design(refs=[{"source": "common", "ref": "Common Design 页面模板: 概览表格页"}])
+        code, report = run_validator(make_spec([page]), strict=True)
+        self.assertEqual(code, 0)
+        self.assertTrue(any(w.get("errorCode") == "DESIGN_REF_SOURCE" for w in report.get("warnings", [])))
+
+    def test_design_ref_empty_ref_warns(self):
+        """designReferences 的 ref 为空 -> RULE-40 DESIGN_REF_REF warning。"""
+        page = self._page_claiming_design(refs=[{"source": "product-design", "ref": ""}])
+        code, report = run_validator(make_spec([page]), strict=True)
+        self.assertEqual(code, 0)
+        self.assertTrue(any(w.get("errorCode") == "DESIGN_REF_REF" for w in report.get("warnings", [])))
+
+    def test_design_ref_passes(self):
+        """声称引用 Design Skill 且 designReferences 登记完整 -> RULE-40 通过，无 DESIGN_REF_* 警告。"""
+        page = self._page_claiming_design(refs=[
+            {"source": "product-design", "ref": "Product Design: 策略配置主题框架"},
+            {"source": "common-design", "ref": "Common Design 页面模板: 概览表格页"},
+            {"source": "ai-fill", "ref": "AI 补齐: 自动补齐筛选项"},
+        ])
+        code, report = run_validator(make_spec([page]), strict=True)
+        self.assertEqual(code, 0)
+        self.assertTrue(report.get("valid"))
+        self.assertFalse(any(w.get("errorCode", "").startswith("DESIGN_REF_") for w in report.get("warnings", [])))
+
+    def test_design_ref_absent_no_claim_passes(self):
+        """页面未声称引用 Design Skill 且无 designReferences -> RULE-40 通过（不强制登记）。"""
+        page = base_page()
+        code, report = run_validator(make_spec([page]), strict=True)
+        self.assertEqual(code, 0)
+        self.assertTrue(report.get("valid"))
+        self.assertFalse(any(w.get("errorCode", "").startswith("DESIGN_REF_") for w in report.get("warnings", [])))
 
 
 if __name__ == "__main__":

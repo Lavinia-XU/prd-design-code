@@ -31,7 +31,7 @@
 - Mock数据完整规则
 - AI Coding完整提示词
 
-以上禁止展开的内容必须写入HTML。需求颗粒度不足时，先由AI按业务设计Skill、已有代码和常见B端产品模式补齐能保证用户旅程、功能点、数据、操作、状态和页面层级闭环的页面设计，不要把字段命名、按钮文案、普通筛选项、常规表格字段等可合理补齐的细节全部抛给用户确认。页面总览后必须追加待确认问题，控制在10个以内，并只询问会影响整体设计、导航结构、用户旅程闭环、关键业务规则或Coding实现的问题。输出待确认问题后停止，等待用户确认；只有用户确认后才生成HTML说明书。若没有关键待确认问题，明确写“暂无关键待确认问题，按当前页面总览继续生成HTML说明书”，然后可继续生成HTML。
+以上禁止展开的内容必须写入HTML。需求颗粒度不足时，先由AI按Product Design、已有代码和常见B端产品模式补齐能保证用户旅程、功能点、数据、操作、状态和页面层级闭环的页面设计，不要把字段命名、按钮文案、普通筛选项、常规表格字段等可合理补齐的细节全部抛给用户确认。页面总览后必须追加待确认问题，控制在10个以内，并只询问会影响整体设计、导航结构、用户旅程闭环、关键业务规则或Coding实现的问题。输出待确认问题后停止，等待用户确认；只有用户确认后才生成HTML说明书。若没有关键待确认问题，明确写“暂无关键待确认问题，按当前页面总览继续生成HTML说明书”，然后可继续生成HTML。
 
 ## 2. 对话框主输出模板
 
@@ -130,7 +130,7 @@ HTML设计说明书已生成。请先查看HTML页面内容；如果HTML中有�
 
 ## 4. AI Coding指导输出格式
 
-页面总览之后，将完整设计说明整理为JSON并调用脚本生成HTML。JSON中不写入`questions`字段；待确认问题只在对话框展示。交互与逻辑规则必须整合进对应页面的`sections`区块说明中，例如工具栏、筛选项、字段展示、可点击操作、状态值、表单选项、校验和边界状态；不再使用独立的页面内关键交互章节或全局交互规则页。每个页面对象必须写入`restoreRequirement`字段，描述从Common Design页面模板获取的页面骨架组件，例如标题栏、筛选区、表格、分页、弹窗、抽屉等，不负责罗列全部字段组件。每个页面对象必须写入`wireframe`字段，用ASCII线框图表达页面标题栏、内容区、关键元素和底部操作；wireframe.ascii 必须严格按所选页面模板（匹配Product Design声明了页面模板时按其模板，否则按Common Design模板）的布局结构绘制出模板必需区域的布局痕迹（标题栏、筛选区、表格、分页、底部操作区等），只允许替换文案并完善内容区中的具体内容，禁止调整模板布局结构、区块顺序、容器形态或新增模板不存在的区域；禁止用一句话或几个字代替线框图，否则被 RULE-32 阻断；regions 声明的内容性区域在 ascii 中无绘制痕迹时触发 RULE-33 提示；必要时写入`wireframeNote`字段说明容器关系、Tab层级或固定底部栏。底部操作区必须继承已读取Common Design页面模板中的容器规则，`wireframe`与`footerActions`中的对齐方式、按钮顺序和规则来源必须一致，不得无依据左右分置按钮。按钮顺序遵循 Common Design：主操作（确定/保存/下一步/完成）在左、次操作（取消/关闭）在右；弹窗/抽屉表单页、弹窗/抽屉列表页、配置表单页的按钮顺序为"确定（保存）→取消"，抽屉详情页底部只保留"关闭"按钮（详情内容多页时可提供"上一个""下一个"翻页）。若页面属于分层Tabs页标题，wireframe中的Tab必须与页面标题同一行展示，不得单独下沉为内容区Tab。若页面存在多个内容切换Tab，`wireframe`应按每个Tab分别绘制对应内容区块的线框图，不要只输出一个总线框图；如果页面同时存在步骤条等内容切换控件，也按同样方式处理，按每个步骤分别绘制对应内容区块的线框图。生成HTML说明书前必须执行页面类型一致性自检：`pages`里的页面类型、页面名称和页面层级必须与页面总览一致；若用户未明确要求修改，不得擅自更改页面类型、页面结构或页面名称。配置类页面的表单配置项必须统一左对齐，按单列表单纵向排列；label与组件必须处于同一行，禁止上下两行排布，禁止多列配置。若页面引用业务设计Skill或已有代码中的功能点实现，页面内容区只简要描述功能点入口、触发效果、展示规则和校验规则，并在页面内`codingGuide.designReferences`和`codingGuide.implementationNotes`中补充关联说明和编码指引。若需求没有明确筛选条件，页面JSON中的查询区与筛选区说明也必须写明AI的自动补齐结果，包括补充了哪些字段、采用什么控件以及补齐依据。筛选区必须写明使用一个`IxProSearch`高级搜索组件还是多个独立组件组合；多个独立组件时，`filterComponent`和`filterComponentDescription`中统一说明各独立组件名称，筛选字段表格不再单独标注iDux组件名称。若筛选项超过 4 个或需要组合管理，wireframe 和 sections 中只写“高级搜索框”整体组件，不展开外观，但仍需在高级搜索配置说明和`filterFields`中列出字段和筛选方式。表单字段`formFields`必须在组件类型右侧写`iduxComponent`；表格字段`tableFields`必须写`iduxComponent`，普通文本/数字可留空，标签、链接按钮、状态徽标、操作按钮等非普通文本必须标注组件名称。需求或规范中明确列出的字段（表格列、表单项、筛选项、详情描述字段、配置项等）必须逐项落入对应区块的字段数组（`tableFields`/`formFields`/`filterFields`/`cardFields`/`fields`等），不得过滤、合并或仅简述；页面对象应写入`requirementFieldNames`（需求/规范明确要求的字段名数组）与`excludedFields`（字段名到排除原因的映射），缺失的需求字段会被 RULE-36 阻断。总结性Coding指导写入顶层`codingGuide`，页面级Coding指导写入页面内`codingGuide`。页面层级通过 `pages` 数组平铺全部页面（含弹窗、抽屉）表达；父页面的`children`只写子容器 ID（字符串）用于标注归属，禁止在 children 内嵌完整页面对象（RULE-35 阻断）。每个页面必须写入`navigation`对象，用`primary`、`secondary`、`tertiary`、`tab`分别表示一级导航、二级导航、三级导航和Tab页面；没有对应层级时填空字符串，禁止只用`/`拼接路径。`navigation`表示页面所属菜单或Tab位置，不表示当前功能子页面名称；新增、编辑、详情、弹窗、抽屉等由主页面操作进入的非菜单页面，必须继承所属主页面的`navigation`，不要把“新增xx”“编辑xx”“xx详情”写进导航位置。HTML中的目录开发要求必须写入Coding指导：左侧目录只用于切换页面内容，Coding时不要使用URL hash定位锚点开发目录；该要求属于HTML生成规范，不属于产品Coding实现规范。
+页面总览之后，将完整设计说明整理为JSON并调用脚本生成HTML。JSON中不写入`questions`字段；待确认问题只在对话框展示。交互与逻辑规则必须整合进对应页面的`sections`区块说明中，例如工具栏、筛选项、字段展示、可点击操作、状态值、表单选项、校验和边界状态；不再使用独立的页面内关键交互章节或全局交互规则页。每个页面对象必须写入`restoreRequirement`字段，描述从Common Design页面模板获取的页面骨架组件，例如标题栏、筛选区、表格、分页、弹窗、抽屉等，不负责罗列全部字段组件。每个页面对象必须写入`wireframe`字段，用ASCII线框图表达页面标题栏、内容区、关键元素和底部操作；wireframe.ascii 必须严格按所选页面模板（匹配Product Design声明了页面模板时按其模板，否则按Common Design模板）的布局结构绘制出模板必需区域的布局痕迹（标题栏、筛选区、表格、分页、底部操作区等），只允许替换文案并完善内容区中的具体内容，禁止调整模板布局结构、区块顺序、容器形态或新增模板不存在的区域；禁止用一句话或几个字代替线框图，否则被 RULE-32 阻断；regions 声明的内容性区域在 ascii 中无绘制痕迹时触发 RULE-33 提示；必要时写入`wireframeNote`字段说明容器关系、Tab层级或固定底部栏。底部操作区必须继承已读取Common Design页面模板中的容器规则，`wireframe`与`footerActions`中的对齐方式、按钮顺序和规则来源必须一致，不得无依据左右分置按钮。按钮顺序、对齐方式与布局细节一律以已读取 Common Design 页面模板及模板注册表为准，本 Skill 不保存按钮顺序细节。若页面属于分层Tabs页标题，wireframe中的Tab必须与页面标题同一行展示，不得单独下沉为内容区Tab。若页面存在多个内容切换Tab，`wireframe`应按每个Tab分别绘制对应内容区块的线框图，不要只输出一个总线框图；如果页面同时存在步骤条等内容切换控件，也按同样方式处理，按每个步骤分别绘制对应内容区块的线框图。生成HTML说明书前必须执行页面类型一致性自检：`pages`里的页面类型、页面名称和页面层级必须与页面总览一致；若用户未明确要求修改，不得擅自更改页面类型、页面结构或页面名称。配置类页面的表单布局（对齐方式、排列方式、label与组件关系等）一律以已读取 Common Design 表单规范及模板注册表为准，本 Skill 不保存表单布局细节。若页面引用Product Design或已有代码中的功能点实现，页面内容区只简要描述功能点入口、触发效果、展示规则和校验规则，并在页面内`codingGuide.designReferences`和`codingGuide.implementationNotes`中补充关联说明和编码指引。页面内`codingGuide.designReferences`登记本页设计决策的知识来源，每项包含`source`与`ref`：`source`取值`common-design` / `product-design` / `code` / `ai-fill`；`ref`为来源标识（如"Common Design 页面模板: 概览表格页"、"Product Design: 策略配置主题框架"、"已验证代码: src/pages/event-analysis/index.vue"、"AI 补齐: 自动补齐筛选项"）。声称引用 Product Design 或 Common Design 的页面必须在此登记对应来源，无来源的设计决策须标记为 `ai-fill`，否则触发 RULE-40 提示（warning，不校验是否读全）。若需求没有明确筛选条件，页面JSON中的查询区与筛选区说明也必须写明AI的自动补齐结果，包括补充了哪些字段、采用什么控件以及补齐依据。筛选区必须写明使用一个高级搜索组件（组件名以已读取 Common Design 组件映射表为准）还是多个独立组件组合；多个独立组件时，`filterComponent`和`filterComponentDescription`中统一说明各独立组件名称，筛选字段表格不再单独标注iDux组件名称。若筛选项较多或需要组合管理，wireframe 和 sections 中只写“高级搜索框”整体组件，不展开外观，但仍需在高级搜索配置说明和`filterFields`中列出字段和筛选方式。表单字段`formFields`必须在组件类型右侧写`iduxComponent`；表格字段`tableFields`必须写`iduxComponent`，普通文本/数字可留空，标签、链接按钮、状态徽标、操作按钮等非普通文本必须标注组件名称。需求或规范中明确列出的字段（表格列、表单项、筛选项、详情描述字段、配置项等）必须逐项落入对应区块的字段数组（`tableFields`/`formFields`/`filterFields`/`cardFields`/`fields`等），不得过滤、合并或仅简述；页面对象应写入`requirementFieldNames`（需求/规范明确要求的字段名数组）与`excludedFields`（字段名到排除原因的映射），缺失的需求字段会被 RULE-36 阻断。总结性Coding指导写入顶层`codingGuide`，页面级Coding指导写入页面内`codingGuide`。页面层级通过 `pages` 数组平铺全部页面（含弹窗、抽屉）表达；父页面的`children`只写子容器 ID（字符串）用于标注归属，禁止在 children 内嵌完整页面对象（RULE-35 阻断）。每个页面必须写入`navigation`对象，用`primary`、`secondary`、`tertiary`、`tab`分别表示一级导航、二级导航、三级导航和Tab页面；没有对应层级时填空字符串，禁止只用`/`拼接路径。`navigation`表示页面所属菜单或Tab位置，不表示当前功能子页面名称；新增、编辑、详情、弹窗、抽屉等由主页面操作进入的非菜单页面，必须继承所属主页面的`navigation`，不要把“新增xx”“编辑xx”“xx详情”写进导航位置。HTML中的目录开发要求必须写入Coding指导：左侧目录只用于切换页面内容，Coding时不要使用URL hash定位锚点开发目录；该要求属于HTML生成规范，不属于产品Coding实现规范。
 
 ### 4.1 脚本调用
 
@@ -141,6 +141,8 @@ python scripts/generate_demo_spec_html.py --input ./demo-spec.json --output ./de
 ```
 
 ### 4.2 JSON结构
+
+同步声明：示例 JSON 中的组件名（如 IxTable、IxPagination、IxProSearch 等）与页面类型名仅为格式示例，实际组件名、页面类型与用法一律以已读取 Common Design 组件映射表及页面模板为准；Common Design 更新后以 Common Design 为准，本 Skill 不保存组件映射清单。
 
 ```json
 {
@@ -219,6 +221,12 @@ python scripts/generate_demo_spec_html.py --input ./demo-spec.json --output ./de
           "严格使用页面字段表中指定的组件",
           "不得用原生 HTML 替代业务组件"
         ],
+        "designReferences": [
+          {"source": "product-design", "ref": "Product Design: 事件分析主题框架"},
+          {"source": "common-design", "ref": "Common Design 页面模板: 概览表格页"},
+          {"source": "code", "ref": "已验证代码: src/pages/event-analysis/index.vue"},
+          {"source": "ai-fill", "ref": "AI 补齐: 自动补齐筛选项"}
+        ],
         "pageItems": [
           {"id": "P01-C01", "scope": "page-shell", "name": "页面框架", "mode": "reuse-framework", "mappingRef": "M01", "mappingStatus": "verified", "target": {"path": "src/pages/event-analysis/index.vue", "export": "EventAnalysisPage"}, "sourceRefs": ["page:P01", "mapping:M01"], "dependencies": [], "requirements": ["复用事件分析页整体布局和固定字段", "新增概览统计区和事件表格区", "保留标题栏、筛选区、表格、分页结构"], "states": ["loading", "empty", "search-no-result", "error"], "mockContract": {"requiredFields": ["事件名称", "风险等级", "发现时间"], "updateAfterActions": ["查询后刷新列表"]}, "acceptanceCriteria": ["页面入口可访问", "页面结构与视觉参考页面一致", "筛选、分页和行内操作可用"], "prohibitedChanges": ["不得替换已验证的业务表格容器", "不得引入真实后端接口"]},
           {"id": "P01-C02", "scope": "toolbar", "name": "导出功能", "mode": "direct-reference", "mappingRef": "M02", "mappingStatus": "verified", "target": {"path": "src/components/export-btn/index.vue", "export": "ExportButton"}, "sourceRefs": ["page:P01", "section:toolbar"], "dependencies": ["P01-C01"], "requirements": ["复用已开发好的导出实现", "仅替换导出字段和文案"], "states": ["exporting", "export-success", "export-failed"], "mockContract": {"exportFields": ["事件名称", "风险等级", "发现时间"]}, "acceptanceCriteria": ["导出文件字段与列表一致", "导出中按钮展示loading"], "prohibitedChanges": ["不得新增真实导出接口"]},
@@ -249,7 +257,7 @@ python scripts/generate_demo_spec_html.py --input ./demo-spec.json --output ./de
 
 ### 4.1 多内容 Tab 页面示例
 
-页面声明两个及以上内容 Tab 时，必须为每个 Tab 提供对应的 wireframe variant，并通过 tabId 关联；sections 绑定 tabId 便于 sections、tabs、variants、wireframe.regions 互相追踪。校验规则见 03-demo-design-spec.md 第 11.3 节。
+页面声明两个及以上内容 Tab 时，必须为每个 Tab 提供对应的 wireframe variant，并通过 tabId 关联；sections 绑定 tabId 便于 sections、tabs、variants、wireframe.regions 互相追踪。校验规则见 04-demo-output-spec.md 第 11.3 节。
 
 ```json
 {

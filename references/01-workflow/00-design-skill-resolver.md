@@ -53,6 +53,26 @@ Design Skill 的读取采用“索引优先、Reference 按需”的方式。
 
 根据当前需求识别命中的能力后，再读取对应 Reference。
 
+### 3.1 能力识别参考框架（防漏清单）
+
+识别“本需求命中了哪些设计能力”时，对照以下五层参考框架自查，防止静默遗漏：
+
+| 层 | 内容 | 典型命中信号 |
+|----|------|-------------|
+| Theme 主题层 | 功能主题（如策略配置、规则配置、任务管理、授权管理）提供的该类需求设计框架 | 需求涉及某类固定业务功能集合，存在主题级框架可填充 |
+| Template 模板层 | 页面级布局骨架 | 需求涉及新页面或页面容器 |
+| Feature 业务功能层 | 固定业务功能点的用法规范 | 需求涉及产品既有功能点（如策略、任务、授权） |
+| Pattern 模式层 | 可复用通用交互方案（导航结构、菜单层级、页面归属、表格表单设计、交互反馈、文案术语等） | 需求涉及导航、表格、表单、交互、状态、术语 |
+| Component 组件映射表 | 基础组件用法 | 需求涉及组件选择与映射 |
+
+约束：
+
+- 五层是“能力识别参考框架”，不是“必须逐层读取的清单”。
+- 命中才读：仅在某层存在与当前需求匹配的内容时，才读取对应 Reference。
+- 未命中留痕：未命中的层在 Design Context 中记录“未命中/不适用”及原因，不产生读取。
+- 禁止将五层理解为全量读取清单，禁止无差别读取 Design Skill 中全部 Reference。
+- 同步规则：读取 Common Design 页面模板（Template 层）后，必须与本 Skill 的模板注册表（references/02-template-contracts/common-design-template-registry.json）对比；当 Common Design 模板定义与注册表不一致时，以 Common Design 为准，并将差异记录到 Design Context 待同步。Product Design 若声明了页面模板覆盖（override），以 Product Design 为准。
+
 ---
 
 ## 4. Coverage 解析

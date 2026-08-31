@@ -37,10 +37,12 @@
 
 ### 1.4 页面总览检查
 
-- 如果当前有Demo代码环境、用户指定代码范围、业务设计Skill提到参考模块或用户提到已有模块，是否读取相关代码作为输入。
+- 如果当前有Demo代码环境、用户指定代码范围、Product Design提到参考模块或用户提到已有模块，是否读取相关代码作为输入。
 - 是否已为当前任务标记代码可用状态（verified 已核验 / partial 部分可用 / unavailable 不可用）并写入 Design Context；项目目录存在但未实际读取验证的代码是否未被标记为 `verified`。
-- 页面拆解和导航结构设计后，如果存在业务设计Skill，是否优先参考业务设计Skill的产品介绍、页面导航结构、页面说明和页面设计规范。
-- 是否仅在业务设计Skill和已有代码未覆盖时，再基于需求上下文与B端常见模式补齐必要设计。
+- 页面拆解和导航结构设计后，是否读取Common Design的页面类型模板和组件映射表；如果存在Product Design，是否优先参考Product Design的产品介绍、页面导航结构、页面说明和页面设计规范。
+- 是否对照五层参考框架（Theme / Template / Feature / Pattern / Component）自查命中能力完整性：命中的能力是否已读取对应 Reference，未命中的层是否记录原因，是否存在静默遗漏。
+- 设计说明书中声称引用 Design Skill 的决策，是否能在 `codingGuide.designReferences` 中找到对应来源登记；无来源的决策是否明确标记为 AI 补齐。
+- 是否仅在Product Design、Common Design和已有代码未覆盖时，再基于需求上下文与B端常见模式补齐必要设计。
 - 导航结构是否综合展示本次Demo覆盖范围，不按每个页面、弹窗或抽屉重复输出。
 - 页面总览表是否列清所有页面或容器，并标明初步复用方向；初步复用方向仅为“复用已有页面”“参考已有框架”“新增页面”或“待详细设计确认”，不得提前写死具体组件或开发方式。
 - `partial` / `unavailable` 状态下，页面总览表是否未虚构真实文件路径或组件名称；真实代码对象是否标记为“Coding 阶段待核验”。
@@ -58,7 +60,7 @@
 - 每个问题是否包含影响范围和当前默认假设。
 - 是否没有询问颜色、按钮位置、普通文案等低价值问题。
 - 未确认内容是否没有被写成已确认事实。
-- 如果代码、需求和业务设计Skill存在冲突，是否列入待确认问题。
+- 如果代码、需求和Product Design存在冲突，是否列入待确认问题。
 - 输出待确认问题后是否停止并等待用户确认；确认前是否没有直接生成HTML或完整AI Coding指导。
 
 ### 1.6 HTML说明书检查
@@ -79,7 +81,7 @@
 - Wireframe / ASCII线框图是否与页面内容区块描述一致，并与页面类型决策表、模板结构、layout、组件与交互、页面级AI Coding指导一致。
 - 含底部操作区的页面、抽屉和弹窗是否已读取对应Common Design页面模板；`wireframe`、`footerActions`和页面内容说明中的底部操作区位置、按钮顺序和布局规则是否一致，不存在无依据的左右分置或跨容器规则混用。
 - 页面区块是否具体到位置、内容、字段/指标、展示形式、取值范围、按钮、可点击操作和点击结果。
-- 表格区是否包含工具栏、搜索筛选、字段、字段展示形式、状态值范围、排序、分页、行内操作和边界状态说明；筛选搜索方式是否优先采用业务设计Skill或Common Design页面模板明确要求；HTML中筛选区是否展示筛选方式来源、筛选组件类型、一个`IxProSearch`高级搜索组件或多个独立组件组合说明，以及筛选字段表格（筛选字段表格不再单独标注iDux组件名称，由筛选区组件说明统一承载）；HTML中表格字段是否渲染为“字段名称、展示形式、组件名称、说明”的表格，非普通文本列是否标注组件名称。
+- 表格区是否包含工具栏、搜索筛选、字段、字段展示形式、状态值范围、排序、分页、行内操作和边界状态说明；筛选搜索方式是否优先采用Product Design或Common Design页面模板明确要求；HTML中筛选区是否展示筛选方式来源、筛选组件类型、一个`IxProSearch`高级搜索组件或多个独立组件组合说明，以及筛选字段表格（筛选字段表格不再单独标注iDux组件名称，由筛选区组件说明统一承载）；HTML中表格字段是否渲染为“字段名称、展示形式、组件名称、说明”的表格，非普通文本列是否标注组件名称。
 - 表单区是否包含字段、组件、iDux组件名称、必填、默认值、选项、是否支持下拉搜索、校验、提示和联动；HTML中表单字段是否渲染为“字段名称、组件类型、iDux组件名称、必填、默认值、选项/规则、提示信息或联动关系”的表格，而不是普通列表。
 - 详情区是否包含对象识别信息、描述列表、关联信息、操作入口和必要Tab。
 - 设计说明书中的复用对象表达是否与代码可用状态一致：`verified` 时精确到真实页面文件、组件名称、文件路径、关键 Props / Events / Slots 和复用类型；`partial` / `unavailable` 时只写语义级描述并标记“Coding 阶段待核验”，未虚构真实代码对象。
@@ -88,7 +90,7 @@
 
 - 是否执行页面目标闭环检查，避免只按需求字面翻译导致页面无法完成用户任务。
 - 对象管理类页面是否具备支撑对象生命周期的基础承载能力；流程/任务类页面是否具备开始、执行、结果和异常反馈；分析/事件类页面是否具备发现、查看详情和处理路径。
-- 当需求只描述局部操作时，是否判断该操作依赖的上下文能力，并从业务设计Skill、已有代码或AI业务理解中按需补齐。
+- 当需求只描述局部操作时，是否判断该操作依赖的上下文能力，并从Product Design、已有代码或AI业务理解中按需补齐。
 - 补齐内容是否标注为`基于页面目标闭环补齐`，且没有伪装成用户原始需求。
 - 会明显影响页面结构、业务规则或用户旅程的补齐项是否进入待确认问题。
 - 补齐内容是否仅用于确保页面可用、易用和Demo可演示，是否避免新增业务模块、复杂审批链路、跨系统联动或与需求目标无关的高级能力。
@@ -96,14 +98,14 @@
 ### 1.8 交互与Coding检查
 
 - HTML中的搜索、筛选、重置、排序、分页是否整合到对应页面的表格区、工具栏或相关内容区块说明里，而不是放在独立全局规则页或页面独立交互章节。
-- HTML中关键交互是否综合需求资料、业务设计Skill、可用Demo代码环境和AI业务理解生成。
+- HTML中关键交互是否综合需求资料、Product Design、可用Demo代码环境和AI业务理解生成。
 - HTML中新增、编辑、查看、删除、处置、启用、禁用、批量操作是否在对应页面的区块说明或底部操作中写清入口、触发方式、打开容器、页面反馈、数据变化、校验、成功反馈、失败反馈和状态联动。
 - HTML中高影响操作是否包含二次确认，确认文案是否说明风险。
 - HTML中表单提交是否有必填校验、格式校验、联动关系、提交中和提交失败反馈。
 - HTML中空状态、搜索无结果、加载态、异常态、无权限态是否覆盖。
 - HTML中极端情况是否覆盖长文本、0值、空字段、数据量大、批量选择为空、部分成功等。
 - HTML中Mock数据是否覆盖主要状态、异常状态和边界数据。
-- HTML中如果页面区块简要引用了业务设计Skill或已有代码功能点，页面级AI Coding指导是否补充关联说明，写清命中的设计依据、使用位置、实现方式、建议复用组件或代码、Mock数据和边界状态。
+- HTML中如果页面区块简要引用了Product Design或已有代码功能点，页面级AI Coding指导是否补充关联说明，写清命中的设计依据、使用位置、实现方式、建议复用组件或代码、Mock数据和边界状态。
 - 对标记为“复用已有页面”或“参考已有框架”的页面，是否已完成代码参考验收，核对容器结构、步骤条、工具栏、底部按钮位置、关键交互和组件组织，并写清实际复用范围与新增差异。
 - HTML中AI Coding提示词是否可直接复制使用。
 - HTML总览AI Coding指导是否包含组件使用规则，要求严格按照页面区块、表格字段、表单字段和页面模板中标注的组件名称开发。
@@ -171,7 +173,7 @@
 | RULE-07 | 禁止未注册页面类型名称 | SKILL.md 强制模板契约与线框校验 | test_unregistered_type_fails |
 | RULE-08 | navigationType 在模板支持范围 | common-design-template-registry.json | — |
 | RULE-09 | 必需页面骨架区块存在 | common-design-template-registry.json | test_missing_title_bar_fails / test_missing_pagination_fails |
-| RULE-10 | requiredRegions 全部出现在 wireframe.regions | 03-demo-design-spec.md 结构化线框契约 | test_missing_pagination_fails |
+| RULE-10 | requiredRegions 全部出现在 wireframe.regions | 04-demo-output-spec.md 结构化线框契约 | test_missing_pagination_fails |
 | RULE-11 | regionOrder 与模板顺序一致 | common-design-template-registry.json | — |
 | RULE-12 | requiredComponents 已声明 | common-design-template-registry.json | test_stepper_uses_tabs_fails |
 | RULE-13 | sections 与 wireframe.regions 双向一致 | SKILL.md 强制模板契约与线框校验 | test_section_wireframe_mismatch_fails |
@@ -184,21 +186,22 @@
 | RULE-20 | footerActions 与模板对齐规则一致 | common-design-template-registry.json | test_drawer_footer_alignment_fails / test_form_config_footer_right_fails |
 | RULE-21 | footerActions 按钮顺序一致 | common-design-template-registry.json | test_form_config_footer_right_fails |
 | RULE-22 | wireframe 与页面内容区块一致 | SKILL.md 强制模板契约与线框校验 | — |
-| RULE-23 | codingGuide 含稳定开发项 ID | 04-interaction-coding-guidelines.md | — |
+| RULE-23 | codingGuide 含稳定开发项 ID | 05-interaction-coding-guidelines.md | — |
 | RULE-24 | partial/unavailable 时 target.path 为空 | SKILL.md 代码可用状态 | test_partial_path_not_empty_fails |
-| RULE-25 | 禁止 Vue3 专属绑定语法作为实现要求 | 04-interaction-coding-guidelines.md | — |
-| RULE-26 | 非普通文本字段声明组件映射 | 03-demo-design-spec.md | — |
+| RULE-25 | 禁止 Vue3 专属绑定语法作为实现要求 | 05-interaction-coding-guidelines.md | — |
+| RULE-26 | 非普通文本字段声明组件映射 | 04-demo-output-spec.md | — |
 | RULE-27 | legacy 自由文本线框兼容模式 | SKILL.md 强制模板契约与线框校验（兼容模式） | test_legacy_wireframe_warning_non_strict |
-| RULE-28 | 页面清单闭环：pageOverview(manifest) 与 pages 数组独立元素（弹窗/抽屉必须作为 pages 独立页面对象，children 仅允许写子容器 ID 字符串引用）的 ID/名称/类型/容器类型一致；页面遗漏、额外页面、重复页面、孤立容器 | 03-demo-design-spec.md 设计闭环自动校验 | test_manifest_page_missing_fails / test_manifest_metadata_mismatch_fails / test_orphan_container_fails |
-| RULE-29 | 操作目标闭环：open-container 必须存在 targetPageId 且容器类型正确；高影响操作必须二次确认；未知操作类型 warning | 03-demo-design-spec.md 设计闭环自动校验 | test_operation_target_missing_fails / test_operation_confirm_missing_fails / test_operation_closure_passes / test_operation_other_info |
-| RULE-30 | Tab 变体闭环（条件式）：页面显式声明 >=2 个内容 Tab 时，tabs/tabId 唯一、variants 数量与 tab 一一对应、variant 保留公共外壳且有内容区、sections 绑定 tabId | 03-demo-design-spec.md 设计闭环自动校验 | test_tabs_missing_variants_fails / test_tabs_variant_count_mismatch_fails / test_tabs_orphan_variant_fails / test_tabs_variant_no_shell_fails / test_tabs_variant_no_content_fails / test_tabs_section_invalid_fails / test_multitab_closure_passes |
-| RULE-31 | 页面级 Coding 闭环：pageContext.pageId 与页面 ID 一致、每页至少一个 Coding item、无孤立 Coding item | 03-demo-design-spec.md 设计闭环自动校验 | test_coding_page_context_mismatch_fails / test_coding_no_items_fails |
-| RULE-32 | 线框图绘制完整性：wireframe.ascii 必须按模板绘制，禁止一句话/几个字代替；ascii 过短或未覆盖模板必需区域即 error | 03-demo-design-spec.md 11.6 线框图绘制质量闭环 | test_wireframe_ascii_too_short_fails / test_wireframe_ascii_not_drawn_fails / test_wireframe_ascii_full_drawing_passes |
-| RULE-33 | 绘制与 regions 一致性：regions 声明的内容性区域在 ascii 中必须有对应绘制痕迹（warning） | 03-demo-design-spec.md 11.6 线框图绘制质量闭环 | test_wireframe_ascii_region_not_drawn_warns |
-| RULE-34 | 线框图布局完整性：ascii 禁止区域标签罗列（每行一个"区域名：内容"），必须绘制为完整页面布局字符画 | 03-demo-design-spec.md 11.6 线框图绘制质量闭环 | test_wireframe_label_list_fails / test_wireframe_full_layout_passes |
-| RULE-35 | 子容器平铺：children 中禁止内嵌完整页面对象，弹窗/抽屉必须作为 pages 数组独立元素，children 仅允许字符串 ID 引用 | 03-demo-design-spec.md 设计闭环自动校验 | test_child_page_not_flattened_fails / test_child_string_ref_passes |
-| RULE-36 | 字段完整性闭环：需求/规范明确要求的字段（表格列、表单项、筛选项、详情字段、配置项）必须逐项落入对应字段数组，未落位且无 excludedFields 排除原因的字段阻断生成 | 01-output-templates.md 字段完整性 / 03-demo-design-spec.md 设计闭环自动校验 | test_requirement_field_missing_fails / test_requirement_field_all_covered_passes / test_requirement_field_excluded_passes |
-| RULE-38 | 表格与详情字段一致性：表格有详情容器时，表格页 tableFields 展示的每个字段必须在对应详情容器字段数组（detailFields/cardFields/fields/tableFields 等）中存在对应项（Common Design 表格与详情字段一致规则兜底） | Common Design 表格与详情字段一致规则 / 03-demo-design-spec.md 11.7 表格与详情字段一致性闭环 | test_table_detail_field_mismatch_fails / test_table_detail_field_consistent_passes / test_table_detail_without_detail_skips / test_table_detail_via_children_fails |
+| RULE-28 | 页面清单闭环：pageOverview(manifest) 与 pages 数组独立元素（弹窗/抽屉必须作为 pages 独立页面对象，children 仅允许写子容器 ID 字符串引用）的 ID/名称/类型/容器类型一致；页面遗漏、额外页面、重复页面、孤立容器 | 04-demo-output-spec.md 设计闭环自动校验 | test_manifest_page_missing_fails / test_manifest_metadata_mismatch_fails / test_orphan_container_fails |
+| RULE-29 | 操作目标闭环：open-container 必须存在 targetPageId 且容器类型正确；高影响操作必须二次确认；未知操作类型 warning | 04-demo-output-spec.md 设计闭环自动校验 | test_operation_target_missing_fails / test_operation_confirm_missing_fails / test_operation_closure_passes / test_operation_other_info |
+| RULE-30 | Tab 变体闭环（条件式）：页面显式声明 >=2 个内容 Tab 时，tabs/tabId 唯一、variants 数量与 tab 一一对应、variant 保留公共外壳且有内容区、sections 绑定 tabId | 04-demo-output-spec.md 设计闭环自动校验 | test_tabs_missing_variants_fails / test_tabs_variant_count_mismatch_fails / test_tabs_orphan_variant_fails / test_tabs_variant_no_shell_fails / test_tabs_variant_no_content_fails / test_tabs_section_invalid_fails / test_multitab_closure_passes |
+| RULE-31 | 页面级 Coding 闭环：pageContext.pageId 与页面 ID 一致、每页至少一个 Coding item、无孤立 Coding item | 04-demo-output-spec.md 设计闭环自动校验 | test_coding_page_context_mismatch_fails / test_coding_no_items_fails |
+| RULE-32 | 线框图绘制完整性：wireframe.ascii 必须按模板绘制，禁止一句话/几个字代替；ascii 过短或未覆盖模板必需区域即 error | 04-demo-output-spec.md 11.6 线框图绘制质量闭环 | test_wireframe_ascii_too_short_fails / test_wireframe_ascii_not_drawn_fails / test_wireframe_ascii_full_drawing_passes |
+| RULE-33 | 绘制与 regions 一致性：regions 声明的内容性区域在 ascii 中必须有对应绘制痕迹（warning） | 04-demo-output-spec.md 11.6 线框图绘制质量闭环 | test_wireframe_ascii_region_not_drawn_warns |
+| RULE-34 | 线框图布局完整性：ascii 禁止区域标签罗列（每行一个"区域名：内容"），必须绘制为完整页面布局字符画 | 04-demo-output-spec.md 11.6 线框图绘制质量闭环 | test_wireframe_label_list_fails / test_wireframe_full_layout_passes |
+| RULE-35 | 子容器平铺：children 中禁止内嵌完整页面对象，弹窗/抽屉必须作为 pages 数组独立元素，children 仅允许字符串 ID 引用 | 04-demo-output-spec.md 设计闭环自动校验 | test_child_page_not_flattened_fails / test_child_string_ref_passes |
+| RULE-36 | 字段完整性闭环：需求/规范明确要求的字段（表格列、表单项、筛选项、详情字段、配置项）必须逐项落入对应字段数组，未落位且无 excludedFields 排除原因的字段阻断生成 | 01-output-templates.md 字段完整性 / 04-demo-output-spec.md 设计闭环自动校验 | test_requirement_field_missing_fails / test_requirement_field_all_covered_passes / test_requirement_field_excluded_passes |
+| RULE-38 | 表格与详情字段一致性：表格有详情容器时，表格页 tableFields 展示的每个字段必须在对应详情容器字段数组（detailFields/cardFields/fields/tableFields 等）中存在对应项（Common Design 表格与详情字段一致规则兜底） | Common Design 表格与详情字段一致规则 / 04-demo-output-spec.md 11.7 表格与详情字段一致性闭环 | test_table_detail_field_mismatch_fails / test_table_detail_field_consistent_passes / test_table_detail_without_detail_skips / test_table_detail_via_children_fails |
+| RULE-39 | 表格标签使用约束：同一表格内标签总数 <= 5；深色/icon/点状标签各仅允许 1 次、浅色标签最多 2 次（超出 error）；样式未标注或中性描述字段（资产类型/IP/域名等）占用标签配额时 warning（Common Design 标签（IxTag）样式使用约束兜底） | Common Design 标签（IxTag）样式使用约束 / 04-demo-output-spec.md 11.8 表格标签使用约束闭环 | test_table_tag_count_exceeded_fails / test_table_tag_style_overused_fails / test_table_tag_style_unspecified_warns / test_table_tag_neutral_field_warns / test_table_tag_usage_passes |
 
 新增校验规则的固定流程：
 
@@ -220,14 +223,15 @@
 - 线框图绘制质量闭环：`wireframe.ascii` 是否按模板绘制（过短或未覆盖模板必需区域会阻断）；regions 声明的内容性区域在 ascii 中是否有绘制痕迹（缺失给 warning）；HTML 生成前校验器拦截"只有几个字"的线框图。
 - 字段完整性闭环：需求/规范明确列出的字段（表格列、表单项、筛选项、详情描述字段、配置项）是否逐项落入对应区块的字段数组（tableFields/formFields/filterFields/cardFields 等）；未落位且无 excludedFields 排除原因的字段会被 RULE-36 阻断，不得为了简洁过滤或合并需求明确字段。
 - 表格与详情字段一致性闭环：表格有详情容器（open-container 指向详情类容器或 children 挂载的详情容器）时，表格页 tableFields 展示的每个字段是否都能在对应详情容器字段数组（detailFields/cardFields/fields/tableFields 等）中找到对应；缺失会被 RULE-38 阻断，表格无详情容器时不校验。
+- 表格标签使用约束闭环：每个表格区块（sections 中带 tableFields 的区块 + 页面级 tableFields）内标签使用是否克制——标签总数是否 <= 5；深色/icon/点状标签是否各自仅 1 次、浅色标签是否 <= 2 次；超出会被 RULE-39 阻断；标签样式未标注（无法自动校验同一样式重复）或中性描述字段（资产类型/IP/域名等）占用标签配额时给出 warning，提示把配额留给风险等级、处置/启用禁用状态等重要业务字段。
 
 ## 2. 禁止事项
 
 1. 用户未提供任何资料就自行生成需求分析或Demo方案。
 2. 输出长篇业务背景、故事版或各子场景未来旅程。
 3. 把线下流程、外部系统操作、技术实现或商业背景直接拆成Demo页面。
-4. 识别到业务设计Skill但未优先参考产品介绍、页面导航结构、页面说明和页面设计规范。
-5. 当前有Demo代码环境、用户指定参考模块或业务设计Skill提到相关模块时，未读取代码就直接生成页面拆解和Coding指导。
+4. 识别到Product Design但未优先参考产品介绍、页面导航结构、页面说明和页面设计规范。
+5. 当前有Demo代码环境、用户指定参考模块或Product Design提到相关模块时，未读取代码就直接生成页面拆解和Coding指导。
 6. 导航结构按每个页面重复书写，而不是综合展示覆盖范围。
 7. 对话框在页面总览表之后继续展开逐页设计说明、交互逻辑、状态规则、Mock数据或完整AI Coding提示词。
 8. 未输出待确认问题或未等待用户确认，就直接生成HTML设计说明书和AI Coding完整指导。
@@ -245,7 +249,7 @@
 20. 把基础表格页开发成随意表格，遗漏筛选/搜索、工具栏、分页或行内操作。
 21. 把抽屉、弹窗开发成页面内普通卡片，或把页面内容误开发成弹窗/抽屉。
 22. HTML线框图未先读取 已确认的页面类型结构，只画空白卡片、通用容器或与页面内容区块不一致的布局。
-23. 忽略业务设计Skill或已有代码中明确规定的组件习惯、筛选方式和页面容器。
+23. 忽略Product Design或已有代码中明确规定的组件习惯、筛选方式和页面容器。
 24. HTML设计说明书未执行组件识别：页面骨架缺少组件映射，筛选区未说明`IxProSearch`或独立组件组合，表格非普通文本列未标注组件名称，表单项未标注iDux组件名称，操作列、状态列、反馈类交互未标注组件。
 25. 在AI Coding提示词中要求实现真实后端、数据库或外部系统联调，除非用户明确要求。
 26. 页面未绑定标准模板或 custom 模板（含 baseTemplateId 与 overrideJustification）就直接生成 HTML 或进入 Coding。
@@ -280,13 +284,13 @@
 - 是否在输出Coding Plan前完成 Implementation Mapping Gate 并输出统一映射表；映射表是否纳入 Coding Plan。
 - 是否先输出具体Coding计划并获得用户确认，确认内容包含导航路径、全新开发页面、参考已有页面、复用已有功能点、新增实现功能点和开发顺序。
 - Coding计划是否只确认开发实现方式，未重新确认字段含义、业务规则、页面是否存在等业务设计内容。
-- Coding输入是否综合HTML设计说明书、原始需求资料、待确认问题回复、业务设计Skill和已有Demo代码，禁止把HTML当作唯一输入或机械执行稿。
+- Coding输入是否综合HTML设计说明书、原始需求资料、待确认问题回复、Product Design和已有Demo代码，禁止把HTML当作唯一输入或机械执行稿。
 - 是否按页面层级和页面依赖拆分开发顺序，优先完成可独立承载主旅程的页面，再实现其关联抽屉、弹窗和子页面。
 - 是否一个页面完成后再开始下一个页面，避免多页面同时改动导致上下文混乱；是否遵守并发开发限制：共享页面外壳、公共组件和实现映射冻结前未并行开发多个页面，父页面和子页面未同时 Coding。
 - 每完成一个页面，是否告知用户“已完成哪个页面，接下来开发哪个页面”。
 - 每个页面完成后是否做基础可运行校验、页面渲染校验、核心交互校验和视觉基线回归校验。
 - 是否将声明为直接引用、组件复用或复用框架的对象擅自改为全新开发。
 - 发现设计说明书与真实代码差异时，是否按实现层差异 / 设计层差异 / 业务事实缺失分级处理，未静默修改。
-- 如果HTML与用户确认内容、业务设计Skill或已有代码冲突，是否按更高优先级依据修正实现，并在开发进度说明中解释调整原因。
+- 如果HTML与用户确认内容、Product Design或已有代码冲突，是否按更高优先级依据修正实现，并在开发进度说明中解释调整原因。
 - 如果用户反馈Coding效果不好，是否先判断问题来源是需求理解、HTML设计说明、代码实现、业务规范还是组件复用策略，再决定修正HTML还是直接修正代码。
 - 全部页面开发完成后，是否完成功能、交互、组件复用和视觉基线回归验证，再告知用户Demo已开发完毕，并请用户说明需要调整的页面、交互或视觉细节。

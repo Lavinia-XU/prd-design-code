@@ -26,7 +26,7 @@ from pathlib import Path
 #      （pageId/errorCode/severity/path/message/expected/actual/sourceRef/fixSuggestion）；
 #   3. 在 run() 中按顺序注册调用；
 #   4. 在 tests/test_validate_demo_spec.py 补充用例；
-#   5. 在 references/01-workflow/05-quality-and-rules.md 登记表中同步一条。
+#   5. 在 references/01-workflow/06-quality-and-rules.md 登记表中同步一条。
 # 模板/数据类规则（requiredRegions、footer、variants、requiredComponents 等）
 # 直接维护 references/02-template-contracts/common-design-template-registry.json，
 # 无需改动校验代码。
@@ -41,7 +41,7 @@ RULES = [
     {"ruleId": "RULE-07", "errorCode": "UNREGISTERED_TYPE", "name": "禁止未注册页面类型名称", "check": "check_unregistered_type", "source": "SKILL.md 强制模板契约与线框校验", "tests": "test_unregistered_type_fails"},
     {"ruleId": "RULE-08", "errorCode": "NAVIGATION_TYPE_UNSUPPORTED", "name": "navigationType 在模板支持范围", "check": "check_navigation_type", "source": "references/02-template-contracts/common-design-template-registry.json", "tests": ""},
     {"ruleId": "RULE-09", "errorCode": "REQUIRED_REGION_MISSING", "name": "必需页面骨架区块存在", "check": "check_skeleton_regions", "source": "references/02-template-contracts/common-design-template-registry.json", "tests": "test_missing_title_bar_fails, test_missing_pagination_fails"},
-    {"ruleId": "RULE-10", "errorCode": "WIREFRAME_REGION_MISSING", "name": "requiredRegions 全部出现在 wireframe.regions", "check": "check_skeleton_regions", "source": "references/01-workflow/03-demo-design-spec.md 结构化线框契约", "tests": "test_missing_pagination_fails"},
+    {"ruleId": "RULE-10", "errorCode": "WIREFRAME_REGION_MISSING", "name": "requiredRegions 全部出现在 wireframe.regions", "check": "check_skeleton_regions", "source": "references/01-workflow/04-demo-output-spec.md 结构化线框契约", "tests": "test_missing_pagination_fails"},
     {"ruleId": "RULE-11", "errorCode": "REGION_ORDER_MISMATCH", "name": "regionOrder 与模板顺序一致", "check": "check_region_order", "source": "references/02-template-contracts/common-design-template-registry.json", "tests": ""},
     {"ruleId": "RULE-12", "errorCode": "REQUIRED_COMPONENT_MISSING", "name": "requiredComponents 已声明", "check": "check_required_components", "source": "references/02-template-contracts/common-design-template-registry.json", "tests": "test_stepper_uses_tabs_fails"},
     {"ruleId": "RULE-13", "errorCode": "SECTION_MISSING_IN_WIREFRAME / WIREFRAME_REGION_NO_BASIS", "name": "sections 与 wireframe.regions 双向一致", "check": "check_section_wireframe_consistency", "source": "SKILL.md 强制模板契约与线框校验", "tests": "test_section_wireframe_mismatch_fails"},
@@ -54,22 +54,24 @@ RULES = [
     {"ruleId": "RULE-20", "errorCode": "FOOTER_ALIGNMENT_MISMATCH", "name": "footerActions 与模板对齐规则一致", "check": "check_footer_alignment", "source": "references/02-template-contracts/common-design-template-registry.json", "tests": "test_drawer_footer_alignment_fails, test_form_config_footer_right_fails"},
     {"ruleId": "RULE-21", "errorCode": "FOOTER_ORDER_MISMATCH", "name": "footerActions 按钮顺序一致", "check": "check_footer_button_order", "source": "references/02-template-contracts/common-design-template-registry.json", "tests": "test_form_config_footer_right_fails"},
     {"ruleId": "RULE-22", "errorCode": "WIREFRAME_CONTENT_MISMATCH", "name": "wireframe 与页面内容区块一致", "check": "check_wireframe_content_consistency", "source": "SKILL.md 强制模板契约与线框校验", "tests": ""},
-    {"ruleId": "RULE-23", "errorCode": "CODING_ITEM_ID_MISSING", "name": "codingGuide 含稳定开发项 ID", "check": "check_coding_item_ids", "source": "references/01-workflow/04-interaction-coding-guidelines.md", "tests": ""},
+    {"ruleId": "RULE-23", "errorCode": "CODING_ITEM_ID_MISSING", "name": "codingGuide 含稳定开发项 ID", "check": "check_coding_item_ids", "source": "references/01-workflow/05-interaction-coding-guidelines.md", "tests": ""},
     {"ruleId": "RULE-24", "errorCode": "PATH_WITHOUT_VERIFY", "name": "partial/unavailable 时 target.path 为空", "check": "check_path_without_verify", "source": "SKILL.md 代码可用状态", "tests": "test_partial_path_not_empty_fails"},
-    {"ruleId": "RULE-25", "errorCode": "VUE3_SYNTAX", "name": "禁止 Vue3 专属绑定语法作为实现要求", "check": "check_vue3_syntax", "source": "references/01-workflow/04-interaction-coding-guidelines.md", "tests": ""},
-    {"ruleId": "RULE-26", "errorCode": "COMPONENT_MAPPING_MISSING", "name": "非普通文本字段声明组件映射", "check": "check_component_mapping", "source": "references/01-workflow/03-demo-design-spec.md", "tests": ""},
+    {"ruleId": "RULE-25", "errorCode": "VUE3_SYNTAX", "name": "禁止 Vue3 专属绑定语法作为实现要求", "check": "check_vue3_syntax", "source": "references/01-workflow/05-interaction-coding-guidelines.md", "tests": ""},
+    {"ruleId": "RULE-26", "errorCode": "COMPONENT_MAPPING_MISSING", "name": "非普通文本字段声明组件映射", "check": "check_component_mapping", "source": "references/01-workflow/04-demo-output-spec.md", "tests": ""},
     {"ruleId": "RULE-27", "errorCode": "LEGACY_WIREFRAME", "name": "legacy 自由文本线框兼容模式", "check": "check_legacy_wireframe", "source": "SKILL.md 强制模板契约与线框校验（兼容模式）", "tests": "test_legacy_wireframe_warning_non_strict"},
-    {"ruleId": "RULE-28", "errorCode": "MANIFEST_* / ORPHAN_CONTAINER", "name": "页面清单闭环：总览确认页面/容器与 pages（含 children）完整一致", "check": "check_manifest_closure", "source": "references/01-workflow/03-demo-design-spec.md 设计闭环", "tests": "test_manifest_page_missing_fails, test_orphan_container_warns"},
-    {"ruleId": "RULE-29", "errorCode": "OPERATION_*", "name": "操作目标闭环：open-container 目标存在、容器类型正确、高影响操作二次确认", "check": "check_operation_closure", "source": "references/01-workflow/03-demo-design-spec.md 设计闭环", "tests": "test_operation_target_missing_fails, test_operation_confirm_missing_fails"},
-    {"ruleId": "RULE-30", "errorCode": "TABS_*", "name": "Tab 变体闭环：多内容 Tab 页面强制完整变体、公共外壳与内容区、sections 绑定 tabId", "check": "check_tab_variants", "source": "references/01-workflow/03-demo-design-spec.md 设计闭环", "tests": "test_tabs_missing_variants_fails, test_tabs_variant_count_mismatch_fails, test_tabs_orphan_variant_fails, test_tabs_variant_no_shell_fails, test_tabs_variant_no_content_fails"},
-    {"ruleId": "RULE-31", "errorCode": "CODING_CLOSURE_*", "name": "页面级 Coding 闭环：pageContext 一致、每页至少一个开发项、无孤立开发项", "check": "check_coding_closure", "source": "references/01-workflow/03-demo-design-spec.md 设计闭环", "tests": "test_coding_page_context_mismatch_fails, test_coding_no_items_fails"},
-    {"ruleId": "RULE-32", "errorCode": "WIREFRAME_ASCII_TOO_SHORT / WIREFRAME_ASCII_NOT_DRAWN", "name": "线框图绘制质量：ascii 必须按模板绘制，禁止只有几个字或一句话", "check": "check_wireframe_drawing_quality", "source": "references/01-workflow/03-demo-design-spec.md 设计闭环", "tests": "test_ascii_too_short_fails, test_ascii_not_drawn_fails"},
-    {"ruleId": "RULE-33", "errorCode": "WIREFRAME_REGION_NOT_DRAWN", "name": "线框图双向一致性：regions 声明的内容性区块必须在 ascii 中有绘制痕迹", "check": "check_wireframe_region_drawn", "source": "references/01-workflow/03-demo-design-spec.md 设计闭环", "tests": "test_ascii_region_not_drawn_warns"},
-    {"ruleId": "RULE-34", "errorCode": "WIREFRAME_ASCII_LABEL_LIST", "name": "线框图布局完整性：ascii 禁止区域标签罗列，必须绘制为完整页面布局字符画", "check": "check_wireframe_label_list", "source": "references/01-workflow/03-demo-design-spec.md 设计闭环", "tests": "test_wireframe_label_list_fails, test_wireframe_full_layout_passes"},
-    {"ruleId": "RULE-35", "errorCode": "CHILD_PAGE_NOT_FLATTENED", "name": "页面平铺闭环：children 只允许子容器 ID 引用，禁止内嵌完整页面设计对象；子容器必须作为 pages 数组独立元素", "check": "check_child_page_flattened", "source": "references/01-workflow/03-demo-design-spec.md 设计闭环", "tests": "test_child_page_not_flattened_fails, test_child_id_reference_passes"},
+    {"ruleId": "RULE-28", "errorCode": "MANIFEST_* / ORPHAN_CONTAINER", "name": "页面清单闭环：总览确认页面/容器与 pages（含 children）完整一致", "check": "check_manifest_closure", "source": "references/01-workflow/04-demo-output-spec.md 设计闭环", "tests": "test_manifest_page_missing_fails, test_orphan_container_warns"},
+    {"ruleId": "RULE-29", "errorCode": "OPERATION_*", "name": "操作目标闭环：open-container 目标存在、容器类型正确、高影响操作二次确认", "check": "check_operation_closure", "source": "references/01-workflow/04-demo-output-spec.md 设计闭环", "tests": "test_operation_target_missing_fails, test_operation_confirm_missing_fails"},
+    {"ruleId": "RULE-30", "errorCode": "TABS_*", "name": "Tab 变体闭环：多内容 Tab 页面强制完整变体、公共外壳与内容区、sections 绑定 tabId", "check": "check_tab_variants", "source": "references/01-workflow/04-demo-output-spec.md 设计闭环", "tests": "test_tabs_missing_variants_fails, test_tabs_variant_count_mismatch_fails, test_tabs_orphan_variant_fails, test_tabs_variant_no_shell_fails, test_tabs_variant_no_content_fails"},
+    {"ruleId": "RULE-31", "errorCode": "CODING_CLOSURE_*", "name": "页面级 Coding 闭环：pageContext 一致、每页至少一个开发项、无孤立开发项", "check": "check_coding_closure", "source": "references/01-workflow/04-demo-output-spec.md 设计闭环", "tests": "test_coding_page_context_mismatch_fails, test_coding_no_items_fails"},
+    {"ruleId": "RULE-32", "errorCode": "WIREFRAME_ASCII_TOO_SHORT / WIREFRAME_ASCII_NOT_DRAWN", "name": "线框图绘制质量：ascii 必须按模板绘制，禁止只有几个字或一句话", "check": "check_wireframe_drawing_quality", "source": "references/01-workflow/04-demo-output-spec.md 设计闭环", "tests": "test_ascii_too_short_fails, test_ascii_not_drawn_fails"},
+    {"ruleId": "RULE-33", "errorCode": "WIREFRAME_REGION_NOT_DRAWN", "name": "线框图双向一致性：regions 声明的内容性区块必须在 ascii 中有绘制痕迹", "check": "check_wireframe_region_drawn", "source": "references/01-workflow/04-demo-output-spec.md 设计闭环", "tests": "test_ascii_region_not_drawn_warns"},
+    {"ruleId": "RULE-34", "errorCode": "WIREFRAME_ASCII_LABEL_LIST", "name": "线框图布局完整性：ascii 禁止区域标签罗列，必须绘制为完整页面布局字符画", "check": "check_wireframe_label_list", "source": "references/01-workflow/04-demo-output-spec.md 设计闭环", "tests": "test_wireframe_label_list_fails, test_wireframe_full_layout_passes"},
+    {"ruleId": "RULE-35", "errorCode": "CHILD_PAGE_NOT_FLATTENED", "name": "页面平铺闭环：children 只允许子容器 ID 引用，禁止内嵌完整页面设计对象；子容器必须作为 pages 数组独立元素", "check": "check_child_page_flattened", "source": "references/01-workflow/04-demo-output-spec.md 设计闭环", "tests": "test_child_page_not_flattened_fails, test_child_id_reference_passes"},
     {"ruleId": "RULE-36", "errorCode": "REQUIRED_FIELD_MISSING", "name": "字段完整性闭环：需求/规范明确要求的字段（表格列、表单项、筛选项、详情描述字段等）必须落入对应字段数组或 excludedFields 排除声明", "check": "check_requirement_fields", "source": "references/01-workflow/01-output-templates.md 字段完整性", "tests": "test_requirement_field_missing_fails, test_requirement_field_all_covered_passes, test_requirement_field_excluded_passes"},
-    {"ruleId": "RULE-37", "errorCode": "FOOTER_ASCII_ORDER_MISMATCH", "name": "线框图按钮顺序：ascii 中按钮出现顺序必须与模板 buttonOrder 一致（主操作在左、次操作在右）", "check": "check_footer_ascii_order", "source": "references/01-workflow/03-demo-design-spec.md 底部操作区", "tests": "test_footer_ascii_order_mismatch_fails, test_footer_ascii_order_passes"},
-    {"ruleId": "RULE-38", "errorCode": "TABLE_DETAIL_FIELD_MISMATCH", "name": "表格与详情字段一致性：表格页展示的每个字段必须在对应详情容器中存在（Common Design 表格与详情字段一致规则兜底）", "check": "check_table_detail_field_consistency", "source": "Common Design 表格与详情字段一致规则 / references/01-workflow/05-quality-and-rules.md", "tests": "test_table_detail_field_mismatch_fails, test_table_detail_field_consistent_passes, test_table_detail_without_detail_skips, test_table_detail_via_children_fails"},
+    {"ruleId": "RULE-37", "errorCode": "FOOTER_ASCII_ORDER_MISMATCH", "name": "线框图按钮顺序：ascii 中按钮出现顺序必须与模板 buttonOrder 一致（主操作在左、次操作在右）", "check": "check_footer_ascii_order", "source": "references/01-workflow/04-demo-output-spec.md 底部操作区", "tests": "test_footer_ascii_order_mismatch_fails, test_footer_ascii_order_passes"},
+    {"ruleId": "RULE-38", "errorCode": "TABLE_DETAIL_FIELD_MISMATCH", "name": "表格与详情字段一致性：表格页展示的每个字段必须在对应详情容器中存在（Common Design 表格与详情字段一致规则兜底）", "check": "check_table_detail_field_consistency", "source": "Common Design 表格与详情字段一致规则 / references/01-workflow/06-quality-and-rules.md", "tests": "test_table_detail_field_mismatch_fails, test_table_detail_field_consistent_passes, test_table_detail_without_detail_skips, test_table_detail_via_children_fails"},
+    {"ruleId": "RULE-39", "errorCode": "TABLE_TAG_*", "name": "表格标签使用约束：同一表格内标签总数 <= 5，深色/icon/点状标签各仅允许 1 次、浅色标签最多 2 次，样式未标注或中性描述字段占用标签配额时 warning 提示（Common Design 标签（IxTag）样式使用约束兜底）", "check": "check_table_tag_usage", "source": "Common Design 标签（IxTag）样式使用约束", "tests": "test_table_tag_count_exceeded_fails, test_table_tag_style_overused_fails, test_table_tag_style_unspecified_warns, test_table_tag_neutral_field_warns, test_table_tag_usage_passes"},
+    {"ruleId": "RULE-40", "errorCode": "DESIGN_REF_*", "name": "设计依据可追溯：声称引用 Design Skill 的决策必须在页面 codingGuide.designReferences 登记来源（source 为 common-design/product-design/code/ai-fill，ref 非空）；无来源的决策须标 ai-fill（warning，不校验是否读全）", "check": "check_design_references", "source": "references/01-workflow/00-design-skill-resolver.md 能力识别参考框架 / SKILL.md 输出可追溯", "tests": ""},
 ]
 
 # 页面 type（中文）与标准模板的映射
@@ -126,6 +128,23 @@ VUE3_PATTERNS = [
     "@click", "@change", "@input", "@submit", ":disabled",
     ":visible", ":loading", ":data", ":model", ":options", ":columns",
 ]
+
+# 表格标签使用约束（Common Design 标签（IxTag）样式使用约束）
+# 同一个表格内：标签总数 <= 5；深色/icon/点状标签各自仅允许 1 次；浅色标签最多 2 次。
+TAG_MAX_COUNT = 5
+TAG_STYLE_LIMITS = {"dark": 1, "icon": 1, "dot": 1, "light": 2}
+TAG_STYLE_KEYS = {
+    "dark": ["深色", "dark"],
+    "icon": ["icon", "图标", "带图标"],
+    "dot": ["点状", "状态点", "dot"],
+    "light": ["浅色", "light"],
+}
+TAG_STYLE_NAMES = {"dark": "深色", "icon": "icon", "dot": "点状", "light": "浅色"}
+# 中性描述字段：标签配额不足时应改用普通文本或等宽文本，不占用标签配额
+TAG_NEUTRAL_FIELD_KEYS = (
+    "资产类型", "资产", "ip", "域名", "端口", "路径", "url",
+    "地址", "主机", "mac", "序列号", "编号", "创建时间", "更新时间",
+)
 
 
 def norm(text):
@@ -1005,6 +1024,157 @@ class Validator:
                                source_ref="Common Design 表格与详情字段一致规则",
                                fix="将表格中展示的字段补充到对应详情容器的字段数组（detailFields/cardFields/fields/tableFields），或从表格移除该字段")
 
+    def _collect_table_blocks(self, page):
+        """收集页面内每个表格区块的字段列表（sections 中带 tableFields 的区块 + 页面级 tableFields）。"""
+        blocks = []
+        for section in self.page_sections(page):
+            fields = section.get("tableFields") or []
+            if fields:
+                blocks.append((section.get("title") or "表格区", fields))
+        page_fields = page.get("tableFields") or []
+        if page_fields:
+            blocks.append(("页面级表格", page_fields))
+        return blocks
+
+    def _is_tag_field(self, field):
+        """字段是否为标签组件（IxTag / 标签）。"""
+        if not isinstance(field, dict):
+            return False
+        comp = str(field.get("iduxComponent") or "").lower()
+        if "ixtag" in comp:
+            return True
+        if "tag" in comp and "select" not in comp:
+            return True
+        text = " ".join(str(field.get(k) or "") for k in ("component", "display"))
+        return "标签" in text
+
+    def _tag_style(self, field):
+        """识别标签字段样式：dark/icon/dot/light，未标注返回 None。"""
+        if not isinstance(field, dict):
+            return None
+        texts = [str(field.get(k) or "") for k in ("display", "description", "style", "tagType", "tagStyle")]
+        joined = " ".join(texts).lower()
+        for style, keys in TAG_STYLE_KEYS.items():
+            if any(k.lower() in joined for k in keys):
+                return style
+        return None
+
+    def check_table_tag_usage(self):
+        """RULE-39 表格标签使用约束（Common Design 标签（IxTag）样式使用约束兜底）。
+
+        同一个表格内：
+          - 标签使用数量 <= 5（超出 -> error）
+          - 深色/icon/点状标签各自仅允许 1 次、浅色标签最多 2 次（超出 -> error）
+          - 存在 >= 2 个标签且样式未标注时 warning，提示无法自动校验“同一样式仅允许 1 次”
+          - 中性描述字段（资产类型/IP/域名等）使用标签时 warning，提示配额优先留给重要业务字段
+        """
+        for page in self.data.get("pages", []):
+            pid = page.get("id", "")
+            for block_title, fields in self._collect_table_blocks(page):
+                tag_fields = [(f, self._tag_style(f)) for f in fields if self._is_tag_field(f)]
+                if not tag_fields:
+                    continue
+                path = f"$.pages[{self._idx(page)}].sections"
+                source_ref = "Common Design 标签（IxTag）样式使用约束"
+                # 1) 标签总数配额
+                if len(tag_fields) > TAG_MAX_COUNT:
+                    self.add_error(pid, "TABLE_TAG_COUNT_EXCEEDED", "error", path,
+                                   f"表格区块「{block_title}」标签使用数量超过配额：{len(tag_fields)} 个（上限 {TAG_MAX_COUNT} 个）",
+                                   f"同一表格内标签数量 <= {TAG_MAX_COUNT}", f"{len(tag_fields)} 个",
+                                   source_ref=source_ref,
+                                   fix=f"削减标签字段至 {TAG_MAX_COUNT} 个以内；标签配额优先留给风险等级、处置/启用禁用状态、本身命名为“标签”的重要业务字段，中性描述字段改用普通文本或等宽文本")
+                # 2) 样式配额：深色/icon/点状各仅 1 次，浅色最多 2 次
+                style_counts = {}
+                for _f, style in tag_fields:
+                    style_counts[style] = style_counts.get(style, 0) + 1
+                for style, limit in TAG_STYLE_LIMITS.items():
+                    cnt = style_counts.get(style, 0)
+                    if cnt > limit:
+                        self.add_error(pid, "TABLE_TAG_STYLE_OVERUSED", "error", path,
+                                       f"表格区块「{block_title}」{TAG_STYLE_NAMES[style]}标签使用 {cnt} 次，超过同一样式配额（{limit} 次）",
+                                       f"{TAG_STYLE_NAMES[style]}标签最多 {limit} 次", f"{cnt} 次",
+                                       source_ref=source_ref,
+                                       fix=f"同一表格内{TAG_STYLE_NAMES[style]}标签仅保留 {limit} 个，其余字段改用其他样式或普通文本，禁止多个字段同时使用同一样式")
+                # 3) 样式未标注：无法自动校验“同一样式仅 1 次”的盲区提示（双重检查）
+                unspecified = [f for f, s in tag_fields if s is None]
+                if len(tag_fields) >= 2 and unspecified:
+                    self.add_error(pid, "TABLE_TAG_STYLE_UNSPECIFIED", "warning", path,
+                                   f"表格区块「{block_title}」存在 {len(unspecified)} 个标签字段未标注样式（深色/浅色/icon/点状），无法自动校验“同一样式仅允许出现 1 次”",
+                                   "标签字段在 display/description 中标注样式", "样式未标注",
+                                   source_ref=source_ref,
+                                   fix="为标签字段标注样式（深色/浅色/icon/点状），确保深色/icon/点状各不超过 1 个、浅色不超过 2 个，禁止多个字段同时使用同一样式")
+                # 4) 中性描述字段不占用标签配额
+                for f, _style in tag_fields:
+                    name = str(f.get("name") or "")
+                    if any(k in name.lower() for k in TAG_NEUTRAL_FIELD_KEYS):
+                        self.add_error(pid, "TABLE_TAG_NEUTRAL_FIELD", "warning", path,
+                                       f"表格区块「{block_title}」中性描述字段「{name}」使用了标签组件，标签配额应优先留给风险等级、处置/启用禁用状态等重要业务字段",
+                                       "中性描述字段使用普通文本或等宽文本", f"「{name}」使用标签组件",
+                                       source_ref=source_ref,
+                                       fix=f"将「{name}」改为普通文本或等宽文本，把标签配额留给需要凸显的重要业务状态字段")
+
+    def check_design_references(self):
+        """RULE-40 设计依据可追溯：声称引用 Design Skill 的决策必须在 codingGuide.designReferences 登记来源。
+
+        warning 级：只校验“声称有依据却无登记”和“登记格式非法”，不校验是否读全所有层。
+        """
+        allowed_sources = ("common-design", "product-design", "code", "ai-fill")
+        for page, path in self.all_pages:
+            pid = page.get("id", "")
+            cg = page.get("codingGuide") or {}
+            refs = cg.get("designReferences")
+            if refs is None:
+                # 页面存在声称引用 Design Skill 的来源标注，但无 designReferences 登记
+                claimed = self._claimed_design_sources(page)
+                if claimed:
+                    self.add_error(pid, "DESIGN_REF_MISSING", "warning",
+                                   f"{path}.codingGuide.designReferences",
+                                   f"页面声称引用 {claimed}，但 codingGuide.designReferences 缺失",
+                                   "designReferences 登记", "缺失",
+                                   fix="在 codingGuide.designReferences 中登记对应来源")
+                continue
+            if not isinstance(refs, list):
+                self.add_error(pid, "DESIGN_REF_TYPE", "warning",
+                               f"{path}.codingGuide.designReferences",
+                               "designReferences 必须是数组", "数组", type(refs).__name__,
+                               fix="将 designReferences 改为数组")
+                continue
+            for i, ref in enumerate(refs):
+                if not isinstance(ref, dict):
+                    self.add_error(pid, "DESIGN_REF_ITEM", "warning",
+                                   f"{path}.codingGuide.designReferences[{i}]",
+                                   "引用项必须是对象", "对象", type(ref).__name__,
+                                   fix="将引用项改为对象")
+                    continue
+                src = str(ref.get("source", "")).strip()
+                if src not in allowed_sources:
+                    self.add_error(pid, "DESIGN_REF_SOURCE", "warning",
+                                   f"{path}.codingGuide.designReferences[{i}].source",
+                                   f"source 必须为 {allowed_sources} 之一",
+                                   "合法 source", src or "空",
+                                   fix="修正 source 取值")
+                if not str(ref.get("ref", "")).strip():
+                    self.add_error(pid, "DESIGN_REF_REF", "warning",
+                                   f"{path}.codingGuide.designReferences[{i}].ref",
+                                   "ref 来源标识不能为空", "非空 ref", "空",
+                                   fix="补充 ref 来源标识")
+
+    def _claimed_design_sources(self, page):
+        """收集页面中显式声称引用 Design Skill 的来源标注。"""
+        claimed = set()
+        rr = page.get("restoreRequirement") or {}
+        for comp in rr.get("components") or []:
+            src = str(comp.get("source", ""))
+            if "Product Design" in src:
+                claimed.add("Product Design")
+            if "Common Design" in src:
+                claimed.add("Common Design")
+        tc = page.get("templateContract") or {}
+        ov = tc.get("override") or {}
+        if "Product Design" in str(ov.get("source", "")):
+            claimed.add("Product Design")
+        return sorted(claimed)
+
     def check_footer_ascii_order(self):
         """RULE-37 线框图按钮顺序：ascii 中底部按钮出现顺序必须与模板 buttonOrder 一致（主操作在左、次操作在右）。"""
         button_keys = {
@@ -1440,6 +1610,10 @@ class Validator:
         self.check_requirement_fields()
         # ---- 表格与详情字段一致性闭环（RULE-38）：表格展示字段必须在对应详情容器中存在 ----
         self.check_table_detail_field_consistency()
+        # ---- 表格标签使用约束（RULE-39）：同一表格内标签总数与样式配额（Common Design 标签样式约束兜底）----
+        self.check_table_tag_usage()
+        # ---- 设计依据可追溯（RULE-40）：声称引用 Design Skill 的决策须登记来源，无来源须标 ai-fill ----
+        self.check_design_references()
         self.check_footer_ascii_order()
 
     def result(self):
