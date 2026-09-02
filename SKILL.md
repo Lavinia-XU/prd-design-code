@@ -171,7 +171,12 @@ metadata:
 - 页面级AI Coding指导必须使用结构化开发项：HTML 展示“编号、开发对象、开发方式、复用与代码映射、实现要求、完成判定”六列表格，JSON 使用固定字段（id/scope/name/mode/mappingRef/mappingStatus/target/sourceRefs/dependencies/requirements/states/mockContract/acceptanceCriteria/prohibitedChanges），页面 codingGuide 固定为 pageContext + implementationRules + items + mockContract + stateContract + acceptanceCriteria + outOfScope，字段规范详见 [Coding指导与执行规范](references/01-workflow/05-interaction-coding-guidelines.md)；开发项须有稳定 ID，Coding Plan、Coding Execution 和 Verification 使用相同 ID 追踪，不得改名、合并或遗漏。不重复罗列字段级组件明细，但必须写明组件使用规则：严格按照页面区块、表格字段、表单字段中标注的组件名称开发，不得用原生HTML或其他组件替代；页面模板中已指定的标题栏、筛选区、表格、分页、弹窗、抽屉等组件，应按模板组件骨架实现；字段表中标注为标签、链接按钮、状态徽标、下拉选择、日期范围、开关等组件的内容，必须使用对应iDux或公司封装组件实现；未标注组件名称的普通文本/数字字段，可按常规文本渲染，如实现时发现交互含义，应回查Common Design组件映射表补齐。涉及已有页面、模块或业务组件时明确复用对象。
 - 将逐页设计说明、页面内容区块、交互逻辑、状态规则、Mock数据和AI Coding指导整理为结构化JSON。
 - 调用脚本生成HTML：`python scripts/generate_demo_spec_html.py --input ./demo-spec.json --output ./demo-design-spec.html --template-registry references/02-template-contracts/common-design-template-registry.json`。生成器默认 strict 模式，生成前自动执行模板契约校验，校验失败禁止写入 HTML；仅兼容旧 JSON 时使用 `--allow-legacy-wireframe`。
-- HTML默认直接输出到项目根目录，禁止写入已有文件夹；仅当用户明确指定其他位置时才使用指定路径。
+- 输出目录判定（HTML 与 demo-spec.json 同目录输出）：
+  - 用户明确指定输出位置时，输出到用户指定位置；
+  - 项目根目录存在 `.demo/design/` 且可确定对应 `{hash}` 子目录（`{hash}` 为真实存在的子目录名：优先取当前需求上下文确定的 hash，无法确定时若 `.demo/design/` 下仅有一个子目录则直接采用该子目录）时，输出到 `.demo/design/{hash}/`；
+  - 找不到或无法确定 `.demo/design/{hash}/` 时，默认输出到项目根目录。
+- 目录探测为只读静默检查，不创建、不修改目录；未找到 `.demo/design/{hash}/` 时直接按项目根目录输出，不得报错、中断或要求用户等待，不得因输出目录问题影响设计说明书生成。
+- 输出目录仅限上述位置，禁止写入项目业务代码目录或已有功能文件夹。
 - HTML标题使用“XX需求设计说明书”；左侧目录只包含总览和按页面层级组织的页面目录，不包含待确认问题。
 
 ## Step 6.5 Implementation Mapping Gate（代码实现映射阶段）
@@ -215,8 +220,19 @@ metadata:
 - Coding Plan必须逐项映射HTML页面级AI Coding指导，不得遗漏、合并或自行改写开发项。
 - 只有用户明确同意后，才进入Coding Execution。
 
+## Step 7.5 编码 Skill 声明识别（Coding 前置必做）
+
+- 进入 Coding Execution 前，必须先主动查询当前项目文件中是否存在编码相关声明与编码类 Skill；该识别是编码前的必做动作，不得跳过，也不得因未找到而停止编码。
+- 查询对象：
+  - 项目根目录及约定的文档/配置目录中的声明与约定文件（如 README、AGENTS.md、CLAUDE.md、copilot-instructions、docs 下的项目说明或编码约定文档），查找其中关于“编码 / Coding / 开发实现应使用或遵循某 Skill”的明确声明；
+  - 项目内实际存在的编码类 Skill 资源（如 skills/ 等目录下的 SKILL.md，其 metadata 或描述与 coding / 编码 / 开发实现相关）。
+- 采用规则：声明或资源指向明确时，通过当前环境 Skill 查询能力实际查询并读取该 Skill 的 SKILL.md，确认其为编码相关后，将其规则作为 Coding Execution 的执行依据；未实际查询和读取的 Skill 一律视为不存在，禁止假设或虚构，禁止仅凭名称猜测其内容。
+- 采用边界：项目声明的编码 Skill 约束 Coding Execution 的实现方式与执行细节（如框架约定、代码组织、命名、工具链、复用与新增策略），不得推翻已确认的 HTML 页面结构、组件映射、复用对象和开发项；其规则与 HTML / Coding Plan 冲突时，按“差异分级与处理规则”处理。
+- 兜底：未找到项目声明的编码类 Skill、声明无法对应到可查询 Skill，或项目无编码相关声明时，按本 Skill 默认 Coding Execution 流程继续编码；不得因未找到而停止、挂起编码或要求用户等待，识别结果记入 Coding Execution 进度输出。
+
 ## Step 8 Coding Execution
 
+- 开始逐页编码前，确认 Step 7.5 编码 Skill 声明识别已完成并明确其识别结果。
 - 按HTML左侧页面目录和页面层级拆分Coding任务，一个页面完成并自检后，再开始下一个页面。
 - 先开发父级主页面，再开发新增、编辑、详情、弹窗、抽屉或下钻页面，确保入口和跳转链路可运行。
 - 每页开发前核对Design Context、HTML页面说明、页面级Coding指导、复用对象和Mock数据要求。
@@ -230,7 +246,7 @@ metadata:
 ## Step 9 Verification
 
 - 读取 [质量自检机制与规则](references/01-workflow/06-quality-and-rules.md)，执行输出边界、Design Context、页面总览、HTML说明书、Coding Plan和Coding结果检查。
-- 验证HTML说明书是否生成在项目根目录、页面总览与HTML逐页说明是否一致、页面结构与Design Context是否一致。
+- 验证HTML说明书输出目录是否符合输出目录判定规则（用户指定位置 / 可发现的 `.demo/design/{hash}/` / 默认项目根目录），且 demo-spec.json 与 HTML 位于同一输出目录；页面总览与HTML逐页说明是否一致、页面结构与Design Context是否一致。
 - 验证Coding实现是否落实HTML页面级开发项、复用策略、页面结构、关键字段、操作、状态、边界和Mock数据。
 - 验证视觉基线：属于已有业务主题或已有页面体系的需求，必须对照真实参考页面做视觉回归，覆盖页面容器、页面标题层级、Tab 结构、筛选区、工具栏、表格容器、表格字段展示、状态组件、操作列、按钮位置和顺序、间距边界和空状态、高风险确认链路；功能行为、组件复用、页面结构和视觉基线回归均通过后，才可宣称 Demo 完整交付。
 - 若用户反馈Coding效果不好，先判断问题来源是需求理解、Design Context、HTML说明书、代码实现、业务规范还是组件复用策略，再决定回到对应步骤修正。
@@ -282,7 +298,7 @@ metadata:
 - 对话框输出：需求与Demo范围、核心用户与场景、Design Context摘要、导航结构、页面总览表、待确认问题、HTML文件路径、Coding Plan和Coding执行进度。
 - HTML输出：总览页、导航结构、页面总览表、逐页页面目标、页面基础信息、页面内容区块、Wireframe / ASCII线框图（先展示完整线框图，下方补充线框说明与变体）、底部操作、页面级AI Coding指导（开头输出模板契约：templateId/templateSource/模板必需区域/区域顺序/底部操作契约）、Mock数据要求。
 - Coding Plan输出：输入来源、Design Context使用方式、Implementation Mapping Gate映射结果、页面开发顺序、复用对象、新增开发项、风险与确认点。
-- Coding Execution输出：按页开发进度、页面级验证结论、下一页计划、最终完成说明。
+- Coding Execution输出：编码 Skill 声明识别结果（是否找到、采用的编码 Skill、未找到时的默认执行说明）、按页开发进度、页面级验证结论、下一页计划、最终完成说明。
 - 禁止在对话框展开HTML逐页详情、完整交互规则、完整Mock数据和完整AI Coding提示词。
 
 # Quality Gate
@@ -297,7 +313,7 @@ metadata:
 - 未使用未匹配产品的Product Design；未通过产品缩写或普通关键词猜测Product Design。
 - 页面总览与HTML逐页说明中的页面ID、页面名称、页面类型、导航路径和入口方式一致。
 - 待确认问题已在HTML前输出并等待用户确认；未把待确认问题写入HTML。
-- HTML文件默认生成在项目根目录，未写入已有文件夹。
+- HTML文件与 demo-spec.json 已按输出目录判定规则输出（用户指定位置 / 可发现的 `.demo/design/{hash}/` / 默认项目根目录），未写入项目业务代码目录或已有功能文件夹；未发现目标目录时已回退默认目录且未中断生成。
 - HTML说明书覆盖逐页设计、交互逻辑、边界状态、Mock数据和AI Coding指导。
 - Implementation Mapping Gate 由 AI 自动执行；输出 Coding Plan 前已输出统一映射表，所有必需复用对象均为“已验证”；必需对象为“阻塞”时未继续输出 Coding Plan；“待核验”只存在于 Gate 执行前，不作为 Gate 完成后的结果。
 - 设计说明书与真实代码的差异已完成分级处理：实现层差异已记录并更新 Coding Plan，设计层差异已修正 HTML 并重新获得用户确认，业务事实缺失已进入待确认问题；未将实现层差异静默改为全新开发。
@@ -305,6 +321,7 @@ metadata:
 - 模板契约校验通过后才生成 HTML；HTML 生成成功不代表校验通过；校验通过时 HTML 顶部不显示校验横幅，校验失败（含 legacy 兼容模式）时 HTML 顶部显示失败提示横幅，validationStatus 非 passed 时未进入 Implementation Mapping Gate，wireframe 结构校验失败时未输出 Coding Plan。
 - 每个页面已绑定标准 templateId 或 custom 模板（含 baseTemplateId、customReason 与 override.affectedRules）；navigationType 已声明或按 assumed + source 处理；未使用未注册页面类型名称；未在 strict 模式下静默通过 legacy 自由文本线框。
 - Coding Plan逐项映射HTML页面级AI Coding指导，并获得用户确认后才执行。
+- 进入 Coding Execution 前已完成 Step 7.5 项目编码 Skill 声明识别：存在明确声明时已按声明的编码 Skill 执行且未越界改变 HTML 已确认的页面结构与开发项；未找到或无法确认时已按默认流程继续编码，未虚构、未阻断。
 - Coding Execution按页面顺序推进，每页完成后做页面级核对；未在共享页面骨架冻结前并发 Coding。
 
 # 本 Skill 自有资源
