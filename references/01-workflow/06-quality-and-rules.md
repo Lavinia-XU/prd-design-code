@@ -118,7 +118,7 @@
 - `verified` 状态下的复用对象是否精确到真实页面文件、组件名称、文件路径、关键 Props / Events / Slots 或使用方式、复用类型和相对已有实现的新增差异。
 - `partial` / `unavailable` 状态下，是否只写语义级描述（如标准列表容器、业务策略列表框架、业务对象展示组件、标准状态切换组件、标准高风险确认链路），是否未虚构真实文件路径、组件路径、Props、Events 或调用方式。
 - 设计阶段没有代码时，是否未阻断需求设计，并明确区分语义级描述与“Coding 阶段待核验”对象。
-- 是否未通过硬编码产品名称或缩写确定产品身份；产品身份是否依据 Product Design 的 metadata、product_id 或 Resolver 结果。
+- 是否未通过硬编码产品名称或缩写确定产品身份；产品身份是否依据 Product Design 的 metadata、product_id（同一产品存在多个名称时是否按声明的多标识集合匹配，需求产品名命中任一标识即视为同一产品）或 Resolver 结果。
 
 ### 1.10 Implementation Mapping Gate 检查
 
@@ -261,7 +261,7 @@
 27. 未经 Implementation Mapping Gate 直接开始 Coding，或在共享页面外壳、公共组件、实现映射尚未冻结时并发开发多个页面。
 28. 把实现层差异静默改为全新开发，或发现设计层差异后不修正 HTML 并重新确认就直接 Coding。
 29. 未完成视觉基线回归就宣称 Demo 完整交付。
-30. 在通用 Skill 内容中硬编码具体产线或产品名称，或通过产品名称缩写猜测 Product Design。
+30. 在通用 Skill 内容中硬编码具体产线或产品名称，或通过产品名称缩写猜测 Product Design。（Product Design 在 metadata 中显式声明的多产品标识（如 `product_id: aes, dr`）属合法标识声明，不属于本条所指的硬编码或缩写猜测。）
 
 ## 3. 表达风格要求
 
@@ -280,10 +280,10 @@
 当HTML设计说明书生成后以及用户确认Coding计划后，执行前和执行中检查：
 
 - 是否先提醒用户查看HTML页面内容，并说明如果HTML需要调整可直接告知修改点。
-- 如果用户在开始Coding前反馈HTML修改意见，是否已先更新设计说明JSON并重新生成最新HTML，再重新执行 Implementation Mapping Gate，再重新输出Coding计划确认。
+- 如果用户在开始Coding前反馈HTML修改意见，是否已先更新设计说明JSON并重新生成最新HTML，再重新执行 Implementation Mapping Gate，再输出最新Coding Plan并自动继续 Coding，未再次要求用户确认 Coding Plan。
 - 是否在输出Coding Plan前完成 Implementation Mapping Gate 并输出统一映射表；映射表是否纳入 Coding Plan。
-- 是否先输出具体Coding计划并获得用户确认，确认内容包含导航路径、全新开发页面、参考已有页面、复用已有功能点、新增实现功能点和开发顺序。
-- Coding计划是否只确认开发实现方式，未重新确认字段含义、业务规则、页面是否存在等业务设计内容。
+- 是否先输出具体Coding计划（导航路径、全新开发页面、参考已有页面、复用已有功能点、新增实现功能点和开发顺序），输出后即自动进入 Coding Execution；用户确认仅发生在待确认问题和 HTML 设计说明书两处。
+- Coding Plan 是否只描述开发实现方式，未重新引入字段含义、业务规则、页面是否存在等业务设计确认（此类内容已在待确认问题和 HTML 确认阶段完成）。
 - Coding输入是否综合HTML设计说明书、原始需求资料、待确认问题回复、Product Design和已有Demo代码，禁止把HTML当作唯一输入或机械执行稿。
 - 是否按页面层级和页面依赖拆分开发顺序，优先完成可独立承载主旅程的页面，再实现其关联抽屉、弹窗和子页面。
 - 进入 Coding Execution 前，是否完成 Step 7.5 项目编码 Skill 声明识别并记录结果（是否找到项目文件中的编码相关声明或编码类 Skill、采用的编码 Skill、未找到时的默认执行说明）。

@@ -19,7 +19,7 @@ metadata:
 - A 不维护具体设计规范：具体页面类型、业务主题、组件、导航、表格、表单、状态、术语等设计知识应来自 Common Design、Product Design、已有代码或用户输入。
 - A 负责把设计知识装配成当前任务可执行的 Design Context，并确保后续页面设计、HTML说明书和Coding执行均基于该上下文。
 - A 负责控制输出边界：对话框只展开到页面总览和待确认问题；逐页设计、交互细节、Mock数据和AI Coding详细指导写入HTML说明书。
-- 职责边界：本 Skill 只负责发现、调用、装配和核验设计知识，不维护任何具体产线的业务模型、业务组件规范或仓库页面路径；产品身份必须通过 Product Design 的 metadata、product_id 或 Resolver 结果确定，禁止在本 Skill 内容中硬编码具体产线或产品名称，禁止用产品名称或缩写猜测 Product Design。
+- 职责边界：本 Skill 只负责发现、调用、装配和核验设计知识，不维护任何具体产线的业务模型、业务组件规范或仓库页面路径；产品身份必须通过 Product Design 的 metadata、product_id（同一产品存在多个名称时按声明的多标识集合判断，需求产品名命中任一标识即视为同一产品）或 Resolver 结果确定，禁止在本 Skill 内容中硬编码具体产线或产品名称，禁止用产品名称或缩写猜测 Product Design。
 
 # 设计知识调用与优先级
 
@@ -27,7 +27,7 @@ metadata:
 - Design Skill必须通过当前环境的Skill查询能力实际发现并读取；未实际查询和读取的Skill一律视为不存在，禁止假设或虚构。
 - 只有完成“查询 → 读取SKILL.md → metadata校验”的Design Skill，才允许进入当前任务的Design Context并作为设计依据。
 - Common Design：优先识别声明`skill_type: common-design`的Skill，作为通用设计规则来源；若只有一个Common Design，直接使用。Common Design是进入正式页面设计阶段的必需依赖：未查询到Common Design，或查询到但无法成功读取其SKILL.md时，不得使用AI自身通用设计知识模拟Common Design；应停止进入正式页面设计，并提示缺少Common Design。读取Common Design时必须明确读取组件映射表和页面模板里的推荐组件，用于页面骨架、筛选区、表格字段、表单字段和反馈类组件映射。
-- Product Design：作为可选增强依赖。先识别当前需求所属产品或当前可确认的产品范围，再寻找`skill_type: product-design`且`product_id`与其一致的Skill；产品身份必须通过 Product Design 的 metadata、product_id 或 Resolver 结果确定，禁止仅通过Skill名称中是否出现XDR、SASE、DSP等缩写判断，也禁止在本 Skill 内容中硬编码具体产线或产品名称。未找到匹配Product Design属于正常执行状态，不阻断流程、不作为待确认问题，进入Common Design模式继续执行，并结合当前代码环境和AI补齐。只有产品身份会影响导航、业务规则或Product Design选择，且无法根据现有输入确定时，才进入待确认问题；发现多个可能匹配的Product Design且无法判断选择对象时，也进入待确认问题。
+- Product Design：作为可选增强依赖。先识别当前需求所属产品或需求中明确出现的产品名称，再寻找`skill_type: product-design`且需求产品名命中其任一产品标识的Skill；Product Design 通过 metadata 的 `product_id` 声明其服务的产品标识，同一产品存在多个名称（例如 AES 与 DR 为同一产品，需求资料可能显示为 DR 但需使用 AES 的 Product Design）时 `product_id` 允许声明逗号分隔的多个标识（如 `product_id: aes, dr`），需求产品名（主名或别名）与任一标识一致（忽略大小写与空白）即匹配并可调用，不得要求需求产品名必须与主标识一致；产品身份必须通过 Product Design 的 metadata、product_id（含多标识声明）或 Resolver 结果确定，禁止仅通过Skill名称中是否出现XDR、SASE、DSP等缩写判断，也禁止在本 Skill 内容中硬编码具体产线或产品名称。未找到匹配Product Design属于正常执行状态，不阻断流程、不作为待确认问题，进入Common Design模式继续执行，并结合当前代码环境和AI补齐。只有产品身份会影响导航、业务规则或Product Design选择，且无法根据现有输入确定时，才进入待确认问题；发现多个可能匹配的Product Design（含同一需求产品名命中多个Product Design的多标识声明）且无法判断选择对象时，也进入待确认问题。
 - Product Design 组件映射处理：
   - 若 Product Design 已提供业务组件映射，prd-design-code 应读取并纳入 Design Context。
   - 若 Product Design 未提供某组件映射，设计阶段使用语义级描述；Coding 阶段通过 Implementation Mapping Gate 核验真实组件，将真实路径、Props、Events 和调用方式记录到当前任务的映射结果中；不把这些仓库级实现细节永久写入本 Skill。
@@ -105,7 +105,7 @@ metadata:
 - 项目目录存在不代表代码已经读取；只有实际读取并验证过的页面、组件、路由、交互和数据结构，才能标记为 `verified`。
 - `partial` 和 `unavailable` 状态下，禁止凭空生成真实文件路径、组件路径、Props、Events 或调用方式。
 - 设计阶段没有代码时，不阻断需求设计，但必须明确区分：哪些内容是语义级描述、哪些内容需要 Coding 阶段核验。
-- 产品身份不通过代码推断，也不得通过硬编码产品名称或缩写确定；必须依据 Product Design 的 metadata、product_id 或 Resolver 结果。
+- 产品身份不通过代码推断，也不得通过硬编码产品名称或缩写确定；必须依据 Product Design 的 metadata、product_id（同一产品存在多个名称时按声明的多标识集合判断，需求产品名命中任一标识即视为同一产品）或 Resolver 结果。
 
 # 核心工作流程
 
@@ -212,13 +212,13 @@ metadata:
 
 ## Step 7 Coding Plan
 
-- HTML生成后，提醒用户查看HTML页面内容；若用户反馈HTML需调整，先更新JSON并重新生成HTML，再执行 Implementation Mapping Gate，最后输出Coding Plan。
+- 用户确认点仅两处：Step 5 待确认问题和 Step 6 的 HTML 设计说明书；HTML 说明书生成后提醒用户查看，若用户反馈需调整，先更新 JSON 并重新生成 HTML，以最新确认的 HTML 作为基线。
+- Step 6.5 Implementation Mapping Gate、本阶段 Coding Plan、Step 7.5 编码 Skill 声明识别与 Step 8 Coding Execution 均为自动执行环节：HTML 说明书确认后自动连续推进，Coding Plan 输出后无需等待用户确认即开始 Coding，Coding Plan 仅作为进度说明向用户展示。
 - Coding Plan以最新HTML中的页面级AI Coding指导作为直接实现基线，不在本阶段重新设计页面结构、重新选择组件或重新改变开发方式。
 - Coding Plan 以 Implementation Mapping Gate 输出的统一映射表为复用与差异基线，不再重复核验映射表中已确认的对象。
-- 若映射阶段发现设计层差异，必须先修正结构化设计说明和 HTML 并重新获得用户确认，确认前不得输出 Coding Plan。
+- 若映射阶段发现设计层差异，必须先修正结构化设计说明和 HTML 并重新获得用户确认，确认前不得输出 Coding Plan；业务事实缺失进入待确认问题；必需对象阻塞时按 Step 6.5 阻塞处理规则向用户说明。
 - Coding Plan必须覆盖：输入来源、导航路径、全新开发页面、参考已有页面、复用对象、新增实现功能点、Mock策略、页面开发顺序和风险点。
 - Coding Plan必须逐项映射HTML页面级AI Coding指导，不得遗漏、合并或自行改写开发项。
-- 只有用户明确同意后，才进入Coding Execution。
 
 ## Step 7.5 编码 Skill 声明识别（Coding 前置必做）
 
@@ -297,7 +297,7 @@ metadata:
 
 - 对话框输出：需求与Demo范围、核心用户与场景、Design Context摘要、导航结构、页面总览表、待确认问题、HTML文件路径、Coding Plan和Coding执行进度。
 - HTML输出：总览页、导航结构、页面总览表、逐页页面目标、页面基础信息、页面内容区块、Wireframe / ASCII线框图（先展示完整线框图，下方补充线框说明与变体）、底部操作、页面级AI Coding指导（开头输出模板契约：templateId/templateSource/模板必需区域/区域顺序/底部操作契约）、Mock数据要求。
-- Coding Plan输出：输入来源、Design Context使用方式、Implementation Mapping Gate映射结果、页面开发顺序、复用对象、新增开发项、风险与确认点。
+- Coding Plan输出：输入来源、Design Context使用方式、Implementation Mapping Gate映射结果、页面开发顺序、复用对象、新增开发项、风险点。
 - Coding Execution输出：编码 Skill 声明识别结果（是否找到、采用的编码 Skill、未找到时的默认执行说明）、按页开发进度、页面级验证结论、下一页计划、最终完成说明。
 - 禁止在对话框展开HTML逐页详情、完整交互规则、完整Mock数据和完整AI Coding提示词。
 
@@ -310,7 +310,7 @@ metadata:
 - HTML中的页面级AI Coding指导已在生成HTML前完成组件映射和复用对象判断；Coding Plan未重新改变已确认HTML中的组件、复用对象和开发方式。
 - HTML线框图已校验页面模板结构一致性；页面类型、模板结构、layout、内容区块、wireframe、组件与交互、页面级AI Coding指导均一致；含底部操作区的页面、抽屉、弹窗等容器均继承已读取Common Design中的按钮位置与顺序规则，不存在无依据的左右分置或跨容器规则混用。
 - 每页均已形成页面类型决策记录；页面类型来自已读取的标准类型或已验证代码，自定义页面类型已说明继承模板与差异；声明复用已有页面或参考已有框架的页面已完成容器结构、步骤条、工具栏、底部按钮位置和关键交互的代码参考验收。
-- 未使用未匹配产品的Product Design；未通过产品缩写或普通关键词猜测Product Design。
+- 未使用未匹配产品的Product Design；Product Design 声明逗号分隔的多产品标识时，未因需求产品名与主标识不一致而漏用或误判其Product Design；未通过产品缩写或普通关键词猜测Product Design。
 - 页面总览与HTML逐页说明中的页面ID、页面名称、页面类型、导航路径和入口方式一致。
 - 待确认问题已在HTML前输出并等待用户确认；未把待确认问题写入HTML。
 - HTML文件与 demo-spec.json 已按输出目录判定规则输出（用户指定位置 / 可发现的 `.demo/design/{hash}/` / 默认项目根目录），未写入项目业务代码目录或已有功能文件夹；未发现目标目录时已回退默认目录且未中断生成。
@@ -320,7 +320,7 @@ metadata:
 - 视觉基线已完成核对：属于已有业务主题或页面体系的需求已对照真实参考页面做视觉回归；功能、交互、组件复用和视觉回归均通过后，才宣称任务完成。
 - 模板契约校验通过后才生成 HTML；HTML 生成成功不代表校验通过；校验通过时 HTML 顶部不显示校验横幅，校验失败（含 legacy 兼容模式）时 HTML 顶部显示失败提示横幅，validationStatus 非 passed 时未进入 Implementation Mapping Gate，wireframe 结构校验失败时未输出 Coding Plan。
 - 每个页面已绑定标准 templateId 或 custom 模板（含 baseTemplateId、customReason 与 override.affectedRules）；navigationType 已声明或按 assumed + source 处理；未使用未注册页面类型名称；未在 strict 模式下静默通过 legacy 自由文本线框。
-- Coding Plan逐项映射HTML页面级AI Coding指导，并获得用户确认后才执行。
+- Coding Plan逐项映射HTML页面级AI Coding指导；用户确认点仅 Step 5 待确认问题与 Step 6 HTML 设计说明书两处，HTML 确认后 Coding Plan 输出即自动进入 Coding Execution，无需再次确认。
 - 进入 Coding Execution 前已完成 Step 7.5 项目编码 Skill 声明识别：存在明确声明时已按声明的编码 Skill 执行且未越界改变 HTML 已确认的页面结构与开发项；未找到或无法确认时已按默认流程继续编码，未虚构、未阻断。
 - Coding Execution按页面顺序推进，每页完成后做页面级核对；未在共享页面骨架冻结前并发 Coding。
 

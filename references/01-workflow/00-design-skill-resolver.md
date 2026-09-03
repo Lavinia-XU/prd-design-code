@@ -24,18 +24,20 @@ Resolver 只决定设计知识来源，不负责具体页面设计。
 
 ### Product Design
 
-先识别当前需求所属产品，再寻找：
+先识别当前需求所属产品或需求中明确出现的产品名称，再寻找：
 
 - `skill_type: product-design`
-- `product_id` 与当前产品一致
+- 需求产品名命中其任一产品标识
 
 的 Skill。
 
-禁止仅通过 Skill 名称中是否出现 XDR、SASE、DSP 等产品缩写判断业务 Design Skill。
+Product Design 通过 metadata 的 `product_id` 声明其服务的产品标识。同一产品存在多个名称（例如 AES 与 DR 为同一产品，需求资料中可能显示为 DR，但需调用 AES 的 Product Design）时，`product_id` 允许声明逗号分隔的多个标识（如 `product_id: aes, dr`），首个为主标识，其余为同一产品的别名标识；需求产品名（主名或别名）与任一标识一致（忽略大小写与空白）即判定匹配，可调用该 Product Design。禁止要求需求产品名必须与主标识一致，禁止仅因需求使用别名就判定不匹配。
 
-没有匹配 Product Design 时，不得使用其他产品的 Product Design 作为参考；这不阻止页面拆解，也不作为待确认问题。此时继续使用 Common Design、当前代码环境和明确标记的AI补齐。仅当发现多个可能匹配的 Product Design 且无法判断选择对象时，才进入待确认问题。
+禁止仅通过 Skill 名称中是否出现 XDR、SASE、DSP 等产品缩写判断业务 Design Skill；Product Design 的多标识必须以 metadata 实际声明为准，不得在未声明时把产品缩写当作其标识。
 
-产品身份必须通过 Product Design 的 metadata、product_id 或 Resolver 结果确定，不得在通用 Skill 内容中硬编码具体产线或产品名称，也不得通过产品名称缩写猜测 Product Design。
+没有匹配 Product Design 时，不得使用其他产品的 Product Design 作为参考；这不阻止页面拆解，也不作为待确认问题。此时继续使用 Common Design、当前代码环境和明确标记的AI补齐。仅当发现多个可能匹配的 Product Design（含同一需求产品名命中多个 Product Design 的多标识声明）且无法判断选择对象时，才进入待确认问题。
+
+产品身份必须通过 Product Design 的 metadata、product_id（同一产品可声明逗号分隔的多标识，需求产品名命中任一标识即视为一致）或 Resolver 结果确定，不得在通用 Skill 内容中硬编码具体产线或产品名称，也不得通过产品名称缩写猜测 Product Design。
 
 ---
 

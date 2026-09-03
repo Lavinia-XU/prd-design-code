@@ -266,7 +266,7 @@ Coding Plan必须覆盖：
 - 页面开发顺序；
 - 风险点、差异和待确认项。
 
-Coding Plan必须逐项映射HTML页面级AI Coding指导，不得遗漏、合并或自行改写开发项。只有用户明确同意后，才进入Coding Execution。
+Coding Plan必须逐项映射HTML页面级AI Coding指导，不得遗漏、合并或自行改写开发项。用户确认点仅两处：Step 5 待确认问题和 HTML 设计说明书；HTML 说明书经用户确认后，Coding Plan 输出即自动进入 Coding Execution，无需等待用户再次确认。
 
 ### 6.1 说明书核销清单（轻量核销）
 

@@ -181,8 +181,9 @@ Product Design统一指包含业务基础产品介绍、页面导航结构、页
 
 识别方式：
 
-- 通过当前环境的Skill查询能力查找声明`skill_type: product-design`且`product_id`与当前需求产品一致的Skill；
-- 产品身份必须依据 Product Design 的 metadata、product_id 或 Design Skill Resolver 结果确定；禁止通过 Skill 名称中是否出现产品缩写（如 XDR、SASE、DSP 等）猜测，也禁止在通用 Skill 内容中硬编码具体产线或产品名称；
+- 通过当前环境的Skill查询能力查找声明`skill_type: product-design`且需求产品名命中其任一产品标识的Skill；
+- Product Design 通过 metadata 的 `product_id` 声明其服务的产品标识；同一产品存在多个名称（例如 AES 与 DR 为同一产品，需求资料中可能显示为 DR，但需使用 AES 的 Product Design）时，`product_id` 允许声明逗号分隔的多个标识（如 `product_id: aes, dr`），首个为主标识，其余为同一产品的别名标识；需求产品名（主名或别名）与任一标识一致（忽略大小写与空白）即判定匹配并可调用，不得要求需求产品名必须与主标识一致；
+- 产品身份必须依据 Product Design 的 metadata、product_id（含同一产品的多标识声明）或 Design Skill Resolver 结果确定；禁止通过 Skill 名称中是否出现产品缩写（如 XDR、SASE、DSP 等）猜测，也禁止在通用 Skill 内容中硬编码具体产线或产品名称；
 - 未找到匹配 Product Design 时，按 Common Design、当前代码环境和明确标记的AI补齐继续设计，不阻断流程。
 
 ### 4.4 关键交互说明生成依据
