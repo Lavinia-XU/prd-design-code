@@ -68,9 +68,20 @@ HTML设计说明书已生成。请先查看HTML页面内容；如果HTML中有�
 
 ### HTML输入JSON示例
 
+以下 JSON 中的 `common-design/...` 文档路径（如 `common-design/references/02-template/01-page-types.md`、`common-design/references/05-components/idux-component-map.md`）为 Common Design 的真实路径，可直接引用；而 `product-design/...` 路径**本 Skill 一律不预置**：Product Design 的目录结构随产品而异，其文档路径与章节锚点必须取自当前实际加载的 Product Design Skill，示例中出现时一律写作 `<product-design 文档路径>#<章节锚点>` 占位。输出前须核对路径与该 Skill 的真实目录一致，写错会导致 `designReferences.ref` 无法在 `readLedger` 锚点级命中而被 RULE-43 `DESIGN_REF_UNREAD` 阻断，并形成无法直达原文复核的坏链。
+
 ```json
 {
   "title": "数据防泄密事件分析需求设计说明书",
+  "designContext": {
+    "commonDesign": {"skillId": "common-design", "read": true},
+    "productDesign": {"matched": false, "skillId": "", "coverage": []},
+    "readLedger": [
+      {"ref": "common-design/references/02-template/01-page-types.md#page-table-overview", "status": "read"},
+      {"ref": "common-design/references/05-components/idux-component-map.md#*", "status": "read"},
+      {"ref": "common-design/SKILL.md#*", "status": "index-only"}
+    ]
+  },
   "overview": {
     "summary": "本需求用于帮助安全运维人员集中查看、筛选和处置数据泄密事件。",
     "pageOverview": [
@@ -97,20 +108,22 @@ HTML设计说明书已生成。请先查看HTML页面内容；如果HTML中有�
       "templateContract": {
         "templateId": "page-table-overview",
         "baseTemplateId": "",
+        "templateBase": "common",
+        "productTemplateRef": "",
         "navigationType": "left-shaped",
         "navigationTypeStatus": "assumed",
         "navigationTypeSource": "AI补齐",
         "navigationTypeNote": "概览表格页默认左侧菜单结构",
-        "templateSource": "common-design/references/03-design-template/01-page-types.md#page-table-overview",
+        "templateSource": "common-design/references/02-template/01-page-types.md#page-table-overview",
         "requiredRegions": ["global-navigation", "title-bar", "overview", "filter", "toolbar", "table", "pagination"],
         "optionalRegions": [],
         "regionOrder": ["global-navigation", "title-bar", "overview", "filter", "toolbar", "table", "pagination"],
         "footerContract": {"required": false, "alignment": "", "buttonOrder": []},
-        "componentContract": {"overview": ["IxCard"], "table": ["IxTable"], "pagination": ["IxPagination"]},
+        "componentContract": {"overview": ["IxCard"], "table": ["IxTable"], "pagination": ["IxPagination"], "patternComponents": []},
         "wireframeContract": {"variantsRequired": false},
         "override": {"enabled": false, "source": "", "reason": "", "affectedRules": []}
       },
-      "restoreRequirement": {"description": "按Common Design概览表格页模板还原页面骨架，组件信息来自页面模板推荐组件。", "components": [{"area": "标题栏", "iduxComponent": "页面模板指定标题栏组件", "source": "Common Design页面模板", "usage": "承载页面标题和导出、刷新等页面级操作"}, {"area": "筛选区", "iduxComponent": "IxProSearch", "source": "Common Design页面模板", "usage": "承载事件查询条件"}, {"area": "表格", "iduxComponent": "IxTable", "source": "Common Design页面模板", "usage": "承载事件列表字段和行内操作"}, {"area": "分页", "iduxComponent": "IxPagination", "source": "Common Design页面模板", "usage": "承载列表分页"}]},
+      "restoreRequirement": {"description": "还原页面骨架，骨架组件优先取匹配 Product Design 页面模板/Component 层已登记的业务封装，未登记时取 Common Design 页面模板推荐组件。", "components": [{"area": "标题栏", "iduxComponent": "页面模板指定标题栏组件", "source": "Common Design页面模板", "usage": "承载页面标题和导出、刷新等页面级操作"}, {"area": "筛选区", "iduxComponent": "IxProSearch", "source": "Common Design页面模板", "usage": "承载事件查询条件"}, {"area": "表格", "iduxComponent": "IxTable", "source": "Common Design页面模板", "usage": "承载事件列表字段和行内操作"}, {"area": "分页", "iduxComponent": "IxPagination", "source": "Common Design页面模板", "usage": "承载列表分页"}]},
       "sections": [
         {
           "title": "概览统计区",
@@ -126,7 +139,7 @@ HTML设计说明书已生成。请先查看HTML页面内容；如果HTML中有�
           "description": "位于概览统计区下方，承载事件查询、导出、批量处置和单条事件操作。表格工具栏、筛选项和列表合并为一个区块描述，避免拆散同一业务对象。",
           "toolbar": ["导出按钮", "批量处置按钮", "风险等级下拉多选：高、中、低", "处置状态下拉单选：待处置、处理中、已处置", "时间范围选择器", "事件名称输入框：支持模糊搜索"],
           "filterComponent": "IxProSearch",
-          "filterComponentDescription": "使用一个高级搜索组件承载风险等级、处置状态、时间范围和事件名称筛选；如果Common Design页面模板要求平铺筛选，则改为多个独立组件并逐项标注组件名称。",
+          "filterComponentDescription": "使用一个高级搜索组件承载风险等级、处置状态、时间范围和事件名称筛选；组件名优先取匹配 Product Design Component 层已登记的业务封装，未登记时取 Common Design 组件映射表；如果产品模板要求平铺筛选，则改为多个独立组件并逐项标注组件名称。",
           "filterFields": [{"name": "风险等级", "component": "下拉多选", "mode": "多选", "options": "高、中、低", "default": "全部", "description": "按风险等级筛选"}, {"name": "处置状态", "component": "下拉单选", "mode": "单选", "options": "待处置、处理中、已处置", "default": "全部", "description": "按处置状态筛选"}, {"name": "时间范围", "component": "日期范围选择器", "mode": "范围", "options": "最近7天、最近30天、自定义", "default": "最近7天", "description": "按发现时间范围筛选"}, {"name": "事件名称", "component": "输入框", "mode": "模糊搜索", "options": "-", "default": "空", "description": "支持模糊搜索"}],
           "tableFields": [{"name": "事件名称", "display": "可点击文本", "iduxComponent": "IxButton link", "description": "点击打开P002事件详情抽屉；长文本单行省略并悬浮展示完整内容"}, {"name": "风险等级", "display": "红/橙/蓝标签", "iduxComponent": "IxTag", "description": "状态值为高、中、低"}, {"name": "处置状态", "display": "状态点+文字", "iduxComponent": "IxBadge/IxTag", "description": "状态值为待处置、处理中、已处置"}, {"name": "发现时间", "display": "时间", "iduxComponent": "", "description": "普通文本展示，支持排序"}, {"name": "操作", "display": "操作按钮", "iduxComponent": "IxButton link", "description": "查看详情、处置"}],
           "actions": ["查询：按条件刷新表格", "重置：清空条件并恢复默认列表", "批量处置：未选择数据时提示请选择数据；已选择数据时弹出二次确认"],
@@ -160,6 +173,7 @@ HTML设计说明书已生成。请先查看HTML页面内容；如果HTML中有�
           "visualBaselineRef": "src/pages/event-analysis/index.vue"
         },
         "implementationRules": ["优先复用已验证页面和业务组件", "严格使用页面字段表中指定的组件"],
+        "designReferences": [{"source": "common-design", "ref": "common-design/references/02-template/01-page-types.md#page-table-overview"}, {"source": "common-design", "ref": "common-design/references/05-components/idux-component-map.md#table"}, {"source": "ai-fill", "ref": "AI 补齐: 导航层级默认作为三级菜单"}],
         "pageItems": [
           {"id": "P001-C01", "scope": "page-shell", "name": "页面框架", "mode": "reuse-framework", "mappingRef": "M01", "mappingStatus": "verified", "target": {"path": "src/pages/event-analysis/index.vue", "export": "EventAnalysisPage"}, "dependencies": [], "requirements": ["复用XX页面整体布局和固定字段", "新增列表区和详情抽屉区"], "states": ["loading", "empty", "search-no-result"], "mockContract": {"requiredFields": ["事件名称", "风险等级", "处置状态", "发现时间"]}, "acceptanceCriteria": ["页面结构与视觉参考页面一致", "筛选、分页和行内操作可用"], "prohibitedChanges": ["不得替换已验证的表格容器"]},
           {"id": "P001-C02", "scope": "modal", "name": "处置弹窗", "mode": "component-reuse", "mappingRef": "M02", "mappingStatus": "verified", "target": {"path": "src/components/dispose-modal/index.vue", "export": "DisposeModal"}, "dependencies": ["P001-C01"], "requirements": ["复用XX页面已存在的弹窗结构和校验逻辑", "补充本页面的处置字段"], "states": ["submitting", "submit-success", "submit-failed"], "mockContract": {"updateAfterActions": ["提交处置后关闭弹窗并更新列表状态"]}, "acceptanceCriteria": ["弹窗校验规则生效", "提交后列表和统计同步更新"], "prohibitedChanges": ["不得新增真实提交接口"]},
@@ -178,7 +192,7 @@ HTML设计说明书已生成。请先查看HTML页面内容；如果HTML中有�
       {"outputItem": "全局复用策略", "description": "说明优先复用哪些页面、组件和功能链路。"},
       {"outputItem": "全局Mock数据策略", "description": "说明整体Mock数据来源、结构和覆盖范围。"},
       {"outputItem": "全局编码边界", "description": "说明不实现真实后端、鉴权、复杂联调等。"},
-      {"outputItem": "组件使用规则", "description": "严格按照页面区块、表格字段、表单字段中标注的组件名称开发，不得用原生HTML或其他组件替代；页面模板中已指定的标题栏、筛选区、表格、分页、弹窗、抽屉等组件，应按模板组件骨架实现；字段表中标注为标签、链接按钮、状态徽标、下拉选择、日期范围、开关等组件的内容，必须使用对应iDux或公司封装组件实现；未标注组件名称的普通文本/数字字段，可按常规文本渲染，如实现时发现交互含义，应回查Common Design组件映射表补齐。"},
+      {"outputItem": "组件使用规则", "description": "严格按照页面区块、表格字段、表单字段中标注的组件名称开发，不得用原生HTML或其他组件替代；页面模板中已指定的标题栏、筛选区、表格、分页、弹窗、抽屉等组件，应按模板组件骨架实现；字段表中标注为标签、链接按钮、状态徽标、下拉选择、日期范围、开关等组件的内容，必须使用对应iDux或公司封装组件实现；未标注组件名称的普通文本/数字字段，可按常规文本渲染，如实现时发现交互含义，应先回查匹配 Product Design 的 Component 层已登记业务封装，未登记时回查Common Design组件映射表补齐。"},
       {"outputItem": "页面开发顺序", "description": "说明建议先开发哪些页面，后开发哪些页面。"}
     ],
     "overviewMockData": ["至少12条事件数据", "覆盖高/中/低风险", "覆盖待处置/处理中/已处置", "包含1条长事件名称和1条空影响用户数据"],

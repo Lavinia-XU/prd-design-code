@@ -77,7 +77,7 @@ def base_page(**overrides):
             "templateId": "page-table-basic",
             "baseTemplateId": "",
             "navigationType": "left-shaped",
-            "templateSource": "common-design/references/03-design-template/01-page-types.md#page-table-basic",
+            "templateSource": "common-design/references/02-template/01-page-types.md#page-table-basic",
             "requiredRegions": ["global-navigation", "title-bar", "filter", "toolbar", "table", "pagination"],
             "optionalRegions": [],
             "regionOrder": ["global-navigation", "title-bar", "filter", "toolbar", "table", "pagination"],
@@ -155,7 +155,7 @@ def modal_page(**overrides):
             "templateId": "page-form-modal",
             "baseTemplateId": "",
             "navigationType": "left-shaped",
-            "templateSource": "common-design/references/03-design-template/01-page-types.md#page-form-modal",
+            "templateSource": "common-design/references/02-template/01-page-types.md#page-form-modal",
             "requiredRegions": ["modal-shell", "modal-header", "form-content", "modal-footer"],
             "optionalRegions": [],
             "regionOrder": ["modal-shell", "modal-header", "form-content", "modal-footer"],
@@ -235,7 +235,7 @@ def drawer_detail_page(**overrides):
             "templateId": "page-detail-drawer",
             "baseTemplateId": "",
             "navigationType": "",
-            "templateSource": "common-design/references/03-design-template/01-page-types.md#page-detail-drawer",
+            "templateSource": "common-design/references/02-template/01-page-types.md#page-detail-drawer",
             "requiredRegions": ["drawer-shell", "drawer-header", "object-summary", "detail-content", "drawer-footer"],
             "optionalRegions": [],
             "regionOrder": ["drawer-shell", "drawer-header", "object-summary", "detail-content", "drawer-footer"],
@@ -356,7 +356,7 @@ class TestValidateDemoSpec(unittest.TestCase):
             id="P02", name="选择策略弹窗", type="弹窗列表页",
             templateContract={
                 "templateId": "page-list-modal", "baseTemplateId": "", "navigationType": "",
-                "templateSource": "common-design/references/03-design-template/01-page-types.md#page-list-modal",
+                "templateSource": "common-design/references/02-template/01-page-types.md#page-list-modal",
                 "requiredRegions": ["modal-shell", "modal-header", "filter", "table", "pagination", "modal-footer"],
                 "optionalRegions": [], "regionOrder": ["modal-shell", "modal-header", "filter", "table", "pagination", "modal-footer"],
                 "footerContract": {"required": True, "alignment": "right", "buttonOrder": ["confirm", "cancel"]},
@@ -393,7 +393,7 @@ class TestValidateDemoSpec(unittest.TestCase):
             id="P02", name="选择策略抽屉", type="抽屉列表页",
             templateContract={
                 "templateId": "page-list-drawer", "baseTemplateId": "", "navigationType": "",
-                "templateSource": "common-design/references/03-design-template/01-page-types.md#page-list-drawer",
+                "templateSource": "common-design/references/02-template/01-page-types.md#page-list-drawer",
                 "requiredRegions": ["drawer-shell", "drawer-header", "object-context", "filter", "table", "pagination", "drawer-footer"],
                 "optionalRegions": [], "regionOrder": ["drawer-shell", "drawer-header", "object-context", "filter", "table", "pagination", "drawer-footer"],
                 "footerContract": {"required": True, "alignment": "left", "buttonOrder": ["confirm", "cancel"]},
@@ -428,7 +428,7 @@ class TestValidateDemoSpec(unittest.TestCase):
             id="P02", name="策略配置表单", type="配置表单页",
             templateContract={
                 "templateId": "page-form-config", "baseTemplateId": "", "navigationType": "left-shaped",
-                "templateSource": "common-design/references/03-design-template/01-page-types.md#page-form-config",
+                "templateSource": "common-design/references/02-template/01-page-types.md#page-form-config",
                 "requiredRegions": ["global-navigation", "title-bar", "form-content", "footer"],
                 "optionalRegions": [], "regionOrder": ["global-navigation", "title-bar", "form-content", "footer"],
                 "footerContract": {"required": True, "alignment": "right", "buttonOrder": ["confirm", "cancel"]},
@@ -463,7 +463,7 @@ class TestValidateDemoSpec(unittest.TestCase):
             id="P02", name="策略配置向导", type="步骤条配置页",
             templateContract={
                 "templateId": "page-form-stepper", "baseTemplateId": "", "navigationType": "left-shaped",
-                "templateSource": "common-design/references/03-design-template/01-page-types.md#page-form-stepper",
+                "templateSource": "common-design/references/02-template/01-page-types.md#page-form-stepper",
                 "requiredRegions": ["global-navigation", "title-bar", "stepper", "step-content", "footer"],
                 "optionalRegions": [], "regionOrder": ["global-navigation", "title-bar", "stepper", "step-content", "footer"],
                 "footerContract": {"required": True, "alignment": "left", "buttonOrder": ["previous", "next-or-complete", "cancel"]},
@@ -501,7 +501,7 @@ class TestValidateDemoSpec(unittest.TestCase):
             id="P02", name="策略配置向导", type="步骤条配置页",
             templateContract={
                 "templateId": "page-form-stepper", "baseTemplateId": "", "navigationType": "left-shaped",
-                "templateSource": "common-design/references/03-design-template/01-page-types.md#page-form-stepper",
+                "templateSource": "common-design/references/02-template/01-page-types.md#page-form-stepper",
                 "requiredRegions": ["global-navigation", "title-bar", "stepper", "step-content", "footer"],
                 "optionalRegions": [], "regionOrder": ["global-navigation", "title-bar", "stepper", "step-content", "footer"],
                 "footerContract": {"required": True, "alignment": "left", "buttonOrder": ["previous", "next-or-complete", "cancel"]},
@@ -573,7 +573,7 @@ class TestValidateDemoSpec(unittest.TestCase):
             id="P02", name="自定义策略页面", type="自定义策略页",
             templateContract={
                 "templateId": "custom", "baseTemplateId": "page-table-basic", "navigationType": "left-shaped",
-                "templateSource": "common-design/references/03-design-template/01-page-types.md#page-table-basic",
+                "templateSource": "common-design/references/02-template/01-page-types.md#page-table-basic",
                 "requiredRegions": ["global-navigation", "title-bar", "filter", "toolbar", "table", "pagination"],
                 "optionalRegions": ["overview"], "regionOrder": ["global-navigation", "title-bar", "filter", "toolbar", "table", "pagination"],
                 "footerContract": {}, "componentContract": {"table": ["IxTable"], "pagination": ["IxPagination"], "toolbar": ["IxButton"]},
@@ -596,6 +596,27 @@ class TestValidateDemoSpec(unittest.TestCase):
         code, report = run_validator(make_spec([page]), strict=True)
         self.assertEqual(code, 0, f"report={report}")
         self.assertTrue(report.get("valid"))
+
+    def test_override_relaxes_required_region(self):
+        """override 生效时模板必需区域约束放宽（以 Product Design / 用户确认为准）-> 不报 REQUIRED_REGION_MISSING。"""
+        page = base_page()
+        page["templateContract"]["override"] = {
+            "enabled": True, "source": "用户确认",
+            "reason": "产品级区域结构差异（步骤条与标题栏同行）",
+            "affectedRules": ["requiredRegions", "regionOrder", "requiredComponents"],
+        }
+        page["wireframe"]["regions"] = [r for r in page["wireframe"]["regions"] if r["templateRegion"] != "pagination"]
+        code, report = run_validator(make_spec([page]), strict=True)
+        self.assertEqual(code, 0, f"report={report}")
+        self.assertTrue(report.get("valid"))
+
+    def test_required_region_missing_without_override_fails(self):
+        """未声明 override 时，模板必需区域（pagination）缺失仍被阻断。"""
+        page = base_page()
+        page["wireframe"]["regions"] = [r for r in page["wireframe"]["regions"] if r["templateRegion"] != "pagination"]
+        code, report = run_validator(make_spec([page]), strict=True)
+        self.assertNotEqual(code, 0)
+        self.assertIn("REQUIRED_REGION_MISSING", error_codes(report))
 
     def test_legacy_wireframe_warning_non_strict(self):
         """15. legacy wireframe 在非严格模式下产生警告，严格模式下失败。"""
@@ -828,6 +849,49 @@ class TestValidateDemoSpec(unittest.TestCase):
         self.assertEqual(code, 0)
         self.assertTrue(report.get("valid"))
 
+    def test_wireframe_region_order_mismatch_warns(self):
+        """regions 顺序与 ascii 绘制顺序矛盾 -> WIREFRAME_REGION_ORDER_MISMATCH（warning）。"""
+        page = base_page()
+        page["wireframe"]["ascii"] = (
+            "┌ 标题栏 ─────────────────┐\n"
+            "│ [筛选] [工具栏]        │\n"
+            "│ [分页] 上一页 1 2 下一页 │\n"
+            "├──────────┬─────────────┤\n"
+            "│ 表格列1   │ 表格列2      │\n"
+            "└────────────────────────┘"
+        )
+        code, report = run_validator(make_spec([page]), strict=True)
+        self.assertEqual(code, 0)
+        self.assertIn("WIREFRAME_REGION_ORDER_MISMATCH", {e.get("errorCode") for e in report.get("warnings", [])})
+
+    def test_wireframe_duplicate_singular_control_warns(self):
+        """页面级单例控件（如导出）被重复绘制 -> WIREFRAME_DUPLICATE_CONTROL（warning）。"""
+        page = base_page()
+        page["wireframe"]["ascii"] = (
+            "┌ 标题栏 ─────────────────┐\n"
+            "│ [导出] [刷新]          │\n"
+            "│ [筛选] [导出]          │\n"
+            "│ 表格                   │\n"
+            "└────────────────────────┘"
+        )
+        code, report = run_validator(make_spec([page]), strict=True)
+        self.assertEqual(code, 0)
+        self.assertIn("WIREFRAME_DUPLICATE_CONTROL", {e.get("errorCode") for e in report.get("warnings", [])})
+
+    def test_wireframe_row_action_not_flagged(self):
+        """行内重复的操作按钮（非单例控件）不应误报重复控件。"""
+        page = base_page()
+        page["wireframe"]["ascii"] = (
+            "┌ 标题栏 ─────────────────┐\n"
+            "│ 表格列1   │ 表格列2      │\n"
+            "│ 主机A   │ [详情]        │\n"
+            "│ 主机B   │ [详情]        │\n"
+            "└────────────────────────┘"
+        )
+        code, report = run_validator(make_spec([page]), strict=True)
+        self.assertEqual(code, 0)
+        self.assertNotIn("WIREFRAME_DUPLICATE_CONTROL", {e.get("errorCode") for e in report.get("warnings", [])})
+
     def test_wireframe_label_list_fails(self):
         """区域标签罗列式线框图（每行一个'区域名：内容' + 横线分隔）-> RULE-34 error 阻断。"""
         page = base_page()
@@ -939,6 +1003,72 @@ class TestValidateDemoSpec(unittest.TestCase):
         code, report = run_validator(make_spec([page]), strict=True)
         self.assertFalse(any(e.get("errorCode") == "FOOTER_ASCII_ORDER_MISMATCH" for e in report.get("errors", [])))
 
+    def test_footer_ascii_button_missing_fails(self):
+        """底部只画关闭、一个模板按钮都没画（P09/P10 静默通过场景）-> RULE-37 FOOTER_ASCII_BUTTON_MISSING 阻断。"""
+        page = modal_page()
+        page["wireframe"]["ascii"] = "弹窗标题/表单主体/关闭"
+        code, report = run_validator(make_spec([page]), strict=True)
+        self.assertNotEqual(code, 0)
+        self.assertIn("FOOTER_ASCII_BUTTON_MISSING", error_codes(report))
+
+    def test_footer_ascii_custom_button_without_override_fails(self):
+        """底部操作区出现模板允许集合外的自定义按钮（保存并关闭）且未 override -> RULE-37 FOOTER_ASCII_CUSTOM_BUTTON 阻断。"""
+        page = modal_page()
+        page["wireframe"]["ascii"] = (
+            "┌──────────────────────┐\n"
+            "│ 弹窗标题             │\n"
+            "├──────────────────────┤\n"
+            "│ 表单主体             │\n"
+            "├──────────────────────┤\n"
+            "│ 取消 [保存并关闭]     │\n"
+            "└──────────────────────┘"
+        )
+        code, report = run_validator(make_spec([page]), strict=True)
+        self.assertIn("FOOTER_ASCII_CUSTOM_BUTTON", error_codes(report))
+
+    def test_footer_ascii_custom_button_with_override_passes(self):
+        """自定义底部按钮经 templateContract.override 声明后不再判为模板外按钮 -> RULE-37 不报 CUSTOM_BUTTON。"""
+        page = modal_page()
+        page["wireframe"]["ascii"] = (
+            "┌──────────────────────┐\n"
+            "│ 弹窗标题             │\n"
+            "├──────────────────────┤\n"
+            "│ 表单主体             │\n"
+            "├──────────────────────┤\n"
+            "│ 确定 取消 [保存并关闭] │\n"
+            "└──────────────────────┘"
+        )
+        page["templateContract"]["override"] = {
+            "enabled": True, "source": "产品业务规范 v1", "reason": "业务需要保存并关闭", "affectedRules": ["RULE-37"],
+        }
+        code, report = run_validator(make_spec([page]), strict=True)
+        self.assertNotIn("FOOTER_ASCII_CUSTOM_BUTTON", error_codes(report))
+        self.assertNotIn("FOOTER_ASCII_BUTTON_MISSING", error_codes(report))
+
+    def test_wireframe_duplicate_region_warns(self):
+        """同一区域（步骤条）在 ascii 中被绘制多次 -> RULE-46 WIREFRAME_DUPLICATE_REGION（warning）。"""
+        page = base_page()
+        page["wireframe"]["ascii"] = "标题栏/筛选/工具栏/步骤条\n步骤条：第1步\n表格/分页"
+        code, report = run_validator(make_spec([page]), strict=True)
+        self.assertEqual(code, 0)
+        self.assertIn("WIREFRAME_DUPLICATE_REGION", warning_codes(report))
+
+    def test_wireframe_column_alignment_warns(self):
+        """内容行右边界错位（两列结构断裂）-> RULE-47 WIREFRAME_COLUMN_ALIGNMENT（warning）。"""
+        page = base_page()
+        page["wireframe"]["ascii"] = "\n".join([
+            "┌" + "─" * 24 + "┐",
+            "│ 标题栏" + " " * 18 + "│",
+            "├" + "─" * 24 + "┤",
+            "│ 表格" + " " * 18 + "│",
+            "│ 分页" + " " * 22 + "│",
+            "│ 底部" + " " * 18 + "│",
+            "└" + "─" * 26 + "┘",
+        ])
+        code, report = run_validator(make_spec([page]), strict=True)
+        self.assertEqual(code, 0)
+        self.assertIn("WIREFRAME_COLUMN_ALIGNMENT", warning_codes(report))
+
     # ---- 表格与详情字段一致性（RULE-38）----
     def test_table_detail_field_mismatch_fails(self):
         """表格字段在详情容器中缺失 -> RULE-38 TABLE_DETAIL_FIELD_MISMATCH 阻断。"""
@@ -988,6 +1118,77 @@ class TestValidateDemoSpec(unittest.TestCase):
         code, report = run_validator(make_spec([table, detail]), strict=True)
         self.assertEqual(code, 1)
         self.assertTrue(any(e.get("errorCode") == "TABLE_DETAIL_FIELD_MISMATCH" for e in report.get("errors", [])))
+
+    # ---- 字段形态键契约（RULE-41）：内容必须写在渲染器实际渲染的键上 ----
+    def test_form_field_options_not_rendered_fails(self):
+        """表单字段把选项/说明写在 options/description -> FORM_FIELD_KEY_MISMATCH 阻断（HTML 会静默空列）。"""
+        page = modal_page()
+        page["sections"] = [
+            {"title": "表单主体", "type": "form", "formFields": [
+                {"name": "策略名称", "iduxComponent": "IxInput", "options": ["A", "B"], "description": "长度不超过64字符"},
+            ]},
+        ]
+        code, report = run_validator(make_spec([base_page(), page]), strict=True)
+        self.assertEqual(code, 1)
+        self.assertTrue(any(e.get("errorCode") == "FORM_FIELD_KEY_MISMATCH" for e in report.get("errors", [])))
+
+    def test_form_field_key_placed_wrong_warns(self):
+        """表单字段同时有异态键与渲染键 -> FORM_FIELD_KEY_PLACED_WRONG warning（内容已渲染，不升为 error）。"""
+        page = modal_page()
+        page["sections"] = [
+            {"title": "表单主体", "type": "form", "formFields": [
+                {"name": "策略名称", "iduxComponent": "IxInput", "options": ["A", "B"], "rules": "长度不超过64字符"},
+            ]},
+        ]
+        code, report = run_validator(make_spec([base_page(), page]), strict=True)
+        self.assertTrue(any(w.get("errorCode") == "FORM_FIELD_KEY_PLACED_WRONG" for w in report.get("warnings", [])))
+        self.assertFalse(any(e.get("errorCode") == "FORM_FIELD_KEY_MISMATCH" for e in report.get("errors", [])))
+
+    def test_form_legacy_fields_options_not_rendered_fails(self):
+        """表单区块用自由 fields 数组写字典且键为 options/description -> 按表单键契约阻断。"""
+        page = modal_page()
+        page["sections"] = [
+            {"title": "表单主体", "type": "form", "fields": [
+                {"name": "策略名称", "iduxComponent": "IxInput", "options": ["A", "B"], "description": "长度不超过64字符"},
+            ]},
+        ]
+        code, report = run_validator(make_spec([base_page(), page]), strict=True)
+        self.assertEqual(code, 1)
+        self.assertTrue(any(e.get("errorCode") == "FORM_FIELD_KEY_MISMATCH" for e in report.get("errors", [])))
+
+    def test_filter_field_rules_not_rendered_fails(self):
+        """筛选项字段写 rules/tips -> FILTER_FIELD_KEY_MISMATCH 阻断。"""
+        page = base_page()
+        for s in page["sections"]:
+            if s.get("type") == "filter":
+                s["filterFields"] = [{"name": "策略名称", "iduxComponent": "IxInput", "rules": "模糊匹配", "tips": "支持回车搜索"}]
+        code, report = run_validator(make_spec([page]), strict=True)
+        self.assertEqual(code, 1)
+        self.assertTrue(any(e.get("errorCode") == "FILTER_FIELD_KEY_MISMATCH" for e in report.get("errors", [])))
+
+    def test_table_field_rules_not_rendered_fails(self):
+        """表格字段写 rules/tips -> TABLE_FIELD_KEY_MISMATCH 阻断。"""
+        page = base_page()
+        for s in page["sections"]:
+            if s.get("type") == "table":
+                s["tableFields"] = [{"name": "策略名称", "iduxComponent": "IxText", "rules": "必填", "tips": "支持排序"}]
+        code, report = run_validator(make_spec([page]), strict=True)
+        self.assertEqual(code, 1)
+        self.assertTrue(any(e.get("errorCode") == "TABLE_FIELD_KEY_MISMATCH" for e in report.get("errors", [])))
+
+    def test_field_key_contract_passes(self):
+        """字段内容写在渲染键上（含合法空栏）-> RULE-41 不误报；base_page 单页全链路通过。"""
+        code, report = run_validator(make_spec([base_page()]), strict=True)
+        self.assertEqual(code, 0)
+        page = modal_page()
+        page["sections"] = [
+            {"title": "表单主体", "type": "form", "formFields": [
+                {"name": "策略名称", "iduxComponent": "IxInput", "required": "是", "default": "-", "rules": "必填；长度不超过64字符", "tips": "名称在同终端组内唯一"},
+            ]},
+        ]
+        code, report = run_validator(make_spec([base_page(), page]), strict=True)
+        all_issues = report.get("errors", []) + report.get("warnings", [])
+        self.assertFalse(any(e.get("errorCode", "").startswith(("FORM_FIELD_KEY", "FILTER_FIELD_KEY", "TABLE_FIELD_KEY")) for e in all_issues))
 
     # ---- 表格标签使用约束（RULE-39）----
     def test_table_tag_count_exceeded_fails(self):
@@ -1051,12 +1252,12 @@ class TestValidateDemoSpec(unittest.TestCase):
             page["codingGuide"]["designReferences"] = refs
         return page
 
-    def test_design_ref_missing_warns(self):
-        """页面声称引用 Product Design 但无 designReferences -> RULE-40 DESIGN_REF_MISSING warning（不阻断）。"""
+    def test_design_ref_missing_fails(self):
+        """页面声称引用 Product Design 但无 designReferences -> RULE-40 DESIGN_REF_MISSING error（阻断）。"""
         page = self._page_claiming_design(refs=None)
         code, report = run_validator(make_spec([page]), strict=True)
-        self.assertEqual(code, 0)
-        self.assertTrue(any(w.get("errorCode") == "DESIGN_REF_MISSING" for w in report.get("warnings", [])))
+        self.assertNotEqual(code, 0)
+        self.assertIn("DESIGN_REF_MISSING", error_codes(report))
 
     def test_design_ref_invalid_source_warns(self):
         """designReferences 的 source 非法 -> RULE-40 DESIGN_REF_SOURCE warning。"""
@@ -1091,6 +1292,335 @@ class TestValidateDemoSpec(unittest.TestCase):
         self.assertEqual(code, 0)
         self.assertTrue(report.get("valid"))
         self.assertFalse(any(w.get("errorCode", "").startswith("DESIGN_REF_") for w in report.get("warnings", [])))
+
+    # ---- RULE-42 需求理解与页面设计追溯 ----
+
+    def _trace_model(self, tasks=None, status="resolved", **extra):
+        model = {
+            "status": status,
+            "inputType": "narrative",
+            "tasks": tasks or [],
+            "businessObjects": ["事件"],
+            "confirmedFacts": ["用户需要处置事件"],
+            "designInferences": [],
+            "aiFillItems": [],
+            "gaps": [],
+        }
+        model.update(extra)
+        return model
+
+    def _bound_page(self, task_ids=("T01",)):
+        page = base_page(taskRefs=list(task_ids))
+        return page
+
+    def test_requirement_status_not_resolved_fails(self):
+        """需求理解 status=needs_confirmation -> RULE-42 REQ_TRACE_STATUS_NOT_RESOLVED error 阻断。"""
+        spec = make_spec([self._bound_page()])
+        spec["requirementUnderstanding"] = self._trace_model(
+            tasks=[{"id": "T01", "actor": "处置员", "action": "处置事件", "outcome": "处置成功"}],
+            status="needs_confirmation")
+        code, report = run_validator(spec, strict=True)
+        self.assertEqual(code, 1)
+        self.assertTrue(any(e.get("errorCode") == "REQ_TRACE_STATUS_NOT_RESOLVED" for e in report.get("errors", [])))
+
+    def test_model_missing_but_task_ref_fails(self):
+        """页面带 taskRefs 但顶层缺 requirementUnderstanding -> RULE-42 REQ_TRACE_MODEL_MISSING error。"""
+        spec = make_spec([self._bound_page()])
+        code, report = run_validator(spec, strict=True)
+        self.assertEqual(code, 1)
+        self.assertTrue(any(e.get("errorCode") == "REQ_TRACE_MODEL_MISSING" for e in report.get("errors", [])))
+
+    def test_page_without_task_ref_fails(self):
+        """模型 resolved 但页面无 taskRefs -> RULE-42 REQ_TRACE_NO_TASK_REF error。"""
+        spec = make_spec([base_page()])
+        spec["requirementUnderstanding"] = self._trace_model(
+            tasks=[{"id": "T01", "actor": "处置员", "action": "处置事件", "outcome": "处置成功"}])
+        code, report = run_validator(spec, strict=True)
+        self.assertEqual(code, 1)
+        self.assertTrue(any(e.get("errorCode") == "REQ_TRACE_NO_TASK_REF" for e in report.get("errors", [])))
+
+    def test_task_not_bound_to_page_fails(self):
+        """任务 T02 未被任何页面 taskRefs 引用 -> RULE-42 REQ_TRACE_TASK_UNBOUND error。"""
+        spec = make_spec([self._bound_page(["T01"])])
+        spec["requirementUnderstanding"] = self._trace_model(tasks=[
+            {"id": "T01", "actor": "处置员", "action": "处置事件", "outcome": "处置成功"},
+            {"id": "T02", "actor": "审核员", "action": "审核事件", "outcome": "审核通过"},
+        ])
+        code, report = run_validator(spec, strict=True)
+        self.assertEqual(code, 1)
+        self.assertTrue(any(e.get("errorCode") == "REQ_TRACE_TASK_UNBOUND" for e in report.get("errors", [])))
+
+    def test_task_without_outcome_fails(self):
+        """任务有 action 但无 outcome -> RULE-42 REQ_TRACE_ACTION_NO_OUTCOME error。"""
+        spec = make_spec([self._bound_page()])
+        spec["requirementUnderstanding"] = self._trace_model(
+            tasks=[{"id": "T01", "actor": "处置员", "action": "处置事件"}])
+        code, report = run_validator(spec, strict=True)
+        self.assertEqual(code, 1)
+        self.assertTrue(any(e.get("errorCode") == "REQ_TRACE_ACTION_NO_OUTCOME" for e in report.get("errors", [])))
+
+    def test_task_without_action_fails(self):
+        """任务缺核心动作定义 -> RULE-42 REQ_TRACE_TASK_INCOMPLETE error。"""
+        spec = make_spec([self._bound_page()])
+        spec["requirementUnderstanding"] = self._trace_model(
+            tasks=[{"id": "T01", "actor": "处置员", "outcome": "处置成功"}])
+        code, report = run_validator(spec, strict=True)
+        self.assertEqual(code, 1)
+        self.assertTrue(any(e.get("errorCode") == "REQ_TRACE_TASK_INCOMPLETE" for e in report.get("errors", [])))
+
+    def test_judge_block_field_no_purpose_warns(self):
+        """区块声明 decisionPoint 但字段缺 fieldRole -> RULE-42 REQ_TRACE_FIELD_NO_PURPOSE warning。"""
+        page = self._bound_page()
+        page["sections"][2]["decisionPoint"] = "是否需要立即处置"
+        spec = make_spec([page])
+        spec["requirementUnderstanding"] = self._trace_model(
+            tasks=[{"id": "T01", "actor": "处置员", "action": "处置事件", "outcome": "处置成功"}])
+        code, report = run_validator(spec, strict=True)
+        self.assertEqual(code, 0)
+        self.assertTrue(any(w.get("errorCode") == "REQ_TRACE_FIELD_NO_PURPOSE" for w in report.get("warnings", [])))
+
+    def test_invalid_source_marker_warns(self):
+        """区块 source 值非法 -> RULE-42 REQ_TRACE_SOURCE_INVALID warning。"""
+        page = self._bound_page()
+        page["sections"][2]["source"] = "user-guess"
+        spec = make_spec([page])
+        spec["requirementUnderstanding"] = self._trace_model(
+            tasks=[{"id": "T01", "actor": "处置员", "action": "处置事件", "outcome": "处置成功"}])
+        code, report = run_validator(spec, strict=True)
+        self.assertEqual(code, 0)
+        self.assertTrue(any(w.get("errorCode") == "REQ_TRACE_SOURCE_INVALID" for w in report.get("warnings", [])))
+
+    def test_invalid_field_role_warns(self):
+        """判断区块字段 fieldRole 值非法 -> RULE-42 REQ_TRACE_FIELD_ROLE_INVALID warning。"""
+        page = self._bound_page()
+        page["sections"][2]["decisionPoint"] = "是否需要立即处置"
+        page["sections"][2]["tableFields"][0]["fieldRole"] = "input"
+        spec = make_spec([page])
+        spec["requirementUnderstanding"] = self._trace_model(
+            tasks=[{"id": "T01", "actor": "处置员", "action": "处置事件", "outcome": "处置成功"}])
+        code, report = run_validator(spec, strict=True)
+        self.assertEqual(code, 0)
+        self.assertTrue(any(w.get("errorCode") == "REQ_TRACE_FIELD_ROLE_INVALID" for w in report.get("warnings", [])))
+
+    def test_requirement_trace_passes(self):
+        """模型 resolved、任务均有页面承载与结果反馈、无判断区块缺失 -> RULE-42 通过。"""
+        spec = make_spec([self._bound_page(["T01"])])
+        spec["requirementUnderstanding"] = self._trace_model(
+            tasks=[{"id": "T01", "actor": "处置员", "action": "处置事件", "outcome": "处置成功"}])
+        code, report = run_validator(spec, strict=True)
+        self.assertEqual(code, 0)
+        self.assertTrue(report.get("valid"))
+        self.assertFalse(any(e.get("errorCode", "").startswith("REQ_TRACE_") for e in report.get("errors", [])))
+        self.assertFalse(any(w.get("errorCode", "").startswith("REQ_TRACE_") for w in report.get("warnings", [])))
+
+    def test_requirement_trace_skipped_without_model(self):
+        """历史格式：无 requirementUnderstanding 且页面无 taskRefs -> RULE-42 不启用，不产生 REQ_TRACE_*。"""
+        page = base_page()
+        code, report = run_validator(make_spec([page]), strict=True)
+        self.assertEqual(code, 0)
+        self.assertTrue(report.get("valid"))
+        self.assertFalse(any(e.get("errorCode", "").startswith("REQ_TRACE_") for e in report.get("errors", [])))
+        self.assertFalse(any(w.get("errorCode", "").startswith("REQ_TRACE_") for w in report.get("warnings", [])))
+
+
+    # ---- 设计依据一致性（RULE-43，条件式：声明 designContext 时启用）----
+    def _design_context(self, **overrides):
+        dc = {
+            "commonDesign": {"skillId": "common-design", "read": True},
+            "productDesign": {"matched": False, "skillId": "", "coverage": []},
+            "readLedger": [],
+        }
+        dc.update(overrides)
+        return dc
+
+    def _page_with_design_ref(self, refs):
+        page = base_page()
+        page["codingGuide"]["designReferences"] = refs
+        return page
+
+    def test_design_context_absent_skips(self):
+        """未声明 designContext -> RULE-43 不启用（历史格式不误伤）。"""
+        code, report = run_validator(make_spec([base_page()]), strict=True)
+        self.assertEqual(code, 0)
+        self.assertTrue(report.get("valid"))
+        self.assertFalse(any(e.get("errorCode", "").startswith(("DESIGN_REF_UNREAD", "TEMPLATE_"))
+                             for e in report.get("errors", [])))
+
+    def test_design_context_unread_ref_fails(self):
+        """designReferences 引用的 product-design 文档在 readLedger 中仅 index-only -> DESIGN_REF_UNREAD error。"""
+        page = self._page_with_design_ref(
+            [{"source": "product-design", "ref": "product-design/references/<sample-doc>.md#主题框架"}])
+        spec = make_spec([page])
+        spec["designContext"] = self._design_context(
+            readLedger=[{"doc": "product-design/references/<sample-doc>.md", "status": "index-only"}])
+        code, report = run_validator(spec, strict=True)
+        self.assertNotEqual(code, 0)
+        self.assertIn("DESIGN_REF_UNREAD", error_codes(report))
+
+    def test_design_context_consistent_passes(self):
+        """product 模板覆盖 + readLedger 命中 + 反向登记 product-design -> RULE-43 通过。"""
+        tc = base_page()["templateContract"]
+        tc["templateBase"] = "product"
+        tc["productTemplateRef"] = "product-design/references/<sample-doc>.md#policy-theme"
+        tc["override"] = {"enabled": True, "source": "Product Design: 策略主题框架",
+                          "reason": "业务覆盖", "affectedRules": []}
+        page = base_page(templateContract=tc)
+        page["codingGuide"]["designReferences"] = [
+            {"source": "product-design", "ref": "product-design/references/<sample-doc>.md#policy-theme"},
+            {"source": "common-design",
+             "ref": "common-design/references/02-template/01-page-types.md#page-table-basic"},
+        ]
+        spec = make_spec([page])
+        spec["designContext"] = self._design_context(
+            productDesign={"matched": True, "skillId": "product-design", "coverage": []},
+            readLedger=[
+                {"doc": "product-design/references/<sample-doc>.md", "status": "read"},
+                {"doc": "common-design/references/02-template/01-page-types.md", "status": "read"},
+            ])
+        code, report = run_validator(spec, strict=True)
+        self.assertEqual(code, 0, f"report={report}")
+        self.assertTrue(report.get("valid"))
+
+    def test_design_context_template_override_not_applied_fails(self):
+        """Product Design 声明模板覆盖，但页面仍落 common 模板 -> TEMPLATE_OVERRIDE_NOT_APPLIED error。"""
+        page = self._page_with_design_ref(
+            [{"source": "common-design",
+              "ref": "common-design/references/02-template/01-page-types.md#page-table-basic"}])
+        spec = make_spec([page])
+        spec["designContext"] = self._design_context(
+            productDesign={"matched": True, "skillId": "product-design",
+                           "coverage": [{"capability": "template", "relation": "override",
+                                         "appliesTo": ["page-table-basic"]}]},
+            readLedger=[{"doc": "common-design/references/02-template/01-page-types.md",
+                         "status": "read"}])
+        code, report = run_validator(spec, strict=True)
+        self.assertNotEqual(code, 0)
+        self.assertIn("TEMPLATE_OVERRIDE_NOT_APPLIED", error_codes(report))
+
+    def test_design_context_template_source_unregistered_fails(self):
+        """采用 product 模板但未登记 product-design 依据 -> TEMPLATE_SOURCE_UNREGISTERED error。"""
+        tc = base_page()["templateContract"]
+        tc["templateBase"] = "product"
+        tc["productTemplateRef"] = "product-design/references/<sample-doc>.md#policy-theme"
+        page = base_page(templateContract=tc)
+        spec = make_spec([page])
+        spec["designContext"] = self._design_context(
+            productDesign={"matched": True, "skillId": "product-design", "coverage": []},
+            readLedger=[{"doc": "product-design/references/<sample-doc>.md", "status": "read"}])
+        code, report = run_validator(spec, strict=True)
+        self.assertNotEqual(code, 0)
+        self.assertIn("TEMPLATE_SOURCE_UNREGISTERED", error_codes(report))
+
+    def test_design_context_anchor_unread_fails(self):
+        """台账只精读了某文档的 A 小节，页面却引用同文档 B 小节 -> DESIGN_REF_UNREAD error（锚点级）。"""
+        page = self._page_with_design_ref(
+            [{"source": "product-design", "ref": "product-design/references/<sample-doc>.md#筛选区形态"}])
+        spec = make_spec([page])
+        spec["designContext"] = self._design_context(
+            productDesign={"matched": True, "skillId": "product-design", "coverage": []},
+            readLedger=[{"ref": "product-design/references/<sample-doc>.md#主题框架", "status": "read"}])
+        code, report = run_validator(spec, strict=True)
+        self.assertNotEqual(code, 0)
+        self.assertIn("DESIGN_REF_UNREAD", error_codes(report))
+
+    def test_design_context_whole_doc_read_passes(self):
+        """台账以 <文档路径>#* 声明整篇已读 -> 任意小节引用通过。"""
+        page = self._page_with_design_ref(
+            [{"source": "product-design", "ref": "product-design/references/<sample-doc>.md#筛选区形态"}])
+        spec = make_spec([page])
+        spec["designContext"] = self._design_context(
+            productDesign={"matched": True, "skillId": "product-design", "coverage": []},
+            readLedger=[{"ref": "product-design/references/<sample-doc>.md#*", "status": "read"}])
+        code, report = run_validator(spec, strict=True)
+        self.assertEqual(code, 0, f"report={report}")
+
+    def test_ability_source_not_registered_fails(self):
+        """coverage 声明 filtering override 且页面命中，但页面未登记同 ability 的 product-design 依据 -> ABILITY_SOURCE_NOT_REGISTERED。"""
+        page = self._page_with_design_ref(
+            [{"source": "common-design",
+              "ref": "common-design/references/02-template/01-page-types.md#page-table-basic"}])
+        spec = make_spec([page])
+        spec["designContext"] = self._design_context(
+            productDesign={"matched": True, "skillId": "product-design",
+                           "coverage": [{"capability": "filtering", "relation": "override",
+                                         "appliesTo": ["page-table-basic"]}]},
+            readLedger=[{"ref": "common-design/references/02-template/01-page-types.md#page-table-basic",
+                         "status": "read"}])
+        code, report = run_validator(spec, strict=True)
+        self.assertNotEqual(code, 0)
+        self.assertIn("ABILITY_SOURCE_NOT_REGISTERED", error_codes(report))
+
+    def test_ability_source_registered_passes(self):
+        """页面按能力登记 product-design 依据且台账已精读 -> 通过。"""
+        page = self._page_with_design_ref([
+            {"source": "product-design", "ref": "product-design/references/<sample-doc>.md#筛选三态",
+             "ability": "filtering"},
+            {"source": "common-design",
+             "ref": "common-design/references/02-template/01-page-types.md#page-table-basic"},
+        ])
+        spec = make_spec([page])
+        spec["designContext"] = self._design_context(
+            productDesign={"matched": True, "skillId": "product-design",
+                           "coverage": [{"capability": "filtering", "relation": "override",
+                                         "appliesTo": ["page-table-basic"]}]},
+            readLedger=[
+                {"ref": "product-design/references/<sample-doc>.md#筛选三态", "status": "read"},
+                {"ref": "common-design/references/02-template/01-page-types.md#page-table-basic",
+                 "status": "read"},
+            ])
+        code, report = run_validator(spec, strict=True)
+        self.assertEqual(code, 0, f"report={report}")
+
+    # ---- 未核验实现细节隔离（RULE-44）----
+    def test_unverified_export_fails(self):
+        """partial 状态编码项 target.export 非空 -> EXPORT_WITHOUT_VERIFY error。"""
+        page = base_page(codeAvailability="partial")
+        page["codingGuide"]["pageItems"][0]["target"] = {"export": "PolicyPage"}
+        code, report = run_validator(make_spec([page]), strict=True)
+        self.assertNotEqual(code, 0)
+        self.assertIn("EXPORT_WITHOUT_VERIFY", error_codes(report))
+
+    def test_unverified_component_name_fails(self):
+        """partial 状态表格字段写入未核验产品专有组件名 -> COMPONENT_WITHOUT_VERIFY error。"""
+        page = base_page(codeAvailability="partial")
+        page["sections"][2]["tableFields"] = [{"name": "策略名称", "iduxComponent": "AESPolicyTable"}]
+        code, report = run_validator(make_spec([page]), strict=True)
+        self.assertNotEqual(code, 0)
+        self.assertIn("COMPONENT_WITHOUT_VERIFY", error_codes(report))
+
+    def test_unverified_ix_component_passes(self):
+        """partial 状态仅使用 Ix 标准组件（语义级）-> RULE-44 不误伤。"""
+        page = base_page(codeAvailability="partial")
+        page["codingGuide"]["pageItems"][0]["target"] = {}
+        code, report = run_validator(make_spec([page]), strict=True)
+        self.assertEqual(code, 0, f"report={report}")
+        self.assertFalse(any(e.get("errorCode") == "COMPONENT_WITHOUT_VERIFY" for e in report.get("errors", [])))
+
+    def test_unverified_visual_baseline_fails(self):
+        """partial 状态引用真实可视化基线页面 -> VISUAL_BASELINE_WITHOUT_VERIFY error。"""
+        page = base_page(codeAvailability="partial")
+        page["visualBaselineRef"] = "src/pages/policy/index.vue"
+        code, report = run_validator(make_spec([page]), strict=True)
+        self.assertNotEqual(code, 0)
+        self.assertIn("VISUAL_BASELINE_WITHOUT_VERIFY", error_codes(report))
+
+    def test_code_status_undeclared_warns(self):
+        """未声明 codeAvailability -> CODE_STATUS_UNDECLARED warning，并已按 unavailable 保守处理。"""
+        page = base_page()
+        page.pop("codeAvailability")
+        page["codingGuide"]["pageItems"][0]["target"] = {}
+        code, report = run_validator(make_spec([page]), strict=True)
+        self.assertEqual(code, 0)
+        self.assertTrue(any(w.get("errorCode") == "CODE_STATUS_UNDECLARED" for w in report.get("warnings", [])))
+
+    def test_code_status_in_page_context_fails(self):
+        """codeAvailability 写在 codingGuide.pageContext 时也应生效（修复读取位置）-> PATH_WITHOUT_VERIFY error。"""
+        page = base_page()
+        page.pop("codeAvailability")
+        page["codingGuide"].setdefault("pageContext", {})["codeAvailability"] = "partial"
+        code, report = run_validator(make_spec([page]), strict=True)
+        self.assertNotEqual(code, 0)
+        self.assertIn("PATH_WITHOUT_VERIFY", error_codes(report))
 
 
 if __name__ == "__main__":

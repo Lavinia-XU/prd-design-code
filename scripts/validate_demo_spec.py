@@ -55,7 +55,7 @@ RULES = [
     {"ruleId": "RULE-21", "errorCode": "FOOTER_ORDER_MISMATCH", "name": "footerActions 按钮顺序一致", "check": "check_footer_button_order", "source": "references/02-template-contracts/common-design-template-registry.json", "tests": "test_form_config_footer_right_fails"},
     {"ruleId": "RULE-22", "errorCode": "WIREFRAME_CONTENT_MISMATCH", "name": "wireframe 与页面内容区块一致", "check": "check_wireframe_content_consistency", "source": "SKILL.md 强制模板契约与线框校验", "tests": ""},
     {"ruleId": "RULE-23", "errorCode": "CODING_ITEM_ID_MISSING", "name": "codingGuide 含稳定开发项 ID", "check": "check_coding_item_ids", "source": "references/01-workflow/05-interaction-coding-guidelines.md", "tests": ""},
-    {"ruleId": "RULE-24", "errorCode": "PATH_WITHOUT_VERIFY", "name": "partial/unavailable 时 target.path 为空", "check": "check_path_without_verify", "source": "SKILL.md 代码可用状态", "tests": "test_partial_path_not_empty_fails"},
+    {"ruleId": "RULE-24", "errorCode": "PATH_WITHOUT_VERIFY / CODE_STATUS_UNDECLARED", "name": "代码可用状态：codeAvailability 必填（page/templateContract/codingGuide.pageContext 三处读取，缺省按 unavailable 保守处理，不再静默跳过）；partial/unavailable 时 target.path 必须为空", "check": "check_path_without_verify", "source": "SKILL.md 代码可用状态 / references/01-workflow/04-demo-output-spec.md 代码可用状态与设计依据分离", "tests": "test_partial_path_not_empty_fails, test_code_status_undeclared_warns"},
     {"ruleId": "RULE-25", "errorCode": "VUE3_SYNTAX", "name": "禁止 Vue3 专属绑定语法作为实现要求", "check": "check_vue3_syntax", "source": "references/01-workflow/05-interaction-coding-guidelines.md", "tests": ""},
     {"ruleId": "RULE-26", "errorCode": "COMPONENT_MAPPING_MISSING", "name": "非普通文本字段声明组件映射", "check": "check_component_mapping", "source": "references/01-workflow/04-demo-output-spec.md", "tests": ""},
     {"ruleId": "RULE-27", "errorCode": "LEGACY_WIREFRAME", "name": "legacy 自由文本线框兼容模式", "check": "check_legacy_wireframe", "source": "SKILL.md 强制模板契约与线框校验（兼容模式）", "tests": "test_legacy_wireframe_warning_non_strict"},
@@ -68,10 +68,17 @@ RULES = [
     {"ruleId": "RULE-34", "errorCode": "WIREFRAME_ASCII_LABEL_LIST", "name": "线框图布局完整性：ascii 禁止区域标签罗列，必须绘制为完整页面布局字符画", "check": "check_wireframe_label_list", "source": "references/01-workflow/04-demo-output-spec.md 设计闭环", "tests": "test_wireframe_label_list_fails, test_wireframe_full_layout_passes"},
     {"ruleId": "RULE-35", "errorCode": "CHILD_PAGE_NOT_FLATTENED", "name": "页面平铺闭环：children 只允许子容器 ID 引用，禁止内嵌完整页面设计对象；子容器必须作为 pages 数组独立元素", "check": "check_child_page_flattened", "source": "references/01-workflow/04-demo-output-spec.md 设计闭环", "tests": "test_child_page_not_flattened_fails, test_child_id_reference_passes"},
     {"ruleId": "RULE-36", "errorCode": "REQUIRED_FIELD_MISSING", "name": "字段完整性闭环：需求/规范明确要求的字段（表格列、表单项、筛选项、详情描述字段等）必须落入对应字段数组或 excludedFields 排除声明", "check": "check_requirement_fields", "source": "references/01-workflow/01-output-templates.md 字段完整性", "tests": "test_requirement_field_missing_fails, test_requirement_field_all_covered_passes, test_requirement_field_excluded_passes"},
-    {"ruleId": "RULE-37", "errorCode": "FOOTER_ASCII_ORDER_MISMATCH", "name": "线框图按钮顺序：ascii 中按钮出现顺序必须与模板 buttonOrder 一致（主操作在左、次操作在右）", "check": "check_footer_ascii_order", "source": "references/01-workflow/04-demo-output-spec.md 底部操作区", "tests": "test_footer_ascii_order_mismatch_fails, test_footer_ascii_order_passes"},
+    {"ruleId": "RULE-37", "errorCode": "FOOTER_ASCII_BUTTON_MISSING / FOOTER_ASCII_ORDER_MISMATCH / FOOTER_ASCII_CUSTOM_BUTTON", "name": "线框图底部按钮：必须按模板 buttonOrder 绘制（缺主操作/顺序错=error，缺次要按钮=warning）；按钮文案须落在模板允许集合，底部操作区出现模板外自定义按钮需 override 声明（业务自定义以业务为准）", "check": "check_footer_ascii_order", "source": "references/01-workflow/04-demo-output-spec.md 11.6 底部操作区 / Common Design 模板 footer.buttonOrder", "tests": "test_footer_ascii_button_missing_fails, test_footer_ascii_order_mismatch_fails, test_footer_ascii_order_passes, test_footer_ascii_custom_button_without_override_fails, test_footer_ascii_custom_button_with_override_passes"},
     {"ruleId": "RULE-38", "errorCode": "TABLE_DETAIL_FIELD_MISMATCH", "name": "表格与详情字段一致性：表格页展示的每个字段必须在对应详情容器中存在（Common Design 表格与详情字段一致规则兜底）", "check": "check_table_detail_field_consistency", "source": "Common Design 表格与详情字段一致规则 / references/01-workflow/06-quality-and-rules.md", "tests": "test_table_detail_field_mismatch_fails, test_table_detail_field_consistent_passes, test_table_detail_without_detail_skips, test_table_detail_via_children_fails"},
     {"ruleId": "RULE-39", "errorCode": "TABLE_TAG_*", "name": "表格标签使用约束：同一表格内标签总数 <= 5，深色/icon/点状标签各仅允许 1 次、浅色标签最多 2 次，样式未标注或中性描述字段占用标签配额时 warning 提示（Common Design 标签（IxTag）样式使用约束兜底）", "check": "check_table_tag_usage", "source": "Common Design 标签（IxTag）样式使用约束", "tests": "test_table_tag_count_exceeded_fails, test_table_tag_style_overused_fails, test_table_tag_style_unspecified_warns, test_table_tag_neutral_field_warns, test_table_tag_usage_passes"},
-    {"ruleId": "RULE-40", "errorCode": "DESIGN_REF_*", "name": "设计依据可追溯：声称引用 Design Skill 的决策必须在页面 codingGuide.designReferences 登记来源（source 为 common-design/product-design/code/ai-fill，ref 非空）；无来源的决策须标 ai-fill（warning，不校验是否读全）", "check": "check_design_references", "source": "references/01-workflow/00-design-skill-resolver.md 能力识别参考框架 / SKILL.md 输出可追溯", "tests": ""},
+    {"ruleId": "RULE-40", "errorCode": "DESIGN_REF_*", "name": "设计依据可追溯：声称引用 Design Skill 的决策必须在页面 codingGuide.designReferences 登记来源（source 为 common-design/product-design/code/ai-fill，ref 非空）；声称有依据却无登记为 error（阻断），来源/字段格式类为 warning", "check": "check_design_references", "source": "references/01-workflow/00-design-skill-resolver.md 能力识别参考框架 / SKILL.md 输出可追溯", "tests": "test_design_ref_missing_fails, test_design_ref_invalid_source_warns, test_design_ref_empty_ref_warns, test_design_ref_passes, test_design_ref_absent_no_claim_passes"},
+    {"ruleId": "RULE-41", "errorCode": "FORM_FIELD_KEY_MISMATCH / FILTER_FIELD_KEY_MISMATCH / TABLE_FIELD_KEY_MISMATCH / FORM_FIELD_KEY_PLACED_WRONG / FILTER_FIELD_KEY_PLACED_WRONG / TABLE_FIELD_KEY_PLACED_WRONG", "name": "字段形态键契约：字段内容必须写在渲染器实际渲染的键上（表单字段 formFields 用 rules/tips；筛选字段 filterFields 用 options/description；表格字段 tableFields/columns 用 display/description）；内容写在异态键导致 HTML 对应列静默空白时阻断（error），内容已渲染但键写错位置时 warning（RULE-41）", "check": "check_field_key_contract", "source": "references/01-workflow/04-demo-output-spec.md 字段形态键对照（RULE-41）/ 01-output-templates.md AI Coding指导输出格式", "tests": "test_form_field_options_not_rendered_fails, test_form_field_key_placed_wrong_warns, test_form_legacy_fields_options_not_rendered_fails, test_filter_field_rules_not_rendered_fails, test_table_field_rules_not_rendered_fails, test_field_key_contract_passes"},
+    {"ruleId": "RULE-42", "errorCode": "REQ_TRACE_STATUS_NOT_RESOLVED / REQ_TRACE_MODEL_MISSING / REQ_TRACE_NO_TASK_REF / REQ_TRACE_TASK_UNBOUND / REQ_TRACE_TASK_INCOMPLETE / REQ_TRACE_ACTION_NO_OUTCOME / REQ_TRACE_FIELD_NO_PURPOSE / REQ_TRACE_SOURCE_INVALID / REQ_TRACE_FIELD_ROLE_INVALID", "name": "需求理解与页面设计追溯（条件式）：顶层声明 requirementUnderstanding 或页面带 taskRefs 时启用——需求理解未解决（status!=resolved）阻断 HTML 生成；每个页面必须关联至少一个业务任务；每个已建模业务任务必须有页面承载；核心动作必须有结果反馈；判断区块内字段须说明用途（fieldRole）；source/fieldRole 显式声明时值必须合法（RULE-42）", "check": "check_requirement_trace", "source": "references/01-workflow/04-demo-output-spec.md 11.9 需求理解与页面设计追溯（RULE-42）/ 01-output-templates.md 任务锚定字段", "tests": "test_requirement_status_not_resolved_fails, test_model_missing_but_task_ref_fails, test_page_without_task_ref_fails, test_task_not_bound_to_page_fails, test_task_without_outcome_fails, test_judge_block_field_no_purpose_warns, test_invalid_source_marker_warns, test_requirement_trace_passes, test_requirement_trace_skipped_without_model"},
+    {"ruleId": "RULE-43", "errorCode": "DESIGN_REF_UNREAD / DESIGN_REF_UNANCHORED / TEMPLATE_OVERRIDE_NOT_APPLIED / TEMPLATE_SOURCE_UNREGISTERED / ABILITY_SOURCE_NOT_REGISTERED / DESIGN_CONTEXT_INCOMPLETE", "name": "设计依据一致性（条件式，顶层声明 designContext 时启用）：common/product-design 依据必须锚点级命中 readLedger 且 status=read（引用未读章节阻断，整篇已读用 #* 声明）；Product Design 声明模板覆盖时被覆盖页面必须真正采用 product 模板（禁止落到 Common Design）；coverage 声明 extend/override 的任意能力，适用页面必须登记同 ability 的 product-design 依据；采用 product 模板必须反向登记 product-design 依据并声明 productDesign.matched", "check": "check_design_basis_consistency", "source": "references/01-workflow/00-design-skill-resolver.md 设计依据登记与读取 / references/01-workflow/04-demo-output-spec.md designContext（RULE-43）", "tests": "test_design_context_unread_ref_fails, test_design_context_anchor_unread_fails, test_design_context_whole_doc_read_passes, test_design_context_template_override_not_applied_fails, test_design_context_template_source_unregistered_fails, test_ability_source_not_registered_fails, test_ability_source_registered_passes, test_design_context_consistent_passes, test_design_context_absent_skips"},
+    {"ruleId": "RULE-44", "errorCode": "EXPORT_WITHOUT_VERIFY / COMPONENT_WITHOUT_VERIFY / VISUAL_BASELINE_WITHOUT_VERIFY / MAPPINGREF_WITHOUT_VERIFY / COMPONENT_PATH_WITHOUT_VERIFY", "name": "未核验实现细节隔离：partial/unavailable 时禁止把未核验的真实代码对象（target.export、产品专有组件名、真实组件路径、可视化基线页面、路径式 mappingRef）当作设计结论写进字段/编码指导，只能做语义级描述，真实导出名/Props/Events 留待 Coding Gate 核验", "check": "check_unverified_implementation", "source": "references/01-workflow/05-interaction-coding-guidelines.md 代码可用状态与设计依据分离 / references/01-workflow/04-demo-output-spec.md 未核验对象约束（RULE-44）", "tests": "test_unverified_export_fails, test_unverified_component_name_fails, test_unverified_ix_component_passes, test_unverified_visual_baseline_fails"},
+    {"ruleId": "RULE-45", "errorCode": "WIREFRAME_REGION_ORDER_MISMATCH", "name": "线框图区域顺序一致性（warning）：regions 声明顺序应与 ascii 自上而下的绘制顺序一致，出现逆序（后面的区域绘制在更靠上的位置）时提示", "check": "check_wireframe_region_ascii_order", "source": "references/01-workflow/04-demo-output-spec.md 线框图绘制规范 / references/01-workflow/03-demo-page-decomposition.md 区域结构", "tests": "test_wireframe_region_order_mismatch_warns, test_wireframe_region_order_ok_passes"},
+    {"ruleId": "RULE-46", "errorCode": "WIREFRAME_DUPLICATE_CONTROL / WIREFRAME_DUPLICATE_REGION", "name": "线框图重复绘制检测（warning）：带标记的控件标签（【】/[]）重复出现时提示；同一内容区域（步骤条/Tab/工具栏/筛选区/分页）在 ascii 中被绘制多次时提示", "check": "check_wireframe_duplicate_control", "source": "references/01-workflow/04-demo-output-spec.md 线框图绘制规范", "tests": "test_wireframe_duplicate_control_warns, test_wireframe_duplicate_region_warns"},
+    {"ruleId": "RULE-47", "errorCode": "WIREFRAME_COLUMN_ALIGNMENT", "name": "线框图列对齐一致性（warning）：内容行右边界（右竖线）应在同一列，出现明显错位（两列结构断裂）时提示", "check": "check_wireframe_column_alignment", "source": "references/01-workflow/04-demo-output-spec.md 线框图绘制规范", "tests": "test_wireframe_column_alignment_warns, test_wireframe_full_layout_passes"},
 ]
 
 # 页面 type（中文）与标准模板的映射
@@ -145,6 +152,36 @@ TAG_NEUTRAL_FIELD_KEYS = (
     "资产类型", "资产", "ip", "域名", "端口", "路径", "url",
     "地址", "主机", "mac", "序列号", "编号", "创建时间", "更新时间",
 )
+
+# 字段形态键契约（RULE-41）：HTML 生成器对各字段形态实际渲染的键。
+# rendered 为该形态渲染的键；aliens 为其他形态的语义键（写了不会被渲染，
+# 导致 HTML 对应列静默空白）。
+FIELD_KEY_CONTRACT = {
+    "formFields":   {"rendered": ("rules", "tips"),          "aliens": ("options", "description")},
+    "filterFields": {"rendered": ("options", "description"), "aliens": ("rules", "tips")},
+    "tableFields":  {"rendered": ("display", "description"), "aliens": ("rules", "tips", "options")},
+    "columns":      {"rendered": ("display", "description"), "aliens": ("rules", "tips", "options")},
+}
+
+# RULE-42 需求理解与页面设计追溯：合法来源标记与字段用途取值
+SOURCE_LABELS = ("requirement", "product-design", "common-design", "code", "ai-fill")
+FIELD_ROLE_LABELS = {
+    "identify": "识别信息",
+    "judge": "判断信息",
+    "precondition": "操作前置",
+    "result": "结果反馈",
+}
+
+
+def _has_text_value(value):
+    """字段值是否承载实际内容（None/空串/空容器视为空）。"""
+    if value is None:
+        return False
+    if isinstance(value, str):
+        return bool(value.strip())
+    if isinstance(value, (list, dict)):
+        return len(value) > 0
+    return True
 
 
 def norm(text):
@@ -241,6 +278,39 @@ KNOWN_ACTIONS = {
 }
 # 高影响操作：必须配置二次确认
 HIGH_RISK_ACTIONS = {"delete", "batch-delete", "disable", "enable", "revoke"}
+# 页面级单例控件：同一页 ascii 中重复绘制即提示（RULE-46）。行内重复动作（详情/编辑/删除）不在其列。
+SINGULAR_CONTROLS = {
+    "导出", "刷新", "查询", "重置", "确定", "取消", "提交", "保存", "关闭",
+    "返回", "新增", "新建", "全选", "清空", "更多", "批量操作", "批量删除",
+    "展开", "收起", "下载", "上传", "同步", "启用", "禁用",
+}
+# 底部操作按钮语义槽位 -> 允许文案（RULE-21 / RULE-37 单一来源）。
+# 文案落在模板允许集合内即为合法；业务自定义按钮（文案不在集合内）必须通过 templateContract.override 声明。
+FOOTER_KIND_LABELS = {
+    "previous": ["上一步"],
+    "next-or-complete": ["下一步", "完成", "提交"],
+    "cancel": ["取消"],
+    "confirm": ["确定", "确认", "保存"],
+    "close": ["关闭"],
+}
+# 语义槽位英文别名（结构化 footerActions 的 kind 判定用）
+FOOTER_KIND_ALIASES = {
+    "previous": ["previous"],
+    "next-or-complete": ["next"],
+    "cancel": ["cancel"],
+    "confirm": ["confirm", "ok"],
+    "close": ["close"],
+}
+# ascii 底部按钮常见描述性前缀（归一化时剥离，如"底部关闭" -> "关闭"）
+FOOTER_LABEL_PREFIXES = ("底部操作区", "底部操作", "底部按钮", "抽屉底部", "弹窗底部", "底部", "footer")
+# 区域级单例（RULE-46 扩展）：同一 ascii 中同一内容区域重复绘制（>=2 行命中）即 warning
+REGION_SINGLETON_KEYS = {
+    "stepper": ["步骤条", "stepper"],
+    "toolbar": ["工具栏", "操作栏"],
+    "filter": ["筛选区", "查询区", "筛选栏"],
+    "tab-bar": ["标签页", "页签"],
+    "pagination": ["分页"],
+}
 # Tab 变体闭环：公共页面外壳区域关键词（preserveRegions 必须至少保留其一）
 SHELL_REGION_KEYS = (
     "global-navigation", "global-nav", "title-bar", "page-shell",
@@ -430,10 +500,20 @@ class Validator:
                                source_ref=template.get("source", ""),
                                fix=f"改为 {supported} 之一，或使用 custom 模板覆盖")
 
+    def _page_override_enabled(self, page):
+        """Product Design / 用户确认的页面模板 override 是否生效。
+        生效时以 Product Design 原文为准，放宽注册表结构约束（区域/顺序/必需组件），
+        与 check_footer_alignment 对 footer 的处理保持一致。"""
+        tc = page.get("templateContract") or {}
+        ov = tc.get("override") or {}
+        return bool(ov.get("enabled"))
+
     def check_skeleton_regions(self):
-        """必需页面骨架区块是否存在（wireframe.regions 或 templateContract 声明）。"""
+        """必需页面骨架区块是否存在（wireframe.regions 或 templateContract 声明）。override 生效时以 Product Design 为准，放宽。"""
         for page in self.data.get("pages", []):
             if page.get("id") in self._legacy_page_ids:
+                continue
+            if self._page_override_enabled(page):
                 continue
             pid = page.get("id", "")
             tid = self.page_template(page)
@@ -452,8 +532,11 @@ class Validator:
                                    fix=f"在 wireframe.regions 中补充 {req} 区块")
 
     def check_region_order(self):
+        """区域顺序与模板一致。override 生效时以 Product Design 为准，放宽。"""
         for page in self.data.get("pages", []):
             if page.get("id") in self._legacy_page_ids:
+                continue
+            if self._page_override_enabled(page):
                 continue
             pid = page.get("id", "")
             tid = self.page_template(page)
@@ -480,8 +563,11 @@ class Validator:
                                fix="按模板 requiredRegions 顺序排列 wireframe.regions")
 
     def check_required_components(self):
+        """模板必需组件是否声明。override 生效时以 Product Design 为准，放宽。"""
         for page in self.data.get("pages", []):
             if page.get("id") in self._legacy_page_ids:
+                continue
+            if self._page_override_enabled(page):
                 continue
             pid = page.get("id", "")
             tid = self.page_template(page)
@@ -510,6 +596,88 @@ class Validator:
         texts.extend(walk_text(tc.get("componentContract") or {}))
         texts.extend(walk_text(page.get("components") or {}))
         return " ".join(texts)
+
+    def check_wireframe_region_ascii_order(self):
+        """RULE-45 线框图区域顺序一致性（warning）：regions 声明顺序应与 ascii 中首次绘制位置自上而下一致。"""
+        for page, ppath in self.all_pages:
+            pid = page.get("id", "")
+            wf = self.page_wireframe(page)
+            if not isinstance(wf, dict):
+                continue
+            ascii_text = str(wf.get("ascii") or "")
+            if len(ascii_text.strip()) < 8:
+                continue
+            regions = wf.get("regions") or []
+            if not isinstance(regions, list) or len(regions) < 2:
+                continue
+            lines = ascii_text.splitlines()
+            order = []
+            for r in regions:
+                if not isinstance(r, dict):
+                    continue
+                name = str(r.get("templateRegion") or r.get("id") or "")
+                keys = REGION_ASCII_KEYS.get(name, [])
+                if not keys:
+                    continue
+                idx = None
+                for i, line in enumerate(lines):
+                    if any(k in line for k in keys):
+                        idx = i
+                        break
+                if idx is not None:
+                    order.append((name, idx))
+            mismatch = None
+            for a in range(len(order)):
+                for b in range(a + 1, len(order)):
+                    if order[b][1] < order[a][1] - 1:
+                        mismatch = (order[a], order[b])
+                        break
+                if mismatch:
+                    break
+            if mismatch:
+                a, b = mismatch
+                self.add_error(pid, "WIREFRAME_REGION_ORDER_MISMATCH", "warning",
+                               f"{ppath}.wireframe",
+                               f"regions 声明顺序与 ascii 绘制顺序矛盾：{b[0]} 绘制在 {a[0]} 之上",
+                               f"{a[0]} 应位于 {b[0]} 之上",
+                               f"{a[0]} 在第 {a[1] + 1} 行、{b[0]} 在第 {b[1] + 1} 行",
+                               fix="调整 ascii 绘制顺序或 regions 顺序，使二者自上而下一致")
+
+    def check_wireframe_duplicate_control(self):
+        """RULE-46 线框图重复控件（warning）：页面级单例控件（导出/查询/确定/保存等）在同一页 ascii 中重复绘制时提示。
+        仅针对页面级单例动作，行内重复动作（详情/编辑/删除）不计入，避免误报。"""
+        singular = SINGULAR_CONTROLS
+        for page, ppath in self.all_pages:
+            pid = page.get("id", "")
+            wf = self.page_wireframe(page)
+            if not isinstance(wf, dict):
+                continue
+            ascii_text = str(wf.get("ascii") or "")
+            if len(ascii_text.strip()) < 8:
+                continue
+            counts = {}
+            for lb in re.findall(r"[【\[]([^】\]\n]{1,20})[】\]]", ascii_text):
+                lb = lb.strip()
+                if lb in singular:
+                    counts[lb] = counts.get(lb, 0) + 1
+            for lb, n in counts.items():
+                if n >= 2:
+                    self.add_error(pid, "WIREFRAME_DUPLICATE_CONTROL", "warning",
+                                   f"{ppath}.wireframe.ascii",
+                                   f"页面级控件在 ascii 中被重复绘制 {n} 次：{lb}",
+                                   f"{lb} 仅绘制一次", f"出现 {n} 次",
+                                   fix="删除重复绘制的控件，或区分其标签文本")
+            # 区域级单例：同一内容区域（步骤条/Tab/工具栏/筛选区/分页）不应重复绘制
+            lines = [l for l in ascii_text.splitlines() if l.strip()]
+            for region, keys in REGION_SINGLETON_KEYS.items():
+                hit_lines = [l for l in lines if any(k in l for k in keys)]
+                if len(hit_lines) >= 2:
+                    self.add_error(pid, "WIREFRAME_DUPLICATE_REGION", "warning",
+                                   f"{ppath}.wireframe.ascii",
+                                   f"区域 {region} 在 ascii 中被重复绘制（{len(hit_lines)} 处）",
+                                   f"{region} 区域仅绘制一次",
+                                   f"命中 {len(hit_lines)} 行：{' / '.join(k for k in keys if any(k in l for l in hit_lines))}",
+                                   fix="合并重复绘制的区域，避免同一区域（步骤条/Tab/工具栏/筛选区/分页）在页面中出现两次")
 
     def check_section_wireframe_consistency(self):
         for page in self.data.get("pages", []):
@@ -557,6 +725,8 @@ class Validator:
             pid = page.get("id", "")
             tid = self.page_template(page)
             if not tid or not tid.startswith(("page-table", "page-list")):
+                continue
+            if self._page_override_enabled(page):
                 continue
             wf = self.page_wireframe(page)
             regions = (wf or {}).get("regions") or [] if isinstance(wf, dict) else []
@@ -744,12 +914,10 @@ class Validator:
         else:
             return ""
         text = str(text).lower()
-        mapping = [("previous", ["上一步", "previous"]),
-                   ("next-or-complete", ["下一步", "完成", "next", "提交"]),
-                   ("cancel", ["取消", "cancel"]),
-                   ("confirm", ["确定", "确认", "保存", "confirm", "ok"]),
-                   ("close", ["关闭", "close"])]
-        for kind, keys in mapping:
+        for kind, keys in FOOTER_KIND_LABELS.items():
+            if any(k.lower() in text for k in keys):
+                return kind
+        for kind, keys in FOOTER_KIND_ALIASES.items():
             if any(k in text for k in keys):
                 return kind
         return ""
@@ -815,6 +983,21 @@ class Validator:
                                "至少 2 个模板必需区域有绘制痕迹",
                                fix=f"参考模板 {tid} 的 requiredRegions，绘制包含标题栏、内容区、底部操作区的 ASCII 线框图")
 
+    @staticmethod
+    def _ascii_region_drawn(ascii_text, keys):
+        """判断 ascii 是否真正绘制了某区域：结构化字符画要求关键词出现在带框线的一行内（避免整段文本偶发命中），
+        纯文本（简单字符串线框）退化为按分隔符分段匹配（避免整句包含即命中）。"""
+        if not keys:
+            return False
+        lines = [l for l in ascii_text.splitlines() if l.strip()]
+        if any(re.search(r"[│|]", l) for l in lines):
+            for l in lines:
+                if re.search(r"[│|─┌┐└┘├┤┬┴┼]", l) and any(k in l for k in keys):
+                    return True
+            return False
+        segs = [s for s in re.split(r"[/、,，;；|]+", ascii_text) if s.strip()]
+        return any(any(k in s for k in keys) for s in segs)
+
     def check_wireframe_region_drawn(self):
         """RULE-33 线框图双向一致性：regions 声明的内容性区块，ascii 中必须有绘制痕迹。"""
         for page in self.data.get("pages", []):
@@ -835,7 +1018,7 @@ class Validator:
                 keys = REGION_ASCII_KEYS.get(region_name, [])
                 if not keys:
                     continue
-                if not any(k in ascii_text for k in keys):
+                if not self._ascii_region_drawn(ascii_text, keys):
                     self.add_error(pid, "WIREFRAME_REGION_NOT_DRAWN", "warning",
                                    f"$.pages[{self._idx(page)}].wireframe.ascii",
                                    f"regions 声明了 {region_name} 区块，但 ascii 线框图中未绘制对应区域",
@@ -855,12 +1038,13 @@ class Validator:
             lines = [l.rstrip() for l in ascii_text.splitlines() if l.strip()]
             if len(lines) < 6:
                 continue
-            # 分隔线行：+---- 或 +----+（无右竖线闭合的纯横线）
-            sep_lines = [l for l in lines if re.fullmatch(r"\+-+\+?", l.strip())]
+            # 分隔线行：ASCII 风格 +----+ 或 box-drawing 风格 ┌─┐/├─┤/└─┘（纯横线，兼容现代字符画）
+            rule_re = r"[+┌├└][─\-]+[+┐┤┘]?"
+            sep_lines = [l for l in lines if re.fullmatch(rule_re, l.strip())]
             # 内容行：非边框线、非分隔线的行
             content_lines = [l for l in lines
                              if not re.match(r"^[+┌└├]", l.strip())
-                             and not re.fullmatch(r"\+-+\+?", l.strip())]
+                             and not re.fullmatch(rule_re, l.strip())]
             if not content_lines:
                 continue
             # 无右竖线闭合的内容行：以 | 或 │ 开头但不以 | 或 │ 结尾（区域标签罗列特征）
@@ -1113,10 +1297,79 @@ class Validator:
                                        source_ref=source_ref,
                                        fix=f"将「{name}」改为普通文本或等宽文本，把标签配额留给需要凸显的重要业务状态字段")
 
+    def check_field_key_contract(self):
+        """RULE-41 字段形态键契约：字段内容必须写在渲染器实际渲染的键上。
+
+        formFields 渲染 rules/tips；filterFields 渲染 options/description；
+        tableFields/columns 渲染 display/description。内容写在异态键上会导致
+        HTML 对应列静默空白：异态键有值且渲染键为空 -> error（阻断生成）；
+        渲染键也有值 -> warning（内容已渲染但键写错位置）。
+        区块级自由文本 fields 数组中的字典字段按区块类型推定形态
+        （含“表单/form”按表单键、含“表格/列表/table/list”按表格键），
+        与 HTML 生成器 normalize_legacy_fields 的推定规则一致。
+        """
+        for page, path in self.all_pages:
+            pid = page.get("id", "")
+            for key in ("formFields", "filterFields", "tableFields", "columns"):
+                fields = page.get(key)
+                if isinstance(fields, list):
+                    self._audit_field_contract(pid, f"{path}.{key}", key, fields)
+            sections = page.get("sections")
+            if not isinstance(sections, list):
+                continue
+            for si, section in enumerate(sections):
+                if not isinstance(section, dict):
+                    continue
+                spath = f"{path}.sections[{si}]"
+                for key in ("formFields", "filterFields", "tableFields", "columns"):
+                    fields = section.get(key)
+                    if isinstance(fields, list):
+                        self._audit_field_contract(pid, f"{spath}.{key}", key, fields)
+                legacy = section.get("fields")
+                if isinstance(legacy, list):
+                    block_type = f"{section.get('type', '')} {section.get('title', '')}"
+                    if "表单" in block_type or "form" in block_type:
+                        self._audit_field_contract(pid, f"{spath}.fields", "formFields", legacy)
+                    elif "表格" in block_type or "列表" in block_type or "table" in block_type or "list" in block_type:
+                        self._audit_field_contract(pid, f"{spath}.fields", "tableFields", legacy)
+
+    def _audit_field_contract(self, pid, base_path, field_key, fields):
+        """对一组字段执行键契约审计（RULE-41 单字段检查）。"""
+        contract = FIELD_KEY_CONTRACT.get(field_key)
+        if not contract:
+            return
+        rendered, aliens = contract["rendered"], contract["aliens"]
+        prefix = "FORM" if field_key == "formFields" else "FILTER" if field_key == "filterFields" else "TABLE"
+        for i, field in enumerate(fields):
+            if not isinstance(field, dict):
+                continue
+            fpath = f"{base_path}[{i}]"
+            alien_present = [k for k in aliens if _has_text_value(field.get(k))]
+            if not alien_present:
+                continue
+            rendered_present = [k for k in rendered if _has_text_value(field.get(k))]
+            if not rendered_present:
+                self.add_error(
+                    pid, f"{prefix}_FIELD_KEY_MISMATCH", "error", fpath,
+                    f"字段内容写在了不渲染的键 {alien_present} 上，HTML 的对应列将静默空白",
+                    f"内容写入渲染键 {list(rendered)}",
+                    f"内容仅存在于不渲染键 {alien_present}",
+                    fix=f"删除 {alien_present}，把内容改写进渲染键 {list(rendered)}",
+                )
+            else:
+                self.add_error(
+                    pid, f"{prefix}_FIELD_KEY_PLACED_WRONG", "warning", fpath,
+                    f"字段内容同时出现在渲染键 {rendered_present} 与不渲染键 {alien_present}，键位置错误",
+                    f"仅使用渲染键 {list(rendered)}",
+                    f"同时使用了不渲染键 {alien_present}",
+                    fix=f"删除 {alien_present}，内容统一写入渲染键 {list(rendered)}",
+                )
+
     def check_design_references(self):
         """RULE-40 设计依据可追溯：声称引用 Design Skill 的决策必须在 codingGuide.designReferences 登记来源。
 
-        warning 级：只校验“声称有依据却无登记”和“登记格式非法”，不校验是否读全所有层。
+        声称有依据却无登记为 error（阻断）；来源/字段格式非法为 warning。
+        是否真正读取、以及“声明来源 vs 实际落地”的一致性由 RULE-43 强制校验。
         """
         allowed_sources = ("common-design", "product-design", "code", "ai-fill")
         for page, path in self.all_pages:
@@ -1127,7 +1380,7 @@ class Validator:
                 # 页面存在声称引用 Design Skill 的来源标注，但无 designReferences 登记
                 claimed = self._claimed_design_sources(page)
                 if claimed:
-                    self.add_error(pid, "DESIGN_REF_MISSING", "warning",
+                    self.add_error(pid, "DESIGN_REF_MISSING", "error",
                                    f"{path}.codingGuide.designReferences",
                                    f"页面声称引用 {claimed}，但 codingGuide.designReferences 缺失",
                                    "designReferences 登记", "缺失",
@@ -1175,15 +1428,63 @@ class Validator:
             claimed.add("Product Design")
         return sorted(claimed)
 
+    @staticmethod
+    def _norm_label(text):
+        return re.sub(r"[\s/、,，;；:：·\-_\[\]【】()（）]", "", str(text or "")).lower()
+
+    def _strip_footer_prefix(self, text):
+        t = str(text or "").strip()
+        for p in FOOTER_LABEL_PREFIXES:
+            if t.startswith(p):
+                return t[len(p):].strip()
+        return t
+
+    def _footer_region_text(self, ascii_text):
+        """定位 ascii 底部操作区文本（最后一个内部分隔线之后、底边线之前的区块）；
+        无法定位结构化字符画时返回空串（此时不做自定义按钮检测，避免误伤整体描述文本）。"""
+        lines = [l.rstrip() for l in ascii_text.splitlines() if l.strip()]
+        if len(lines) < 2:
+            return ""
+        struct = [i for i, l in enumerate(lines)
+                  if re.fullmatch(r"[+\-─│┌┐└┘├┤┬┴┼ ]+", l.strip()) and re.search(r"[─\-]", l)]
+        internal = [i for i in struct if 0 < i < len(lines) - 1]
+        if not internal:
+            return ""
+        start = max(internal) + 1
+        end = len(lines)
+        while end > start and re.fullmatch(r"[+\-─│┌┐└┘├┤┬┴┼ ]+", lines[end - 1].strip()):
+            end -= 1
+        return "\n".join(lines[start:end]).strip()
+
+    def _check_footer_custom_buttons(self, page, pid, path, template, allowed, footer_text):
+        """RULE-37：底部操作区出现的、模板允许集合外的按钮，需 override 声明（业务自定义按钮以业务为准）。"""
+        tc = page.get("templateContract") or {}
+        if bool((tc.get("override") or {}).get("enabled")):
+            return
+        allowed_norm = {self._norm_label(a) for a in allowed}
+        global_norm = {self._norm_label(l) for labels in FOOTER_KIND_LABELS.values() for l in labels}
+        seen = set()
+        for raw in re.findall(r"[【\[]([^】\]\n]{1,24})[】\]]", footer_text):
+            token = raw.strip()
+            if not token or token in seen:
+                continue
+            seen.add(token)
+            base = self._norm_label(self._strip_footer_prefix(token))
+            if not base or base in allowed_norm:
+                continue
+            # 仅当该标签由底部按钮文案组合而成（如"保存并关闭"）或为其它模板的底部按钮时，判为自定义底部按钮
+            if any(g and g in base for g in global_norm):
+                self.add_error(pid, "FOOTER_ASCII_CUSTOM_BUTTON", "error",
+                               path,
+                               f"底部操作区出现模板允许集合外的自定义按钮：{token}",
+                               f"模板允许按钮：{' / '.join(allowed)}（或启用 templateContract.override 并登记业务覆盖来源）",
+                               token,
+                               source_ref=template.get("source", ""),
+                               fix="改用模板允许的按钮文案，或启用 templateContract.override 并在 source 登记业务覆盖来源")
+
     def check_footer_ascii_order(self):
-        """RULE-37 线框图按钮顺序：ascii 中底部按钮出现顺序必须与模板 buttonOrder 一致（主操作在左、次操作在右）。"""
-        button_keys = {
-            "previous": ["上一步"],
-            "next-or-complete": ["下一步", "完成"],
-            "cancel": ["取消"],
-            "confirm": ["确定", "确认", "保存"],
-            "close": ["关闭"],
-        }
+        """RULE-37 线框图底部按钮：ascii 必须按模板 buttonOrder 绘制（主操作在左、次操作在右），
+        按钮文案须落在模板允许集合（缺主操作/顺序错=error，缺次要按钮=warning），自定义按钮需 override 声明。"""
         for page in self.data.get("pages", []):
             pid = page.get("id", "")
             tid = self.page_template(page)
@@ -1195,12 +1496,17 @@ class Validator:
             if not isinstance(wf, dict):
                 continue
             ascii_text = str(wf.get("ascii") or "")
-            if not ascii_text:
+            if not ascii_text.strip():
                 continue
+            path = f"$.pages[{self._idx(page)}].wireframe.ascii"
+            tpl = template.get("source", "")
+            allowed = []
+            for kind in expected_order:
+                allowed.extend(FOOTER_KIND_LABELS.get(kind, []))
             pos = []
             for kind in expected_order:
                 idx = -1
-                for key in button_keys.get(kind, []):
+                for key in FOOTER_KIND_LABELS.get(kind, []):
                     i = ascii_text.find(key)
                     if i != -1 and (idx == -1 or i < idx):
                         idx = i
@@ -1208,13 +1514,66 @@ class Validator:
                     pos.append((idx, kind))
             pos.sort()
             actual_order = [k for _, k in pos]
-            if actual_order != expected_order[:len(actual_order)]:
+            expected_present = [k for k in expected_order if k in actual_order]
+            if not pos:
+                # 一个模板按钮都没画：修复"找不到按钮即静默通过"（P09/P10 只画 [关闭] 的场景）
+                self.add_error(pid, "FOOTER_ASCII_BUTTON_MISSING", "error",
+                               path,
+                               "线框图底部操作区未按模板绘制任何按钮",
+                               f"按 Common Design 模板 buttonOrder 绘制底部按钮：{' → '.join(expected_order)}",
+                               "未找到任何模板按钮（确定/取消/上一步/下一步/关闭等）",
+                               source_ref=tpl,
+                               fix="按 Common Design 模板 buttonOrder 在底部操作区绘制按钮，禁止只画关闭或省略主操作")
+            elif actual_order != expected_present:
                 self.add_error(pid, "FOOTER_ASCII_ORDER_MISMATCH", "error",
-                               f"$.pages[{self._idx(page)}].wireframe.ascii",
+                               path,
                                "线框图中底部按钮出现顺序与模板按钮顺序不一致",
                                f"按 Common Design 模板顺序绘制底部按钮：{' → '.join(expected_order)}（主操作在左、次操作在右）",
                                f"ascii 中出现顺序：{' → '.join(actual_order)}",
+                               source_ref=tpl,
                                fix="调整 ascii 线框图中按钮的绘制顺序，使主操作（确定/保存）在左、次操作（取消/关闭）在右，与模板 buttonOrder 一致")
+            elif len(actual_order) < len(expected_order):
+                missing_kinds = [k for k in expected_order if k not in actual_order]
+                self.add_error(pid, "FOOTER_ASCII_BUTTON_MISSING", "warning",
+                               path,
+                               "线框图底部操作区缺少模板要求的按钮",
+                               f"模板按钮：{' → '.join(expected_order)}",
+                               f"缺少：{' → '.join(missing_kinds)}",
+                               source_ref=tpl,
+                               fix="补齐模板 buttonOrder 中缺失的按钮文案")
+            footer_text = self._footer_region_text(ascii_text)
+            if footer_text:
+                self._check_footer_custom_buttons(page, pid, path, template, allowed, footer_text)
+
+    def check_wireframe_column_alignment(self):
+        """RULE-47 线框图列对齐一致性（warning）：内容行右边界（右竖线）应在同一列，
+        出现明显错位时提示，用于捕捉"两列结构断裂"。"""
+        for page in self.data.get("pages", []):
+            pid = page.get("id", "")
+            wf = self.page_wireframe(page)
+            if not isinstance(wf, dict):
+                continue
+            ascii_text = str(wf.get("ascii") or "")
+            lines = [l.rstrip() for l in ascii_text.splitlines() if l.strip()]
+            if len(lines) < 4:
+                continue
+            right_cols = []
+            for l in lines:
+                s = l.strip()
+                if re.fullmatch(r"[+\-─│┌┐└┘├┤┬┴┼ ]+", s):
+                    continue
+                if s and s[-1] in "│|":
+                    right_cols.append(len(l) - 1)
+            if len(right_cols) < 4:
+                continue
+            drift = max(right_cols) - min(right_cols)
+            if drift >= 3:
+                self.add_error(pid, "WIREFRAME_COLUMN_ALIGNMENT", "warning",
+                               f"$.pages[{self._idx(page)}].wireframe.ascii",
+                               "线框图内容行右边界未对齐，疑似两列结构断裂",
+                               "各内容行右竖线对齐在同一列",
+                               f"右边界列跨度 {drift}（{min(right_cols)}~{max(right_cols)}）",
+                               fix="对齐各行右边界竖线，或检查是否把两列结构画断")
 
     def check_coding_item_ids(self):
         for page in self.data.get("pages", []):
@@ -1229,21 +1588,350 @@ class Validator:
                                    "非空 id（如 P01-C01）", "空",
                                    fix="为每个开发项补充稳定 ID，供 Coding Plan/Execution/Verification 追踪")
 
+    def _declared_code_availability(self, page):
+        """读取页面声明的代码可用状态：page / templateContract / codingGuide.pageContext 三处取首个非空。"""
+        tc = page.get("templateContract") or {}
+        ctx = (page.get("codingGuide") or {}).get("pageContext") or {}
+        for value in (page.get("codeAvailability"),
+                      tc.get("codeAvailability"),
+                      ctx.get("codeAvailability")):
+            text = str(value or "").strip().lower()
+            if text:
+                return text
+        return ""
+
+    @staticmethod
+    def _looks_like_path(text):
+        text = str(text or "").strip()
+        return "/" in text and "." in text
+
+    @staticmethod
+    def _norm_doc(text):
+        """归一化文档路径（取 # 前），统一分隔符与大小写。"""
+        return str(text or "").split("#", 1)[0].strip().replace("\\", "/").lower()
+
+    @staticmethod
+    def _norm_ref(text):
+        """归一化设计依据引用为 (文档路径, 章节锚点)。无 # 时锚点为空串。"""
+        raw = str(text or "").strip().replace("\\", "/")
+        doc, _, anchor = raw.partition("#")
+        return doc.strip().lower(), anchor.strip().lower()
+
+    def _build_ledger(self, entries):
+        """构建 readLedger 索引 {(文档, 锚点): status}。
+
+        约定：条目形如 {"ref": "<文档路径>#<章节锚点>", "status": "read|index-only"}；
+        锚点用 "*" 表示整篇已读。兼容旧写法 {"doc": <文档路径>, "status": ...}（视为整篇，锚点 "*"）。
+        """
+        ledger = {}
+        for ent in entries or []:
+            if not isinstance(ent, dict):
+                continue
+            if "ref" in ent:
+                doc, anchor = self._norm_ref(ent.get("ref", ""))
+            else:
+                doc, anchor = self._norm_doc(ent.get("doc", "")), "*"
+            if doc:
+                ledger[(doc, anchor)] = str(ent.get("status", "")).strip().lower()
+        return ledger
+
+    @staticmethod
+    def _split_component_tokens(value):
+        return [t.strip() for t in re.split(r"[/,，、|;；\s]+", str(value or "")) if t.strip()]
+
+    @staticmethod
+    def _is_unverified_component_token(token):
+        """真实/产品专有组件名令牌：以字母开头、非 iDux 标准组件（非 Ix 前缀）且含至少两个大写字母。"""
+        if not re.match(r"^[A-Za-z][A-Za-z0-9_-]*$", token):
+            return False
+        if token.startswith("Ix"):
+            return False
+        return sum(1 for c in token if c.isupper()) >= 2
+
+    def _pd_registered_component_names(self, page):
+        """收集页面已登记的 Product Design 组件/能力名（小写），用于区分“PD 已登记但代码未核验”与“凭空断言组件名”。"""
+        names = set()
+
+        def _add(v):
+            s = str(v).strip()
+            if s:
+                names.add(s.lower())
+
+        refs = (page.get("codingGuide") or {}).get("designReferences") or []
+        for r in refs:
+            if isinstance(r, dict) and str(r.get("source", "")).strip() == "product-design":
+                for key in ("ability", "component", "name"):
+                    _add(r.get(key, ""))
+                for v in (r.get("components") or []):
+                    _add(v)
+        cc = (page.get("templateContract") or {}).get("componentContract") or {}
+        for pc in (cc.get("patternComponents") or []):
+            if isinstance(pc, dict):
+                _add(pc.get("ability", ""))
+                for v in (pc.get("components") or []):
+                    _add(v)
+        return names
+
+    def _flag_unverified_components(self, pid, json_path, value, code_avail, seen, pd_registered=None):
+        pd_registered = pd_registered or set()
+        for token in self._split_component_tokens(value):
+            if self._is_unverified_component_token(token) and token not in seen:
+                seen.add(token)
+                if token.lower() in pd_registered:
+                    self.add_error(pid, "COMPONENT_WITHOUT_VERIFY", "warning",
+                                   json_path,
+                                   f"组件名（{token}）为 Product Design 已登记的业务封装，但代码状态为 {code_avail} 尚未核验",
+                                   "保留业务组件名并标注“待 Coding 阶段核验”，或改为语义级能力描述",
+                                   token,
+                                   fix="保留业务组件名并标注“待 Coding 阶段核验”；不得因此退回 iDux 通用组件")
+                    continue
+                self.add_error(pid, "COMPONENT_WITHOUT_VERIFY", "error",
+                               json_path,
+                               f"代码状态为 {code_avail} 时不得把未核验的产品专有组件名（{token}）作为设计结论",
+                               "语义级能力描述或 Ix 标准组件；真实组件名留待 Coding Gate 核验",
+                               token,
+                               fix="将产品专有组件名替换为语义级能力描述，或标记为 Coding 阶段待核验")
+
     def check_path_without_verify(self):
-        for page in self.data.get("pages", []):
+        """RULE-24：codeAvailability 必填（缺省按 unavailable 处理，不再静默跳过）；partial/unavailable 时禁止真实 target.path。"""
+        for page, path in self.all_pages:
             pid = page.get("id", "")
-            code_avail = str(page.get("codeAvailability", "") or
-                             (page.get("templateContract") or {}).get("codeAvailability", ""))
+            declared = self._declared_code_availability(page)
+            code_avail = declared or "unavailable"
+            if not declared:
+                self.add_error(pid, "CODE_STATUS_UNDECLARED", "warning",
+                               f"{path}.codeAvailability",
+                               "未声明代码可用状态，已按 unavailable 保守处理",
+                               "verified/partial/unavailable", "缺失",
+                               fix="在 codingGuide.pageContext.codeAvailability 声明代码可用状态")
+            if code_avail not in ("partial", "unavailable"):
+                continue
             cg = page.get("codingGuide") or {}
             for i, item in enumerate(cg.get("pageItems") or []):
+                if not isinstance(item, dict):
+                    continue
                 target = item.get("target") or {}
-                path = target.get("path", "")
-                if code_avail in ("partial", "unavailable") and path:
+                path_val = target.get("path")
+                if str(path_val or "").strip():
                     self.add_error(pid, "PATH_WITHOUT_VERIFY", "error",
-                                   f"$.pages[{self._idx(page)}].codingGuide.pageItems[{i}].target.path",
+                                   f"{path}.codingGuide.pageItems[{i}].target.path",
                                    f"代码状态为 {code_avail} 时 target.path 必须为空",
-                                   "空 path（待映射阶段核验）", path,
+                                   "空 path（待映射阶段核验）", path_val,
                                    fix="清空 target.path，标记 mappingStatus=pending 或 blocked")
+
+    def check_unverified_implementation(self):
+        """RULE-44：partial/unavailable 时禁止把未核验的真实代码对象当作设计结论（只允许语义级描述）。"""
+        for page, path in self.all_pages:
+            pid = page.get("id", "")
+            code_avail = self._declared_code_availability(page) or "unavailable"
+            if code_avail not in ("partial", "unavailable"):
+                continue
+            seen = set()
+            pd_registered = self._pd_registered_component_names(page)
+            cg = page.get("codingGuide") or {}
+            for i, item in enumerate(cg.get("pageItems") or []):
+                if not isinstance(item, dict):
+                    continue
+                target = item.get("target") or {}
+                if str(target.get("export", "")).strip():
+                    self.add_error(pid, "EXPORT_WITHOUT_VERIFY", "error",
+                                   f"{path}.codingGuide.pageItems[{i}].target.export",
+                                   f"代码状态为 {code_avail} 时 target.export（真实导出名）必须为空",
+                                   "空 export（Coding Gate 核验）", target.get("export"),
+                                   fix="清空 target.export，真实导出名留待 Coding 阶段核验")
+                self._flag_unverified_components(
+                    pid, f"{path}.codingGuide.pageItems[{i}].target.component",
+                    target.get("component", ""), code_avail, seen, pd_registered)
+                self._flag_unverified_components(
+                    pid, f"{path}.codingGuide.pageItems[{i}].target.components",
+                    "/".join(str(c) for c in (target.get("components") or [])), code_avail, seen, pd_registered)
+                mapping_ref = str(item.get("mappingRef", "")).strip()
+                if self._looks_like_path(mapping_ref):
+                    self.add_error(pid, "MAPPINGREF_WITHOUT_VERIFY", "error",
+                                   f"{path}.codingGuide.pageItems[{i}].mappingRef",
+                                   f"代码状态为 {code_avail} 时 mappingRef 不得是真实文件路径",
+                                   "映射编号（如 M01）", mapping_ref,
+                                   fix="改用映射编号，真实路径留待 Coding 阶段核验")
+            if str(page.get("visualBaselineRef", "")).strip():
+                self.add_error(pid, "VISUAL_BASELINE_WITHOUT_VERIFY", "error",
+                               f"{path}.visualBaselineRef",
+                               f"代码状态为 {code_avail} 时不得引用真实可视化基线页面",
+                               "空 visualBaselineRef（待核验）", page.get("visualBaselineRef"),
+                               fix="清空 visualBaselineRef，待页面代码核验可用后再引用")
+            rr = page.get("restoreRequirement") or {}
+            for k, comp in enumerate(rr.get("components") or []):
+                if not isinstance(comp, dict):
+                    continue
+                if str(comp.get("path", "")).strip():
+                    self.add_error(pid, "COMPONENT_PATH_WITHOUT_VERIFY", "error",
+                                   f"{path}.restoreRequirement.components[{k}].path",
+                                   f"代码状态为 {code_avail} 时不得声明真实组件路径",
+                                   "空 path（待核验）", comp.get("path"),
+                                   fix="清空组件 path，改用语义级能力描述")
+                self._flag_unverified_components(
+                    pid, f"{path}.restoreRequirement.components[{k}].name",
+                    comp.get("name", ""), code_avail, seen, pd_registered)
+            for s_idx, section in enumerate(self.page_sections(page)):
+                if not isinstance(section, dict):
+                    continue
+                for key in ("component", "filterComponent", "topComponent"):
+                    self._flag_unverified_components(
+                        pid, f"{path}.sections[{s_idx}].{key}", section.get(key, ""), code_avail, seen, pd_registered)
+                for f_key in ("fields", "formFields", "filterFields", "tableFields", "detailFields", "columns"):
+                    for f_idx, field in enumerate(section.get(f_key) or []):
+                        if not isinstance(field, dict):
+                            continue
+                        for comp_key in ("iduxComponent", "component"):
+                            self._flag_unverified_components(
+                                pid, f"{path}.sections[{s_idx}].{f_key}[{f_idx}].{comp_key}",
+                                field.get(comp_key, ""), code_avail, seen, pd_registered)
+
+    def check_design_basis_consistency(self):
+        """RULE-43：设计依据一致性（条件式，顶层声明 designContext 时启用）。
+
+        1) common/product-design 依据必须命中 readLedger 且 status=read（引用未读文档阻断）；
+        2) Product Design 声明模板覆盖时，被覆盖页面必须真正采用 product 模板（禁止落到 Common Design）；
+        3) 采用 product 模板必须反向登记 product-design 依据并声明 productDesign.matched。
+        """
+        dc = self.data.get("designContext")
+        if not isinstance(dc, dict):
+            return  # 未声明 designContext：历史格式不启用（不误伤）
+        ledger = self._build_ledger(dc.get("readLedger"))
+
+        def _ledger_status(doc, anchor):
+            for key in ((doc, anchor), (doc, "*")):
+                if key in ledger:
+                    return ledger[key]
+            if not anchor and (doc, "") in ledger:
+                return ledger[(doc, "")]
+            return None
+        pd = dc.get("productDesign") or {}
+        pd_matched = bool(pd.get("matched"))
+        if pd_matched and not str(pd.get("skillId", "")).strip():
+            self.add_error("-", "DESIGN_CONTEXT_INCOMPLETE", "warning",
+                           "$.designContext.productDesign.skillId",
+                           "productDesign.matched=true 但未声明 skillId",
+                           "非空 skillId", "缺失",
+                           fix="补充 Product Design 的 skillId")
+        # 1) 未读引用
+        for page, path in self.all_pages:
+            pid = page.get("id", "")
+            refs = (page.get("codingGuide") or {}).get("designReferences")
+            if not isinstance(refs, list):
+                continue
+            for i, ref in enumerate(refs):
+                if not isinstance(ref, dict):
+                    continue
+                src = str(ref.get("source", "")).strip()
+                if src not in ("common-design", "product-design"):
+                    continue
+                rf = str(ref.get("ref", "")).strip()
+                if "#" not in rf:
+                    self.add_error(pid, "DESIGN_REF_UNANCHORED", "warning",
+                                   f"{path}.codingGuide.designReferences[{i}].ref",
+                                   f"{src} 依据必须是精确锚点（文档#条目），禁止仅凭索引/摘要下结论",
+                                   "文档路径#章节/模板条目", rf or "空",
+                                   fix="补充精确锚点，禁止仅凭索引/摘要下结论")
+                doc, anchor = self._norm_ref(rf)
+                status = _ledger_status(doc, anchor)
+                ref_label = f"{doc}#{anchor or '*'}"
+                if status is None:
+                    self.add_error(pid, "DESIGN_REF_UNREAD", "error",
+                                   f"{path}.codingGuide.designReferences[{i}].ref",
+                                   f"引用的设计依据 {ref_label} 未在 readLedger 中登记为已精读"
+                                   "（锚点级命中：文档与章节锚点均须一致，或该文档以 #* 声明整篇已读）",
+                                   "readLedger 中 status=read 且锚点匹配的条目", rf or "空",
+                                   fix="仅引用已实际精读的章节；整篇已读请在 readLedger 用 <文档路径>#* 声明，"
+                                       "否则须将该章节精确登记为 read")
+                elif status != "read":
+                    self.add_error(pid, "DESIGN_REF_UNREAD", "error",
+                                   f"{path}.codingGuide.designReferences[{i}].ref",
+                                   f"引用的设计依据 {ref_label} 在 readLedger 中状态为 {status}，索引/摘要不得作为设计依据",
+                                   "status=read", status or "空",
+                                   fix="补读该文档该章节原文后将 readLedger 状态更新为 read")
+        # 2) 模板覆盖落地（防止“应为 Product Design 效果却落到 Common Design”）
+        if pd_matched:
+            overrides = [c for c in (pd.get("coverage") or [])
+                         if isinstance(c, dict)
+                         and str(c.get("capability", "")).strip().lower() in ("template", "page-template", "模板", "页面模板")
+                         and str(c.get("relation", "")).strip().lower() == "override"]
+            if overrides:
+                applies = set()
+                for c in overrides:
+                    for t in c.get("appliesTo") or []:
+                        applies.add(str(t).strip())
+                for page, path in self.all_pages:
+                    pid = page.get("id", "")
+                    tid = self.page_template(page)
+                    if applies and tid not in applies:
+                        continue
+                    tc = page.get("templateContract") or {}
+                    base = str(tc.get("templateBase", "")).strip().lower()
+                    pref = str(tc.get("productTemplateRef", "")).strip()
+                    if base != "product" or not pref:
+                        self.add_error(pid, "TEMPLATE_OVERRIDE_NOT_APPLIED", "error",
+                                       f"{path}.templateContract.templateBase",
+                                       "Product Design 声明模板覆盖，但页面未采用 Product Design 模板（落到 Common Design）",
+                                       "templateBase=product 且 productTemplateRef 非空",
+                                       f"templateBase={base or '空'}",
+                                       fix="按 Product Design 覆盖定义采用 product 模板并登记 productTemplateRef")
+        # 2b) 能力覆盖落地：coverage 声明 extend/override 的（非模板）能力，适用页面必须登记同 ability 的 product-design 依据
+        if pd_matched:
+            for cov in (pd.get("coverage") or []):
+                if not isinstance(cov, dict):
+                    continue
+                cap = str(cov.get("capability", "")).strip()
+                capk = cap.lower()
+                relation = str(cov.get("relation", "")).strip().lower()
+                if not capk or capk in ("template", "page-template", "模板", "页面模板"):
+                    continue
+                if relation not in ("override", "extend"):
+                    continue
+                applies = {str(t).strip() for t in (cov.get("appliesTo") or [])}
+                for page, path in self.all_pages:
+                    pid = page.get("id", "")
+                    tid = self.page_template(page)
+                    if applies and pid not in applies and tid not in applies:
+                        continue
+                    refs = (page.get("codingGuide") or {}).get("designReferences") or []
+                    registered = any(isinstance(r, dict)
+                                     and str(r.get("source", "")).strip() == "product-design"
+                                     and str(r.get("ability", "")).strip().lower() == capk
+                                     for r in refs)
+                    if not registered:
+                        self.add_error(pid, "ABILITY_SOURCE_NOT_REGISTERED", "error",
+                                       f"{path}.codingGuide.designReferences",
+                                       f"Product Design 声明能力 {cap} 的 {relation} 覆盖，但页面未登记该能力的 product-design 依据",
+                                       f"designReferences 中含 source=product-design 且 ability={cap} 的条目", "缺失",
+                                       fix=f"在 codingGuide.designReferences 登记 ability={cap} 的 Product Design 依据")
+        # 3) 反向一致：采用 product 模板必须登记 product-design 依据
+        for page, path in self.all_pages:
+            pid = page.get("id", "")
+            tc = page.get("templateContract") or {}
+            base = str(tc.get("templateBase", "")).strip().lower()
+            if base != "product":
+                continue
+            pref = str(tc.get("productTemplateRef", "")).strip()
+            if not pref:
+                self.add_error(pid, "TEMPLATE_SOURCE_UNREGISTERED", "error",
+                               f"{path}.templateContract.productTemplateRef",
+                               "采用 product 模板但未声明 productTemplateRef",
+                               "非空 productTemplateRef", "空",
+                               fix="补充 Product Design 模板锚点")
+            if not pd_matched:
+                self.add_error(pid, "TEMPLATE_SOURCE_UNREGISTERED", "error",
+                               f"{path}.templateContract.templateBase",
+                               "采用 product 模板但 designContext 未声明 productDesign.matched=true",
+                               "productDesign.matched=true", "false/缺失",
+                               fix="在 designContext.productDesign 中声明 matched 与 skillId")
+            refs = (page.get("codingGuide") or {}).get("designReferences") or []
+            has_pd = any(isinstance(r, dict) and str(r.get("source", "")).strip() == "product-design" for r in refs)
+            if not has_pd:
+                self.add_error(pid, "TEMPLATE_SOURCE_UNREGISTERED", "error",
+                               f"{path}.codingGuide.designReferences",
+                               "采用 product 模板但未登记 product-design 设计依据",
+                               "source=product-design 的 designReferences 条目", "缺失",
+                               fix="在 codingGuide.designReferences 中登记 Product Design 依据")
 
     def check_vue3_syntax(self):
         for page in self.data.get("pages", []):
@@ -1555,6 +2243,132 @@ class Validator:
                                    f"pageId={pid}", str(item["pageId"]),
                                    fix="修正开发项 pageId 或移动到对应页面")
 
+    # ---- 需求理解与页面设计追溯（RULE-42）----
+    def check_requirement_trace(self):
+        """RULE-42 需求理解与页面设计追溯（条件式启用）。
+
+        顶层声明 requirementUnderstanding（需求理解模型）或任一页面带 taskRefs 时启用：
+        - 模型 status != resolved 阻断 HTML 生成（未解决的业务事实不得作为确定设计写入 HTML）；
+        - 页面带 taskRefs 但顶层无模型 -> 模型缺失阻断；
+        - 每个页面必须关联至少一个业务任务（taskRefs 非空）；
+        - 每个已建模业务任务必须有页面承载（taskRefs 引用）；
+        - 核心动作必须有结果反馈（action 存在时 outcome 不得为空）；
+        - 判断区块（带 informationPurpose/decisionPoint）内字段须说明用途（fieldRole）；
+        - source/fieldRole 显式声明时值必须合法（requirement/product-design/common-design/code/ai-fill；
+          identify/judge/precondition/result）。
+        历史格式（无模型且无 taskRefs）不触发本规则，避免误伤存量数据。
+        """
+        model = self.data.get("requirementUnderstanding") if isinstance(self.data, dict) else None
+        pages = list(self.all_pages)
+        has_task_refs = any(isinstance(p.get("taskRefs"), list) and p.get("taskRefs") for p, _ in pages)
+        if not isinstance(model, dict) and not has_task_refs:
+            return
+        if not isinstance(model, dict):
+            for page, path in pages:
+                if isinstance(page.get("taskRefs"), list) and page.get("taskRefs"):
+                    self.add_error(page.get("id", ""), "REQ_TRACE_MODEL_MISSING", "error",
+                                   f"{path}.taskRefs",
+                                   "页面 taskRefs 引用了业务任务，但顶层缺少 requirementUnderstanding 需求理解模型",
+                                   "顶层存在 requirementUnderstanding", "缺失",
+                                   fix="先按 SKILL.md Step 1.5 完成需求理解与业务任务建模并输出 requirementUnderstanding")
+            return
+        status = model.get("status")
+        if status != "resolved":
+            self.add_error("", "REQ_TRACE_STATUS_NOT_RESOLVED", "error",
+                           "$.requirementUnderstanding.status",
+                           f"需求理解未解决（status={status or '缺失'}）：未解决的业务事实不得写入 HTML 作为确定设计",
+                           "resolved", str(status or "缺失"),
+                           fix="先确认阻塞性业务理解问题（页面拆解前提出）并更新 requirementUnderstanding.status=resolved")
+        tasks = model.get("tasks")
+        task_ids = []
+        if isinstance(tasks, list):
+            for i, task in enumerate(tasks):
+                if not isinstance(task, dict):
+                    continue
+                tpath = f"$.requirementUnderstanding.tasks[{i}]"
+                tid = str(task.get("id", "")).strip()
+                task_ids.append(tid)
+                if not _has_text_value(task.get("action")):
+                    self.add_error("", "REQ_TRACE_TASK_INCOMPLETE", "error", f"{tpath}.action",
+                                   f"业务任务 {tid or i} 缺少核心动作定义",
+                                   "action 非空（处置/审核/分配/配置等）", "缺失/空",
+                                   fix="补充任务执行动作与入口承载页面")
+                elif not _has_text_value(task.get("outcome")):
+                    self.add_error("", "REQ_TRACE_ACTION_NO_OUTCOME", "error", f"{tpath}.outcome",
+                                   f"业务任务 {tid or i} 定义了核心动作却没有结果反馈（outcome）",
+                                   "outcome 非空（成功/失败/部分成功及状态变化）", "缺失/空",
+                                   fix="补充任务结果与状态反馈定义")
+        bound = set()
+        for page, path in pages:
+            pid = page.get("id", "")
+            refs = page.get("taskRefs")
+            if not isinstance(refs, list) or not refs:
+                self.add_error(pid, "REQ_TRACE_NO_TASK_REF", "error", f"{path}.taskRefs",
+                               "页面没有关联任何业务任务（taskRefs 缺失或为空）",
+                               "taskRefs 非空并引用已建模任务 id", "缺失/空",
+                               fix="将该页面承载的业务任务 id 写入 taskRefs（见 01-output-templates.md 页面对象）")
+            else:
+                for r in refs:
+                    if isinstance(r, str) and r.strip():
+                        bound.add(r.strip())
+        for tid in task_ids:
+            if tid and tid not in bound:
+                self.add_error("", "REQ_TRACE_TASK_UNBOUND", "error",
+                               "$.requirementUnderstanding.tasks",
+                               f"业务任务 {tid} 没有任何页面承载（taskRefs 未引用）",
+                               "至少一个页面 taskRefs 引用该任务", "无页面承载",
+                               fix="补充承载该任务的页面并在其 taskRefs 中登记，或确认该任务不在本次交付范围后从 tasks 移除")
+        # 区块级追溯：判断区块（声明信息目的/决策点）字段用途 + 来源标记合法值
+        for page, path in pages:
+            pid = page.get("id", "")
+            sections = page.get("sections")
+            if not isinstance(sections, list):
+                continue
+            for si, section in enumerate(sections):
+                if not isinstance(section, dict):
+                    continue
+                spath = f"{path}.sections[{si}]"
+                self._audit_source_value(pid, f"{spath}.source", section.get("source"))
+                is_judge_block = (_has_text_value(section.get("informationPurpose"))
+                                  or _has_text_value(section.get("decisionPoint")))
+                if not is_judge_block:
+                    continue
+                for key in ("fields", "formFields", "filterFields", "tableFields", "columns"):
+                    fields = section.get(key)
+                    if not isinstance(fields, list):
+                        continue
+                    for fi, field in enumerate(fields):
+                        if not isinstance(field, dict):
+                            continue
+                        fpath = f"{spath}.{key}[{fi}]"
+                        self._audit_source_value(pid, f"{fpath}.source", field.get("source"))
+                        role = field.get("fieldRole")
+                        if not _has_text_value(role):
+                            self.add_error(pid, "REQ_TRACE_FIELD_NO_PURPOSE", "warning", f"{fpath}.fieldRole",
+                                           "区块声明了信息目的/判断点，但字段未说明用途（识别/判断/操作前置/结果反馈）",
+                                           "fieldRole 已标注", "缺失",
+                                           fix="补充 fieldRole: identify（识别信息）/ judge（判断信息）/ precondition（操作前置）/ result（结果反馈）")
+                        elif str(role).strip() not in FIELD_ROLE_LABELS:
+                            self._audit_bad_role(pid, f"{fpath}.fieldRole", role)
+
+    def _audit_source_value(self, pid, path, value):
+        """来源标记合法性（RULE-42 warning 级）。"""
+        if value is None:
+            return
+        s = str(value).strip()
+        if s and s not in SOURCE_LABELS:
+            self.add_error(pid, "REQ_TRACE_SOURCE_INVALID", "warning", path,
+                           f"来源标记非法: {s}（合法值: requirement / product-design / common-design / code / ai-fill）",
+                           "合法来源标记", s,
+                           fix="使用 requirement / product-design / common-design / code / ai-fill 之一；AI 推导内容必须标 ai-fill")
+
+    def _audit_bad_role(self, pid, path, role):
+        """fieldRole 取值合法性（RULE-42 warning 级）。"""
+        self.add_error(pid, "REQ_TRACE_FIELD_ROLE_INVALID", "warning", path,
+                       f"fieldRole 值非法: {role}（合法值: identify / judge / precondition / result）",
+                       "identify / judge / precondition / result", str(role),
+                       fix="将 fieldRole 修正为 identify / judge / precondition / result 之一")
+
     # ---- 执行 ----
     def _idx(self, page):
         for i, p in enumerate(self.data.get("pages", [])):
@@ -1604,16 +2418,28 @@ class Validator:
         self.check_wireframe_drawing_quality()
         self.check_wireframe_region_drawn()
         self.check_wireframe_label_list()
+        self.check_wireframe_region_ascii_order()
+        self.check_wireframe_duplicate_control()
+        # ---- 线框图列对齐一致性（RULE-47）：右边界错位/两列结构断裂提示 ----
+        self.check_wireframe_column_alignment()
         # ---- 页面平铺闭环（RULE-35）：children 禁止内嵌完整页面设计对象 ----
         self.check_child_page_flattened()
         # ---- 字段完整性闭环（RULE-36）：需求明确字段必须落位或排除 ----
         self.check_requirement_fields()
+        # ---- 字段形态键契约（RULE-41）：内容必须写在渲染器实际渲染的键上，跨形态套键阻断 ----
+        self.check_field_key_contract()
         # ---- 表格与详情字段一致性闭环（RULE-38）：表格展示字段必须在对应详情容器中存在 ----
         self.check_table_detail_field_consistency()
         # ---- 表格标签使用约束（RULE-39）：同一表格内标签总数与样式配额（Common Design 标签样式约束兜底）----
         self.check_table_tag_usage()
         # ---- 设计依据可追溯（RULE-40）：声称引用 Design Skill 的决策须登记来源，无来源须标 ai-fill ----
         self.check_design_references()
+        # ---- 需求理解与页面设计追溯（RULE-42）：任务绑定/结果反馈/判断区块字段用途/来源合法性 ----
+        self.check_requirement_trace()
+        # ---- 设计依据一致性（RULE-43）：读未读/模板覆盖落地/反向登记（条件式，声明 designContext 时启用）----
+        self.check_design_basis_consistency()
+        # ---- 未核验实现细节隔离（RULE-44）：partial/unavailable 时禁止未核验真实代码对象作设计结论 ----
+        self.check_unverified_implementation()
         self.check_footer_ascii_order()
 
     def result(self):

@@ -1,10 +1,10 @@
 {
   "version": "1.0",
-  "sourceBase": "common-design/references/03-design-template/01-page-types.md",
-  "description": "Common Design 标准页面模板注册表。本文件是 Common Design 页面模板定义的机器可读快照，来源于 common-design/references/03-design-template/01-page-types.md；所有规则来源于 Common Design 页面类型定义，禁止凭 AI 经验新增模板结构。页面必须绑定本注册表中的 templateId，无法匹配时必须使用 custom 模板并填写 override。",
+  "sourceBase": "common-design/references/02-template/01-page-types.md",
+  "description": "Common Design 标准页面模板注册表。本文件是 Common Design 页面模板定义的机器可读快照，来源于 common-design/references/02-template/01-page-types.md；所有规则来源于 Common Design 页面类型定义，禁止凭 AI 经验新增模板结构。页面必须绑定本注册表中的 templateId，无法匹配时必须使用 custom 模板并填写 override。",
   "templates": {
     "page-table-basic": {
-      "source": "common-design/references/03-design-template/01-page-types.md#page-table-basic",
+      "source": "common-design/references/02-template/01-page-types.md#page-table-basic",
       "navigationTypes": [
         "left-shaped",
         "l-shaped"
@@ -39,7 +39,7 @@
       }
     },
     "page-table-tree": {
-      "source": "common-design/references/03-design-template/01-page-types.md#page-table-tree",
+      "source": "common-design/references/02-template/01-page-types.md#page-table-tree",
       "navigationTypes": [
         "left-shaped",
         "l-shaped"
@@ -75,7 +75,7 @@
       }
     },
     "page-table-overview": {
-      "source": "common-design/references/03-design-template/01-page-types.md#page-table-overview",
+      "source": "common-design/references/02-template/01-page-types.md#page-table-overview",
       "navigationTypes": [
         "left-shaped",
         "l-shaped"
@@ -111,7 +111,7 @@
       }
     },
     "page-table-overview-tree": {
-      "source": "common-design/references/03-design-template/01-page-types.md#page-table-overview-tree",
+      "source": "common-design/references/02-template/01-page-types.md#page-table-overview-tree",
       "navigationTypes": [
         "left-shaped",
         "l-shaped"
@@ -151,7 +151,7 @@
       }
     },
     "page-list-modal": {
-      "source": "common-design/references/03-design-template/01-page-types.md#page-list-modal",
+      "source": "common-design/references/02-template/01-page-types.md#page-list-modal",
       "navigationTypes": [],
       "requiredRegions": [
         "modal-shell",
@@ -189,7 +189,7 @@
       }
     },
     "page-list-drawer": {
-      "source": "common-design/references/03-design-template/01-page-types.md#page-list-drawer",
+      "source": "common-design/references/02-template/01-page-types.md#page-list-drawer",
       "navigationTypes": [],
       "requiredRegions": [
         "drawer-shell",
@@ -228,7 +228,7 @@
       }
     },
     "page-detail-drilldown": {
-      "source": "common-design/references/03-design-template/01-page-types.md#page-detail-drilldown",
+      "source": "common-design/references/02-template/01-page-types.md#page-detail-drilldown",
       "navigationTypes": [
         "left-shaped",
         "l-shaped"
@@ -259,7 +259,7 @@
       }
     },
     "page-detail-drawer": {
-      "source": "common-design/references/03-design-template/01-page-types.md#page-detail-drawer",
+      "source": "common-design/references/02-template/01-page-types.md#page-detail-drawer",
       "navigationTypes": [],
       "requiredRegions": [
         "drawer-shell",
@@ -289,7 +289,7 @@
       }
     },
     "page-detail-log": {
-      "source": "common-design/references/03-design-template/01-page-types.md#page-detail-log",
+      "source": "common-design/references/02-template/01-page-types.md#page-detail-log",
       "navigationTypes": [
         "left-shaped",
         "l-shaped"
@@ -321,7 +321,7 @@
       }
     },
     "page-form-config": {
-      "source": "common-design/references/03-design-template/01-page-types.md#page-form-config",
+      "source": "common-design/references/02-template/01-page-types.md#page-form-config",
       "navigationTypes": [
         "left-shaped",
         "l-shaped"
@@ -355,7 +355,7 @@
       }
     },
     "page-form-stepper": {
-      "source": "common-design/references/03-design-template/01-page-types.md#page-form-stepper",
+      "source": "common-design/references/02-template/01-page-types.md#page-form-stepper",
       "navigationTypes": [
         "left-shaped",
         "l-shaped"
@@ -394,7 +394,7 @@
       }
     },
     "page-form-modal": {
-      "source": "common-design/references/03-design-template/01-page-types.md#page-form-modal",
+      "source": "common-design/references/02-template/01-page-types.md#page-form-modal",
       "navigationTypes": [],
       "requiredRegions": [
         "modal-shell",
@@ -428,7 +428,7 @@
       }
     },
     "page-form-drawer": {
-      "source": "common-design/references/03-design-template/01-page-types.md#page-form-drawer",
+      "source": "common-design/references/02-template/01-page-types.md#page-form-drawer",
       "navigationTypes": [],
       "requiredRegions": [
         "drawer-shell",
@@ -462,7 +462,7 @@
       }
     },
     "page-dashboard": {
-      "source": "common-design/references/03-design-template/01-page-types.md#page-dashboard",
+      "source": "common-design/references/02-template/01-page-types.md#page-dashboard",
       "navigationTypes": [
         "left-shaped",
         "l-shaped"

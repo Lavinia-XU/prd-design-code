@@ -35,6 +35,8 @@
 - 若页面包含底部操作区，是否已读取对应页面类型或容器形态的Common Design页面模板结构，并继承底部操作区位置、按钮顺序和布局规则；
 - 若存在Product Design，其Coverage的继承（inherit）、扩展（extend）或覆盖（override）关系是否已解析；
 - 当前任务的代码可用状态（verified 已核验 / partial 部分可用 / unavailable 不可用）是否已标记；
+- 实际读取清单 readLedger 是否完整：`common-design` / `product-design` 依据所引用的文档是否均为 `status: read`，是否存在仅凭索引 / 摘要（index-only）作为设计依据的情况；
+- Product Design 声明页面模板 override 的页面，其 `templateContract.templateBase` 是否为 `product` 且 `productTemplateRef` 非空，避免应使用 Product Design 效果却落到 Common Design；
 - 当前页面是否存在需要明确标记的AI合理补齐项；
 - 真实业务事实、权限、状态流转、数量限制和业务规则是否来自PRD、用户确认或可验证代码，而非AI推断；
 - 是否仍有影响页面结构、导航、规则或实现方式的待确认问题。
@@ -44,6 +46,8 @@
 ### 2.2 当前代码环境核验
 
 当存在Demo代码环境、用户指定代码范围、Product Design指定复用对象，或用户提到已有模块时，必须实际检查以下内容：
+
+设计阶段仅完成定位（Tier 0：路由、菜单/Tab 归属、页面清单、相似页面入口定位），本节承接**实现级核验**（Tier 2）：组件真实导出名、Props、Events、数据结构、功能链路与 Mock / 状态管理细节在本节读取；设计阶段已精读并核验的内容直接复用，不重复读取；设计阶段未读的实现细节在本节补齐后再写入页面级 Coding 指导。
 
 | 核验对象 | 核验内容 | 用途 |
 | --- | --- | --- |
@@ -59,7 +63,8 @@
 
 - 项目目录存在不代表代码已读取；只有实际读取并验证过的页面、组件、路由、交互和数据结构才能标记为 `verified`。
 - `verified` 状态才允许写精确的真实文件路径、组件名称、Props、Events 或调用方式。
-- `partial` / `unavailable` 状态下，页面级AI Coding指导只能写语义级描述和组件能力，并统一标记为“Coding 阶段待核验”，禁止凭空生成真实文件路径、组件路径、Props、Events 或调用方式。
+- `partial` / `unavailable` 状态下，页面级AI Coding指导只能写语义级描述和组件能力，并统一标记为“Coding 阶段待核验”，禁止凭空生成真实文件路径、组件路径、Props、Events 或调用方式；字段表（tableFields / formFields / filterFields）、编码指导与复用映射中同样禁止出现未核验的产品专有组件名（非 `Ix` 标准组件），此类名称只能以语义级能力描述表达或标注“Coding 阶段待核验”（RULE-44）。
+- 代码可用状态逐页写入 `codingGuide.pageContext.codeAvailability`（兼容页面级 `codeAvailability` / `templateContract.codeAvailability`）；缺省时校验器按 `unavailable` 处理（RULE-24 `CODE_STATUS_UNDECLARED` 提示）。
 - 代码可用状态写入 Design Context，并在 Implementation Mapping Gate 阶段复核。
 
 ### 2.3 实现方式判定
@@ -228,6 +233,7 @@ Mock数据用于验证Demo中的页面展示、用户操作、前端状态更新
 - 视觉参考页面：需求属于已有业务主题或页面体系时，填写当前页面对应的真实参考页面文件或路由；全新页面体系填写“不适用（全新基线）”。
 - 视觉基线范围：只对页面级设计对象填写，覆盖页面容器、标题层级、Tab 结构、筛选区、工具栏、表格容器、表格字段展示、状态组件、操作列、按钮位置和顺序、间距边界和空状态、高风险确认链路；组件级对象填写“继承页面基线”。
 - “待核验”只允许作为 Gate 执行前的临时状态；Gate 完成后，设计说明书中的“Coding 阶段待核验”标记必须被映射结果替换并回填到 Coding Plan。
+- 设计阶段（`partial` / `unavailable`）的结构化产物只做设计语义，不得把未核验的真实导出名、产品专有组件名（非 `Ix` 标准组件）或真实文件 / 组件路径当作已确认设计结论写入字段或编码指导；该隔离由 RULE-44 在 HTML 生成前强制，真实代码对象在 Gate 内完成核验后再回填。
 
 ### 5.3 差异发现与处理
 
@@ -266,7 +272,7 @@ Coding Plan必须覆盖：
 - 页面开发顺序；
 - 风险点、差异和待确认项。
 
-Coding Plan必须逐项映射HTML页面级AI Coding指导，不得遗漏、合并或自行改写开发项。用户确认点仅两处：Step 5 待确认问题和 HTML 设计说明书；HTML 说明书经用户确认后，Coding Plan 输出即自动进入 Coding Execution，无需等待用户再次确认。
+Coding Plan必须逐项映射HTML页面级AI Coding指导，不得遗漏、合并或自行改写开发项。用户确认点：Step 1.5 阻塞性业务理解问题（存在时在页面拆解前确认）、Step 5 设计决策待确认问题和 HTML 设计说明书；HTML 说明书经用户确认后，Coding Plan 输出即自动进入 Coding Execution，无需等待用户再次确认。
 
 ### 6.1 说明书核销清单（轻量核销）
 
@@ -279,22 +285,30 @@ Coding Plan 必须同时产出"说明书核销清单"，作为 Coding 执行完�
 
 ## 7. Coding Execution
 
+本 Skill 是否执行 Coding Execution 由 Step 7.5 编码 Skill 判定决定：判定来源按优先级为项目 `.frieren-design/workflows.json` 编码工作流 → 项目声明文档（claude.md / CLAUDE.md 等）中的编码 Skill 声明 → 项目内或环境可查询的编码类 Skill。命中时，先向用户明示将执行的编码定义（workflow 或编码 Skill 名称与来源），再按其执行并完成（含页面级核销、视觉检视与还原度验收）；命中 `.frieren-design/workflows.json` 时严格按 workflow 顺序执行，不得跳步、改序；本章默认编码路径（7.2-7.5）不由本 Skill 执行，编码不因命中而中断；未命中时，向用户明示按默认流程执行后，本 Skill 按本章默认编码路径逐页编码并完成。
+
 按HTML左侧页面目录和页面层级拆分Coding任务，先开发父级主页面，再开发子页面、弹窗或抽屉；一个页面完成并自检后，再开始下一个页面，避免入口、状态联动和Mock数据不一致。
 
-### 7.1 项目编码 Skill 声明识别（Coding 前置必做）
+### 7.1 项目编码 Skill 判定与执行主体切换（Coding 前置必做）
 
-进入 Coding Execution 前，必须先执行项目编码 Skill 声明识别。该动作必做；识别结果用于约束 Coding 执行方式，但不阻断默认编码流程。
+进入 Coding Execution 前，必须先执行项目编码 Skill 判定。该动作必做；判定来源按优先级为：项目 `.frieren-design/workflows.json` 编码工作流（最优先）→ 项目声明文档（claude.md / CLAUDE.md 等）编码 Skill 声明 → 项目内或环境可查询的编码类 Skill。判定结果只决定编码由谁执行，编码本身都会开始并执行完成：命中则由对应编码工作流 / 编码 Skill 执行并完成（本 Skill 不再自行执行编码与编码结果检验），未命中则由本 Skill 按本章默认编码流程执行并完成。
 
-- 检索范围与对象：
-  - 项目根目录及约定的文档/配置目录中的声明与约定文件：README、AGENTS.md、CLAUDE.md、.cursor/rules、.github/copilot-instructions.md、docs 下的项目说明或编码约定文档；
-  - 声明形式示例：文档中出现“本项目编码 / Coding / 开发实现应使用或遵循 <Skill>”“coding skill: <名称>”“编码 Skill：<名称>”等明确指向编码类 Skill 的表述；
-  - 项目内实际存在的编码类 Skill：skills/ 等目录下的 SKILL.md，其 metadata 或 description 与 coding / 编码 / 开发实现相关。
-- 确认与加载：
-  - 指向明确时，通过当前环境的 Skill 查询能力实际查询并读取对应 Skill 的 SKILL.md；确认其为编码相关 Skill 后，将其规则纳入 Coding Execution 依据，并在执行中按其实现。
-  - 未实际查询和读取的 Skill 一律视为不存在，禁止假设其存在或虚构其规则，禁止仅凭 Skill 名称中的 coding / 编码字样猜测内容。
-  - 同一项目出现多个编码 Skill 声明且相互冲突时，按用户最近确认、声明文件优先级（根级约定文件优先于示例文档）、编码范围更具体的声明确认；仍无法确认时记录原因并进入默认流程。
-- 采用边界：编码 Skill 决定 Coding Execution 的实现方式与代码细节（框架、目录组织、命名、工具链、复用与新增实现策略），不改变 HTML 已确认的页面结构、组件映射、复用对象和开发项；与 HTML / Coding Plan 冲突时按“差异分级与处理规则”处理（实现层差异更新 Coding Plan 后继续，设计层差异需修正 HTML 并重新获得用户确认）。
-- 兜底：未发现声明、声明无法对应到可查询 Skill，或项目无编码类 Skill 时，按 prd-design-code 默认 Coding Execution 规则逐页编码，不得停止、挂起或要求用户等待；在进度输出中记录“未发现项目编码 Skill 声明，按默认流程执行”。
+- 检索范围与对象（按优先级依次查找，命中即停）：
+  - 第一优先：项目 `.frieren-design/workflows.json`。存在该文件时读取其中定义的 coding / 编码相关工作流；该工作流即编码环节的执行定义，命中后必须严格按照 workflow 定义的步骤与顺序执行编码，不得跳步、改序、合并或省略；文件不存在、无法读取或未定义编码工作流时进入下一优先级；
+  - 第二优先：项目声明文档中的编码 Skill 声明。无 `.frieren-design/workflows.json` 时，查找 claude.md / CLAUDE.md / AGENTS.md / README / .cursor/rules / .github/copilot-instructions.md 及 docs 下的项目说明或编码约定文档；声明形式示例：文档中出现“本项目编码 / Coding / 开发实现应使用或遵循 <Skill>”“coding skill: <名称>”“编码 Skill：<名称>”等明确指向编码类 Skill 的表述；
+  - 第三优先：项目内实际存在的编码类 Skill：skills/ 等目录下的 SKILL.md，其 metadata 或 description 与 coding / 编码 / 开发实现相关；以及通过当前环境 Skill 查询能力发现的、与当前项目或编码任务相关的编码类 Skill；前两级均未命中时按此查询。
+- 命中判定：来源为 `.frieren-design/workflows.json` 时，实际读取该文件并确认其定义编码工作流后判定命中；来源为声明文档或 Skill 资源时，必须实际查询并读取对应 Skill 的 SKILL.md，确认其为编码相关 Skill 后判定命中。未实际查询和读取的一律视为不存在，禁止假设其存在或虚构其规则，禁止仅凭 Skill 名称中的 coding / 编码字样猜测内容。
+- 命中切换（编码由项目声明的编码 Skill 执行并完成）：
+  - 先输出用户可见的执行宣告：命中 `.frieren-design/workflows.json` 时宣告“检测到项目声明的编码工作流：.frieren-design/workflows.json，将严格按照其中定义的 workflow 顺序执行编码”；命中声明文档或编码类 Skill 时宣告“检测到项目声明的编码 Skill：<Skill 名称>（来源：<声明文件/路径>），将按照该编码 Skill 执行并完成编码”；识别到多个编码 Skill 时逐一列出名称与来源；
+  - 再输出执行主体交接说明：识别结果（编码 Skill 声明与资源清单）、编码输入基线路径（已确认 HTML、demo-spec.json、Coding Plan、Implementation Mapping Gate 映射表与说明书核销清单）、交接边界与回流规则，并声明本 Skill 不再自行执行编码与编码结果检验；
+  - 执行桥接（关键动作）：执行宣告与交接说明输出后，必须立即开始执行编码，不得停在宣告处等待用户，不得向用户复询编码范围或开始同意（除非执行定义自身明确要求用户输入）：
+    - 命中 `.frieren-design/workflows.json`：直接按该 workflow 定义的步骤与顺序执行编码；workflow 中某步骤指定使用某编码 Skill 时，通过 Skill 查询/加载能力加载该 Skill 并按其指导完成该步骤；全程严格遵循 workflow 顺序，不得跳步、改序、合并或省略；
+    - 命中编码类 Skill（声明文档或 Skill 资源来源）：立即通过当前环境的 Skill 查询/加载能力加载该项目编码 Skill（如 load_skill page-codegen），读取其 SKILL.md 与编码说明，并按该编码 Skill 的指导逐页执行编码直至完成（含其定义的说明书核销、视觉检视与还原度验收）；
+  - 交接边界：以 HTML 页面级 AI Coding 指导为实现基线；编码 Skill 决定实现方式与代码细节（框架、目录组织、命名、工具链、复用与新增实现策略），不得改变 HTML 已确认的页面结构、组件映射、复用对象和开发项；
+  - 回流规则：编码 Skill 发现设计层差异（影响页面容器、布局、表格结构、视觉层级、交互流程或业务规则）时，须回流本 Skill 修正 HTML 并重新获得用户确认后继续；实现层差异由编码 Skill 自行记录处理；
+  - 编码照常开始并执行完成：编码执行、说明书核销、视觉检视与还原度验收全部由编码 Skill 在其编码流程内完成，本 Skill 不再自行执行编码与编码结果检验；识别到编码 Skill 不是停止编码的信号；命中多个编码 Skill 时，其调用顺序与分工由编码 Skill 自行编排并共同完成编码，本 Skill 不做选择、排序，也不进入待确认询问用户。
+  - 加载失败回退：命中的 `.frieren-design/workflows.json` 无法读取或解析、或命中的编码 Skill 无法通过 Skill 加载能力读取其 SKILL.md（加载/读取失败）时，视为该来源不可用，向用户明示后依次尝试下一优先级的判定来源（workflows.json → claude.md 等声明文档 → 项目内/环境编码类 Skill）；全部来源均不可用时，改由本 Skill 按本章默认编码流程（7.2-7.5）逐页编码并完成，不停止、不挂起；
+- 兜底（未命中）：未发现声明、声明无法对应到可查询 Skill，或项目无编码类 Skill 时，先向用户明示“未检测到项目声明的编码 Skill，将按默认流程执行编码并完成”，再由本 Skill 按 prd-design-code 默认 Coding Execution 规则（本章 7.2-7.5）逐页编码并完成，不得停止、挂起或要求用户等待；在进度输出中记录“未发现项目编码 Skill 声明，按默认流程执行”。
 
 ### 7.2 并发开发限制
 
@@ -310,8 +324,7 @@ Coding Plan 必须同时产出"说明书核销清单"，作为 Coding 执行完�
 4. Implementation Mapping Gate 映射表中当前页面的真实代码对象、实现方式和映射结果；
 5. HTML指定复用对象是否已经过代码环境验证；
 6. 当前页面必须还原的区块、字段、底部操作区位置、按钮顺序、状态、边界和联动规则；
-7. 当前页面的Mock数据范围与前端更新逻辑；
-8. Step 7.1 识别到的项目编码 Skill 及其编码执行规则（若存在）。
+7. 当前页面的Mock数据范围与前端更新逻辑。
 
 ### 7.4 每页开发后检查
 

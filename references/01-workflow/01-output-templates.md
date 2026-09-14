@@ -10,16 +10,18 @@
 
 ## 1. 对话框输出边界
 
-对话框主体输出只到“页面总览表”为止。页面总览表之后必须先输出待确认问题并等待用户确认；用户确认后，才生成HTML说明书。页面总览之后的逐页内容不得在对话框展开。
+对话框主体输出只到“页面总览表”为止。阻塞性业务理解问题（业务对象、动作、状态等业务模型理解缺失）在页面拆解前已提出并确认（见 SKILL.md Step 1.5），不推迟到页面总览后；页面总览表之后必须先输出设计决策待确认问题并等待用户确认；用户确认后，才生成HTML说明书。页面总览之后的逐页内容不得在对话框展开。
 
 对话框允许输出：
 
 - 需求概括
 - 主要用户角色
 - 核心场景与功能映射
+- 体验目标（3条目标选项与一段画面感，在导航结构前输出，不写入HTML）
 - 导航结构
 - 页面总览表
-- 待确认问题
+- 产品规范补齐清单（匹配 Product Design 时，默认纳入、可剔除；页面总览后、待确认问题前输出，不写入HTML）
+- 待确认问题（设计决策类，页面总览后；阻塞性业务理解问题在页面拆解前输出）
 - HTML文件路径和简短说明
 
 对话框禁止展开：
@@ -31,7 +33,7 @@
 - Mock数据完整规则
 - AI Coding完整提示词
 
-以上禁止展开的内容必须写入HTML。需求颗粒度不足时，先由AI按Product Design、已有代码和常见B端产品模式补齐能保证用户旅程、功能点、数据、操作、状态和页面层级闭环的页面设计，不要把字段命名、按钮文案、普通筛选项、常规表格字段等可合理补齐的细节全部抛给用户确认。页面总览后必须追加待确认问题，控制在10个以内，并只询问会影响整体设计、导航结构、用户旅程闭环、关键业务规则或Coding实现的问题。输出待确认问题后停止，等待用户确认；只有用户确认后才生成HTML说明书。若没有关键待确认问题，明确写“暂无关键待确认问题，按当前页面总览继续生成HTML说明书”，然后可继续生成HTML。
+以上禁止展开的内容必须写入HTML。需求颗粒度不足时，AI按Product Design、已有代码和常见B端产品模式补齐能保证用户旅程闭环的页面设计：AI可补齐页面展示、信息层级、常规筛选、反馈和边界状态，也可合理补齐字段命名、按钮文案、普通筛选项、常规表格字段等展示与交互细节，不要把这类可合理补齐的细节全部抛给用户确认；AI不得自行补齐业务对象、状态流转、权限、数量限制、审批关系和核心动作等业务事实，此类缺失必须进入待确认问题。影响业务模型理解的问题（业务对象、动作范围、状态定义与流转等）作为业务理解问题在页面拆解前提出，阻塞项须在页面拆解前确认（见 SKILL.md Step 1.5），非阻塞建议确认项记录默认假设后推进；页面总览后必须追加设计决策待确认问题（页面组织、容器、交互方式等，含仍未确认的非阻塞业务理解建议项），控制在10个以内，并只询问会影响整体设计、导航结构、用户旅程闭环、关键业务规则或Coding实现的问题。输出待确认问题后停止，等待用户确认；只有用户确认后才生成HTML说明书。若没有关键待确认问题，明确写“暂无关键待确认问题，按当前页面总览继续生成HTML说明书”，然后可继续生成HTML。
 
 ## 2. 对话框主输出模板
 
@@ -41,24 +43,48 @@
 ## 1. 需求概括
 <简要概述本需求解决的问题，不限制为一句话>
 
-## 2. 主要用户与场景
-### 2.1 主要用户角色
+## 2. 需求理解摘要
+<只展示可供用户快速确认的业务理解结果，不输出完整推理过程>
+
+| 角色 | 业务目标 | 业务对象 | 核心动作 | 判断信息 | 结果/状态 |
+| ---- | -------- | -------- | -------- | -------- | ---------- |
+| <执行角色> | <该角色通过本Demo要达成的业务目标> | <操作/处置/管理的业务对象> | <查看、配置、分配、处置、审核等> | <用户做判断所依赖的关键信息> | <成功/失败/部分成功的结果及状态变化> |
+
+## 3. 主要用户与场景
+### 3.1 主要用户角色
 | 用户角色 | 岗位职责 | 核心任务 | 在Demo中关注什么 |
 | -------- | -------- | -------- | ---------------- |
 
-### 2.2 核心场景与功能映射
+### 3.2 核心场景与功能映射
 | 核心场景 | 用户要完成的任务 | Demo中对应能力 |
 | -------- | ---------------- | -------------- |
 
-## 3. Demo 页面总览
-### 3.1 导航结构
+### 3.3 体验目标
+
+#### 目标选项
+- **目标选项 1（偏业务闭环/结果确定性）**：<一句话，说明角色在核心场景中获得的结果确定性，并内嵌A到B对比或度量>
+- **目标选项 2（偏用户能力跃迁/独立性）**：<一句话，说明角色从依赖协作/经验转为可独立完成，并内嵌A到B对比或度量>
+- **目标选项 3（偏防错确定性/效果感知）**：<一句话，说明角色能更清楚判断、校验或恢复，并内嵌A到B对比或度量>
+
+#### 画面感
+<一段话，突出过去卡点、新方案跨越、确定性结果和业务价值；控制在120-180字。>
+
+## 4. Demo 页面总览
+### 4.1 导航结构
 <从一级菜单到Tab菜单综合展示本次Demo涉及范围，同一菜单只写一次>
 
-### 3.2 页面总览表
+### 4.2 页面总览表
 | 业务模块 | 页面ID | 页面名称 | 页面类型 | 页面用途 | 入口方式 | 关键交互 | 初步复用方向 |
 | -------- | ------ | -------- | -------- | -------- | -------- | -------- | ------------ |
 
-### 3.3 待确认问题
+### 4.3 产品规范补齐清单
+<匹配 Product Design 时输出：PD 声明为需求已建设对象/页面类型固有能力、需求未提及但默认纳入的补齐项；默认处理为“纳入”，如不需要请告知；无匹配或无补齐项时写“无”。只在对话框输出，不写入HTML。>
+
+| 序号 | 补齐能力 | 所属对象/页面 | Product Design 来源 | 默认处理 |
+| ---- | -------- | ------------- | ------------------- | -------- |
+| 1 | <如：资产适用规则检测> | <如：策略管理页> | <文档锚点> | 纳入 |
+
+### 4.4 待确认问题
 | 序号 | 待确认问题 | 影响范围 | 当前默认假设 |
 | ---- | ---------- | -------- | ------------ |
 | 1 | <只填写关键问题；无关键问题时写“暂无关键待确认问题”> | <导航结构/页面容器/用户旅程/业务规则/Coding实现> | <默认假设> |
@@ -130,7 +156,7 @@ HTML设计说明书已生成。请先查看HTML页面内容；如果HTML中有�
 
 ## 4. AI Coding指导输出格式
 
-页面总览之后，将完整设计说明整理为JSON并调用脚本生成HTML。JSON中不写入`questions`字段；待确认问题只在对话框展示。交互与逻辑规则必须整合进对应页面的`sections`区块说明中，例如工具栏、筛选项、字段展示、可点击操作、状态值、表单选项、校验和边界状态；不再使用独立的页面内关键交互章节或全局交互规则页。每个页面对象必须写入`restoreRequirement`字段，描述从Common Design页面模板获取的页面骨架组件，例如标题栏、筛选区、表格、分页、弹窗、抽屉等，不负责罗列全部字段组件。每个页面对象必须写入`wireframe`字段，用ASCII线框图表达页面标题栏、内容区、关键元素和底部操作；wireframe.ascii 必须严格按所选页面模板（匹配Product Design声明了页面模板时按其模板，否则按Common Design模板）的布局结构绘制出模板必需区域的布局痕迹（标题栏、筛选区、表格、分页、底部操作区等），只允许替换文案并完善内容区中的具体内容，禁止调整模板布局结构、区块顺序、容器形态或新增模板不存在的区域；禁止用一句话或几个字代替线框图，否则被 RULE-32 阻断；regions 声明的内容性区域在 ascii 中无绘制痕迹时触发 RULE-33 提示；必要时写入`wireframeNote`字段说明容器关系、Tab层级或固定底部栏。底部操作区必须继承已读取Common Design页面模板中的容器规则，`wireframe`与`footerActions`中的对齐方式、按钮顺序和规则来源必须一致，不得无依据左右分置按钮。按钮顺序、对齐方式与布局细节一律以已读取 Common Design 页面模板及模板注册表为准，本 Skill 不保存按钮顺序细节。若页面属于分层Tabs页标题，wireframe中的Tab必须与页面标题同一行展示，不得单独下沉为内容区Tab。若页面存在多个内容切换Tab，`wireframe`应按每个Tab分别绘制对应内容区块的线框图，不要只输出一个总线框图；如果页面同时存在步骤条等内容切换控件，也按同样方式处理，按每个步骤分别绘制对应内容区块的线框图。生成HTML说明书前必须执行页面类型一致性自检：`pages`里的页面类型、页面名称和页面层级必须与页面总览一致；若用户未明确要求修改，不得擅自更改页面类型、页面结构或页面名称。配置类页面的表单布局（对齐方式、排列方式、label与组件关系等）一律以已读取 Common Design 表单规范及模板注册表为准，本 Skill 不保存表单布局细节。若页面引用Product Design或已有代码中的功能点实现，页面内容区只简要描述功能点入口、触发效果、展示规则和校验规则，并在页面内`codingGuide.designReferences`和`codingGuide.implementationNotes`中补充关联说明和编码指引。页面内`codingGuide.designReferences`登记本页设计决策的知识来源，每项包含`source`与`ref`：`source`取值`common-design` / `product-design` / `code` / `ai-fill`；`ref`为来源标识（如"Common Design 页面模板: 概览表格页"、"Product Design: 策略配置主题框架"、"已验证代码: src/pages/event-analysis/index.vue"、"AI 补齐: 自动补齐筛选项"）。声称引用 Product Design 或 Common Design 的页面必须在此登记对应来源，无来源的设计决策须标记为 `ai-fill`，否则触发 RULE-40 提示（warning，不校验是否读全）。若需求没有明确筛选条件，页面JSON中的查询区与筛选区说明也必须写明AI的自动补齐结果，包括补充了哪些字段、采用什么控件以及补齐依据。筛选区必须写明使用一个高级搜索组件（组件名以已读取 Common Design 组件映射表为准）还是多个独立组件组合；多个独立组件时，`filterComponent`和`filterComponentDescription`中统一说明各独立组件名称，筛选字段表格不再单独标注iDux组件名称。若筛选项较多或需要组合管理，wireframe 和 sections 中只写“高级搜索框”整体组件，不展开外观，但仍需在高级搜索配置说明和`filterFields`中列出字段和筛选方式。表单字段`formFields`必须在组件类型右侧写`iduxComponent`；表格字段`tableFields`必须写`iduxComponent`，普通文本/数字可留空，标签、链接按钮、状态徽标、操作按钮等非普通文本必须标注组件名称。需求或规范中明确列出的字段（表格列、表单项、筛选项、详情描述字段、配置项等）必须逐项落入对应区块的字段数组（`tableFields`/`formFields`/`filterFields`/`cardFields`/`fields`等），不得过滤、合并或仅简述；页面对象应写入`requirementFieldNames`（需求/规范明确要求的字段名数组）与`excludedFields`（字段名到排除原因的映射），缺失的需求字段会被 RULE-36 阻断。总结性Coding指导写入顶层`codingGuide`，页面级Coding指导写入页面内`codingGuide`。页面层级通过 `pages` 数组平铺全部页面（含弹窗、抽屉）表达；父页面的`children`只写子容器 ID（字符串）用于标注归属，禁止在 children 内嵌完整页面对象（RULE-35 阻断）。每个页面必须写入`navigation`对象，用`primary`、`secondary`、`tertiary`、`tab`分别表示一级导航、二级导航、三级导航和Tab页面；没有对应层级时填空字符串，禁止只用`/`拼接路径。`navigation`表示页面所属菜单或Tab位置，不表示当前功能子页面名称；新增、编辑、详情、弹窗、抽屉等由主页面操作进入的非菜单页面，必须继承所属主页面的`navigation`，不要把“新增xx”“编辑xx”“xx详情”写进导航位置。HTML中的目录开发要求必须写入Coding指导：左侧目录只用于切换页面内容，Coding时不要使用URL hash定位锚点开发目录；该要求属于HTML生成规范，不属于产品Coding实现规范。
+页面总览之后，将完整设计说明整理为JSON并调用脚本生成HTML。JSON中不写入`questions`字段；待确认问题只在对话框展示。交互与逻辑规则必须整合进对应页面的`sections`区块说明中，例如工具栏、筛选项、字段展示、可点击操作、状态值、表单选项、校验和边界状态；不再使用独立的页面内关键交互章节或全局交互规则页。每个页面对象必须写入`restoreRequirement`字段，描述页面骨架组件，例如标题栏、筛选区、表格、分页、弹窗、抽屉等（骨架组件优先取匹配 Product Design 页面模板或 Component 层已登记的业务封装，未登记时取 Common Design 页面模板推荐组件），不负责罗列全部字段组件；Pattern 层算出的组件结论（如 `component_requirements`）必须写入 `componentContract.patternComponents`，不得遗留在 Pattern 层。每个页面对象必须写入`wireframe`字段，用ASCII线框图表达页面标题栏、内容区、关键元素和底部操作；wireframe.ascii 必须严格按所选页面模板（匹配Product Design声明了页面模板时按其模板，否则按Common Design模板）的布局结构绘制出模板必需区域的布局痕迹（标题栏、筛选区、表格、分页、底部操作区等），只允许替换文案并完善内容区中的具体内容，禁止调整模板布局结构、区块顺序、容器形态或新增模板不存在的区域；页面模板来源必须判定并登记：匹配 Product Design 声明该页模板 override 时按 Product Design 页面模板（`templateContract.templateBase=product` 并填写 `productTemplateRef` 指向 Product Design 模板文档原文锚点，格式`<文档路径>#<章节/模板条目>`），否则按 Common Design 页面模板（`templateBase=common`）；判定与结构依据由主设计者基于模板文档原文精读得出并登记到 `codingGuide.designReferences`，禁止仅凭 Reference Index、摘要或他方转述确定模板结构、必需区域、区域顺序或 footer 契约；禁止用一句话或几个字代替线框图，否则被 RULE-32 阻断；regions 声明的内容性区域在 ascii 中无绘制痕迹时触发 RULE-33 提示；必要时写入`wireframeNote`字段说明容器关系、Tab层级或固定底部栏。底部操作区必须继承已读取Common Design页面模板中的容器规则，`wireframe`与`footerActions`中的对齐方式、按钮顺序和规则来源必须一致，不得无依据左右分置按钮。按钮顺序、对齐方式与布局细节一律以已读取 Common Design 页面模板及模板注册表为准，本 Skill 不保存按钮顺序细节。若页面属于分层Tabs页标题，wireframe中的Tab必须与页面标题同一行展示，不得单独下沉为内容区Tab。若页面存在多个内容切换Tab，`wireframe`应按每个Tab分别绘制对应内容区块的线框图，不要只输出一个总线框图；如果页面同时存在步骤条等内容切换控件，也按同样方式处理，按每个步骤分别绘制对应内容区块的线框图。生成HTML说明书前必须执行页面类型一致性自检：`pages`里的页面类型、页面名称和页面层级必须与页面总览一致；若用户未明确要求修改，不得擅自更改页面类型、页面结构或页面名称。配置类页面的表单布局（对齐方式、排列方式、label与组件关系等）一律以已读取 Common Design 表单规范及模板注册表为准，本 Skill 不保存表单布局细节。若页面引用Product Design或已有代码中的功能点实现，页面内容区只简要描述功能点入口、触发效果、展示规则和校验规则，并在页面内`codingGuide.designReferences`和`codingGuide.implementationNotes`中补充关联说明和编码指引。页面内`codingGuide.designReferences`登记本页设计决策的知识来源，每项包含`source`与`ref`：`source`取值`common-design` / `product-design` / `code` / `ai-fill`；`common-design` / `product-design` 的`ref`必须为精确锚点`<文档路径>#<章节/模板条目>`（如"common-design/references/02-template/01-page-types.md#page-table-overview"），且对应文档必须在顶层`designContext.readLedger`中登记为`status: read`；`code` / `ai-fill` 的`ref`为来源标识（如"已验证代码: src/pages/event-analysis/index.vue"、"AI 补齐: 自动补齐筛选项"）。声称引用 Product Design 或 Common Design 的页面必须在此登记对应来源（缺失以 RULE-40 阻断），无来源的设计决策须标记为 `ai-fill`；仅凭索引 / 摘要（`index-only`）的文档不得作为依据，未读引用或仅索引引用以 RULE-43 阻断。若需求没有明确筛选条件，页面JSON中的查询区与筛选区说明也必须写明AI的自动补齐结果，包括补充了哪些字段、采用什么控件以及补齐依据。筛选区必须写明使用一个高级搜索组件还是多个独立组件组合（组件名来源：匹配 Product Design 且其 Component 层已登记该业务封装时以其为准，否则以已读取 Common Design 组件映射表为准；Product Design 已登记的 Component Reference 优先于 Common Design 通用组件）；多个独立组件时，`filterComponent`和`filterComponentDescription`中统一说明各独立组件名称，筛选字段表格不再单独标注iDux组件名称。若筛选项较多或需要组合管理，wireframe 和 sections 中只写“高级搜索框”整体组件，不展开外观，但仍需在高级搜索配置说明和`filterFields`中列出字段和筛选方式。表单字段`formFields`必须在组件类型右侧写`iduxComponent`，内容键固定为`rules`（选项/规则：选项枚举、必填、长度与格式校验等）与`tips`（提示信息或联动关系）；表单字段禁止写`options`/`description`，这两个键在表单区不会被渲染，写了会导致HTML“选项/规则”与“提示信息或联动关系”列静默空白（RULE-41阻断）。筛选字段`filterFields`的内容键为`options`（选项范围）与`description`（说明），禁止写`rules`/`tips`；表格字段`tableFields`/`columns`的内容键为`display`（展示形式）与`description`（说明），禁止写`rules`/`tips`/`options`。字段形态键对照见references/01-workflow/04-demo-output-spec.md“字段形态键对照（RULE-41）”。表格字段`tableFields`必须写`iduxComponent`，普通文本/数字可留空，标签、链接按钮、状态徽标、操作按钮等非普通文本必须标注组件名称。需求或规范中明确列出的字段（表格列、表单项、筛选项、详情描述字段、配置项等）必须逐项落入对应区块的字段数组（`tableFields`/`formFields`/`filterFields`/`cardFields`/`fields`等），不得过滤、合并或仅简述；页面对象应写入`requirementFieldNames`（需求/规范明确要求的字段名数组）与`excludedFields`（字段名到排除原因的映射），缺失的需求字段会被 RULE-36 阻断。总结性Coding指导写入顶层`codingGuide`，页面级Coding指导写入页面内`codingGuide`。页面层级通过 `pages` 数组平铺全部页面（含弹窗、抽屉）表达；父页面的`children`只写子容器 ID（字符串）用于标注归属，禁止在 children 内嵌完整页面对象（RULE-35 阻断）。每个页面必须写入`navigation`对象，用`primary`、`secondary`、`tertiary`、`tab`分别表示一级导航、二级导航、三级导航和Tab页面；没有对应层级时填空字符串，禁止只用`/`拼接路径。`navigation`表示页面所属菜单或Tab位置，不表示当前功能子页面名称；新增、编辑、详情、弹窗、抽屉等由主页面操作进入的非菜单页面，必须继承所属主页面的`navigation`，不要把“新增xx”“编辑xx”“xx详情”写进导航位置。HTML中的目录开发要求必须写入Coding指导：左侧目录只用于切换页面内容，Coding时不要使用URL hash定位锚点开发目录；该要求属于HTML生成规范，不属于产品Coding实现规范。
 
 ### 4.1 脚本调用
 
@@ -142,11 +168,33 @@ python scripts/generate_demo_spec_html.py --input ./demo-spec.json --output ./de
 
 ### 4.2 JSON结构
 
-同步声明：示例 JSON 中的组件名（如 IxTable、IxPagination、IxProSearch 等）与页面类型名仅为格式示例，实际组件名、页面类型与用法一律以已读取 Common Design 组件映射表及页面模板为准；Common Design 更新后以 Common Design 为准，本 Skill 不保存组件映射清单。
+同步声明：示例 JSON 中的组件名（如 IxTable、IxPagination、IxProSearch 等）与页面类型名仅为格式示例，实际组件名、页面类型与用法优先取匹配 Product Design 的 Component 层已登记业务封装，未登记时以已读取 Common Design 组件映射表及页面模板为准（Product Design 已登记的 Component Reference 优先于 Common Design 通用组件）；对应 Design Skill 更新后以其为准，本 Skill 不保存组件映射清单。同理，示例 JSON 中出现的 `common-design/...`、`product-design/...` 文档路径均为示例占位，实际输出必须替换为当前任务真实加载的 Design Skill 文档路径与章节锚点，且路径须与该 Skill 的真实目录一致（路径写错会触发 RULE-43 `DESIGN_REF_UNREAD` 阻断）。
+
+顶层必须写入`requirementUnderstanding`（status/inputType/tasks/businessObjects/confirmedFacts/designInferences/gaps，完整固定结构见 SKILL.md Step 1.5，含 actors/goals/aiFillItems 等）；每个页面对象必须写入`taskRefs`（关联业务任务ID数组）、`businessObject`（本页承载的核心业务对象）与`pageDecisionPurpose`（本页帮助用户完成的关键判断或决策）；每个内容区块必须写入`informationPurpose`（该区块支撑用户哪项判断）与`decisionPoint`（用户在该区块需要做的决策点或触发的动作分支，无则填空字符串）。校验信息层级是否服务于用户任务时，以页面 taskRefs/businessObject/pageDecisionPurpose 与区块 informationPurpose/decisionPoint 的对应关系为准，而不是只检查字段有没有写全；示例 JSON 仅为字段形态示范，每个页面与每个内容区块都必须带这些字段。
 
 ```json
 {
   "title": "数据防泄密事件分析需求设计说明书",
+  "designContext": {
+    "commonDesign": {"skillId": "common-design", "read": true},
+    "productDesign": {"matched": true, "skillId": "<product-design-skill-id>", "coverage": [{"capability": "theme", "relation": "extend", "appliesTo": []}]},
+    "readLedger": [
+      {"ref": "common-design/references/02-template/01-page-types.md#page-table-overview", "status": "read"},
+      {"ref": "<product-design 文档路径>#*", "status": "read"},
+      {"ref": "product-design/SKILL.md#*", "status": "index-only"}
+    ]
+  },
+  "requirementUnderstanding": {
+    "status": "resolved",
+    "inputType": "narrative",
+    "tasks": [
+      {"id": "T01", "actor": "安全运维人员", "trigger": "收到事件上报或识别到高风险事件", "object": "事件", "action": "查看并处置", "preconditions": [], "requiredInformation": ["风险等级", "事件详情"], "outcome": "事件完成处置", "nextState": "已处置", "exceptions": ["处置失败时展示失败原因"]}
+    ],
+    "businessObjects": ["事件"],
+    "confirmedFacts": ["用户需要查看并处置安全事件"],
+    "designInferences": ["事件列表应展示风险等级和发现时间以支持处置判断"],
+    "gaps": []
+  },
   "overview": {
     "summary": "本Demo用于展示事件分析、筛选定位、详情查看和处置闭环。",
     "pageOverview": [
@@ -164,6 +212,9 @@ python scripts/generate_demo_spec_html.py --input ./demo-spec.json --output ./de
       "containerType": "page",
       "navigation": {"primary": "数据安全", "secondary": "数据防泄密", "tertiary": "事件分析", "tab": ""},
       "purpose": "帮助安全运维人员查看事件概览并筛选定位风险事件。",
+      "taskRefs": ["T01"],
+      "businessObject": "事件",
+      "pageDecisionPurpose": "帮助用户识别风险并选择处置动作",
       "layout": "上方概览统计区 + 下方筛选表格区。",
       "operations": [
         {"id": "P001-OP01", "action": "delete", "label": "删除", "trigger": "行内操作", "confirm": true, "confirmConfig": {"title": "确认删除该事件？", "level": "danger"}},
@@ -172,11 +223,13 @@ python scripts/generate_demo_spec_html.py --input ./demo-spec.json --output ./de
       "templateContract": {
         "templateId": "page-table-overview",
         "baseTemplateId": "",
+        "templateBase": "common",
+        "productTemplateRef": "",
         "navigationType": "left-shaped",
         "navigationTypeStatus": "assumed",
         "navigationTypeSource": "AI补齐",
         "navigationTypeNote": "概览表格页无明确导航依据时默认左侧菜单结构",
-        "templateSource": "common-design/references/03-design-template/01-page-types.md#page-table-overview",
+        "templateSource": "common-design/references/02-template/01-page-types.md#page-table-overview",
         "requiredRegions": ["global-navigation", "title-bar", "overview", "filter", "toolbar", "table", "pagination"],
         "optionalRegions": [],
         "regionOrder": ["global-navigation", "title-bar", "overview", "filter", "toolbar", "table", "pagination"],
@@ -201,11 +254,11 @@ python scripts/generate_demo_spec_html.py --input ./demo-spec.json --output ./de
           {"id": "pagination", "templateRegion": "pagination", "position": "bottom", "required": true, "content": "分页区：上一页 1 2 3 下一页"}
         ],
         "variants": [],
-        "ascii": "┌──────────────────────────────────────────────┐\n│ 事件分析                        [导出] [刷新] │\n├──────────────────────────────────────────────┤\n│ ┌──────────────────────────────────────────┐ │\n│ │ 事件总数  待处置  高风险  已处置           │ │\n│ └──────────────────────────────────────────┘ │\n│ [风险等级] [时间范围] [关键字]       [查询]  │\n│ [导出]                                      │\n│ ┌──────────────────────────────────────────┐ │\n│ │ 事件名称 | 风险等级 | 发现时间 | 操作     │ │\n│ │ 事件A    | 高       | 08-01    | 详情     │ │\n│ └──────────────────────────────────────────┘ │\n│ 上一页 1 2 3 下一页     共 42 条             │\n└──────────────────────────────────────────────┘"
+        "ascii": "┌──────────────────────────────────────────────┐\n│ 事件分析                        [导出] [刷新] │\n├──────────────────────────────────────────────┤\n│ ┌──────────────────────────────────────────┐ │\n│ │ 事件总数  待处置  高风险  已处置           │ │\n│ └──────────────────────────────────────────┘ │\n│ [风险等级] [时间范围] [关键字]       [查询]  │\n│ ┌──────────────────────────────────────────┐ │\n│ │ 事件名称 | 风险等级 | 发现时间 | 操作     │ │\n│ │ 事件A    | 高       | 08-01    | 详情     │ │\n│ └──────────────────────────────────────────┘ │\n│ 上一页 1 2 3 下一页     共 42 条             │\n└──────────────────────────────────────────────┘"
       },
       "sections": [
         {"title": "概览统计区", "type": "指标区", "description": "页面顶部横向卡片展示事件总数、待处置事件数、高风险事件数。高风险事件数为可点击数字，点击后下方表格筛选风险等级为高，统计卡片保持高亮反馈。", "fields": ["事件总数：数字，0值正常展示", "待处置事件数：可点击数字，点击筛选处置状态为待处置", "高风险事件数：可点击数字，点击筛选风险等级为高"], "actions": ["点击高风险事件数后，列表筛选高风险事件"], "interactionNotes": ["点击统计数字后刷新表格数据并同步筛选条件", "查询中表格展示loading"], "validationRules": ["无数据时统计数字展示0，不隐藏卡片"]},
-        {"title": "事件表格区", "type": "表格区", "description": "位于概览统计区下方，承载事件查询、导出和单条事件操作。", "toolbar": ["导出按钮", "风险等级下拉多选", "时间范围选择器", "事件名称输入框"], "filterComponent": "IxProSearch", "filterComponentDescription": "使用一个高级搜索组件承载风险等级、发现时间和事件名称筛选；若改为平铺筛选，则在filterComponent中统一列出各独立iDux组件名称。", "filterFields": [{"name": "风险等级", "component": "下拉多选", "mode": "多选", "options": "高/中/低", "default": "全部", "description": "按风险等级筛选"}, {"name": "发现时间", "component": "日期范围", "mode": "范围", "options": "最近7天/最近30天/自定义", "default": "最近7天", "description": "按发现时间筛选"}, {"name": "事件名称", "component": "输入框", "mode": "模糊搜索", "options": "-", "default": "空", "description": "按事件名称搜索"}], "tableFields": [{"name": "事件名称", "display": "可点击文本", "iduxComponent": "IxButton link", "description": "点击打开事件详情抽屉；长文本单行省略并悬浮展示完整内容"}, {"name": "风险等级", "display": "单标签", "iduxComponent": "IxTag", "description": "高/中/低，使用红/橙/蓝标签"}, {"name": "发现时间", "display": "时间", "iduxComponent": "", "description": "普通文本展示，支持排序"}], "actions": ["查询：按条件刷新表格", "重置：清空条件并恢复默认列表"], "interactionNotes": ["点击事件名称打开详情抽屉"], "validationRules": ["搜索无结果展示暂无符合条件的数据"]}
+        {"title": "事件表格区", "type": "表格区", "informationPurpose": "支持用户判断事件风险", "decisionPoint": "是否需要立即处置", "description": "位于概览统计区下方，承载事件查询、导出和单条事件操作。", "toolbar": ["导出按钮", "风险等级下拉多选", "时间范围选择器", "事件名称输入框"], "filterComponent": "IxProSearch", "filterComponentDescription": "使用一个高级搜索组件承载风险等级、发现时间和事件名称筛选；若改为平铺筛选，则在filterComponent中统一列出各独立iDux组件名称。", "filterFields": [{"name": "风险等级", "component": "下拉多选", "mode": "多选", "options": "高/中/低", "default": "全部", "description": "按风险等级筛选"}, {"name": "发现时间", "component": "日期范围", "mode": "范围", "options": "最近7天/最近30天/自定义", "default": "最近7天", "description": "按发现时间筛选"}, {"name": "事件名称", "component": "输入框", "mode": "模糊搜索", "options": "-", "default": "空", "description": "按事件名称搜索"}], "tableFields": [{"name": "事件名称", "display": "可点击文本", "iduxComponent": "IxButton link", "description": "点击打开事件详情抽屉；长文本单行省略并悬浮展示完整内容"}, {"name": "风险等级", "display": "单标签", "iduxComponent": "IxTag", "description": "高/中/低，使用红/橙/蓝标签"}, {"name": "发现时间", "display": "时间", "iduxComponent": "", "description": "普通文本展示，支持排序"}], "actions": ["查询：按条件刷新表格", "重置：清空条件并恢复默认列表"], "interactionNotes": ["点击事件名称打开详情抽屉"], "validationRules": ["搜索无结果展示暂无符合条件的数据"]}
       ],
       "footerActions": {"visible": false, "containerType": "page", "alignment": "none", "actions": [], "source": "无底部操作"},
       "codingGuide": {
@@ -222,8 +275,8 @@ python scripts/generate_demo_spec_html.py --input ./demo-spec.json --output ./de
           "不得用原生 HTML 替代业务组件"
         ],
         "designReferences": [
-          {"source": "product-design", "ref": "Product Design: 事件分析主题框架"},
-          {"source": "common-design", "ref": "Common Design 页面模板: 概览表格页"},
+          {"source": "product-design", "ref": "<product-design 文档路径>#<章节锚点>", "ability": "theme"},
+          {"source": "common-design", "ref": "common-design/references/02-template/01-page-types.md#page-table-overview"},
           {"source": "code", "ref": "已验证代码: src/pages/event-analysis/index.vue"},
           {"source": "ai-fill", "ref": "AI 补齐: 自动补齐筛选项"}
         ],
@@ -254,6 +307,8 @@ python scripts/generate_demo_spec_html.py --input ./demo-spec.json --output ./de
   }
 }
 ```
+
+顶层 `designContext` 记录本次任务的设计依据装配结果，供 RULE-43 校验设计依据一致性：`commonDesign` / `productDesign` 记录命中的设计库与 `skillId`（`productDesign.matched` 表示是否匹配到 Product Design）；`productDesign.coverage` 记录该产品对各层能力的关系（`relation`：inherit / extend / override）与适用页面（`appliesTo` 填 templateId，为空表示全部页面）；`readLedger` 逐锚点记录实际读取状态（每条 `{ "ref": "<文档路径>#<章节/模板条目>", "status": "read|index-only" }`，整篇已读用 `#*`，命中要求文档与锚点同时一致）。页面 `templateContract.templateBase`（common / product）与 `productTemplateRef` 必须与覆盖判定一致：Product Design 声明页面模板 override 的页面必须 `templateBase=product` 且 `productTemplateRef` 非空；声明 extend / override 的任意能力（含模板）还须在适用页面的 `designReferences` 中登记 `source=product-design` 且 `ability` 对应的依据条目。代码可用状态写入页面 `codingGuide.pageContext.codeAvailability`（兼容页面级 `codeAvailability` / `templateContract.codeAvailability`），缺省按 `unavailable` 处理。
 
 ### 4.1 多内容 Tab 页面示例
 
