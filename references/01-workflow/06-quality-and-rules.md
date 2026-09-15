@@ -234,6 +234,8 @@
 | RULE-45 | 线框区域顺序一致性：`regions[].position` 的相对顺序必须与 `wireframe.ascii` 中区域标签首次出现的行序一致，不一致时提示（warning） | SKILL.md 强制模板契约与线框校验 / 04-demo-output-spec.md | test_wireframe_region_order_mismatch_warns / test_wireframe_region_order_consistent_passes |
 | RULE-46 | 线框重复绘制：页面级单例控件（导出/刷新/查询/确定/取消等，见 `SINGULAR_CONTROLS`）在 `wireframe.ascii` 中同页重复绘制时提示；同一内容区域（步骤条/Tab/工具栏/筛选区/分页，见 `REGION_SINGLETON_KEYS`）在 ascii 中被绘制多次时提示（warning） | SKILL.md 强制模板契约与线框校验 / 04-demo-output-spec.md | test_wireframe_duplicate_control_warns / test_wireframe_duplicate_region_warns |
 | RULE-47 | 线框列对齐一致性：`wireframe.ascii` 内容行右边界（右竖线）应在同一列，出现明显错位（疑似两列结构断裂）时提示（warning） | SKILL.md 强制模板契约与线框校验 / 04-demo-output-spec.md | test_wireframe_column_alignment_warns / test_wireframe_full_layout_passes |
+| RULE-48 | 下拉选项完整性（条件式启用：页面声明 `requirementOptionSets` 时）：固定选项型下拉（表单下拉/筛选下拉/单选/多选等）声明的完整选项必须逐项出现在表单 `rules`（选项/规则）或筛选 `options`（选项范围）单元格，缺失选项阻断（REQUIRED_OPTION_MISSING）、声明字段不存在阻断（OPTION_FIELD_NOT_FOUND）；未声明选项集的选择类字段选项单元格出现 等/例如/如：/… 截断指纹时告警（OPTION_TRUNCATION_MARKER）；声明项非法/不完整给 warning（OPTION_SET_INVALID / OPTION_SET_INCOMPLETE） | 04-demo-output-spec.md 11.13 下拉选项完整性（RULE-48）/ 01-output-templates.md 4.2 | test_requirement_option_missing_fails / test_requirement_option_all_present_passes / test_option_set_field_not_found_fails / test_option_truncation_marker_warns / test_option_completeness_skips_without_declaration |
+| RULE-49 | 详情页字段去重（条件式启用：仅详情类页面）：顶部概览卡片/对象摘要已展示字段（声明 `detailSummaryFields` 为准，未声明时以 `cardFields` 兜底）不得在其下方详情描述列表（概览/描述/detail 等区块的 fields/detailFields）重复展示，命中给 warning（DETAIL_FIELD_DUPLICATE）；同一详情描述列表区块内字段名重复出现给 error（DETAIL_FIELD_DUPLICATED_IN_LIST）；`excludedFields` 与页面级 `detailDedupExempt` 豁免，历史/日志/操作记录类区块与表格字段不参与；非详情页跳过 | 04-demo-output-spec.md 11.14 详情页字段去重（RULE-49）/ 01-output-templates.md 4.2 | test_detail_field_duplicate_warns / test_detail_summary_fields_declared_warns / test_detail_field_dedup_exempt_passes / test_detail_field_duplicated_in_list_fails / test_detail_field_dedup_skips_non_detail_page |
 
 **override 影响范围**：`templateContract.override.enabled = true` 时，RULE-09/10（必需区域）、RULE-11（区域顺序）、RULE-12（必需组件）、RULE-14（表格语义）对该页自动放宽（校验器跳过对应结构断言），改由 Product Design 的页面模板定义兜底；RULE-20（footer 对齐）与 RULE-37（底部按钮文案/自定义按钮）本就读 override。放宽不代表不校验，仍需在 `templateContract.override.source` 中登记覆盖来源。
 
@@ -248,7 +250,7 @@
 5. 在本登记表同步一条；
 6. 若规则涉及 HTML 展示或门禁，同步更新 `generate_demo_spec_html.py` 与 SKILL.md Quality Gate。
 
-### 1.15 设计闭环自动校验检查（RULE-28 ~ RULE-44）
+### 1.15 设计闭环自动校验检查（RULE-28 ~ RULE-49）
 
 生成 HTML 前必须完成以下设计闭环自检，任一 error 都会阻断 HTML 生成：
 
@@ -261,6 +263,8 @@
 - 表格与详情字段一致性闭环：表格有详情容器（open-container 指向详情类容器或 children 挂载的详情容器）时，表格页 tableFields 展示的每个字段是否都能在对应详情容器字段数组（detailFields/cardFields/fields/tableFields 等）中找到对应；缺失会被 RULE-38 阻断，表格无详情容器时不校验。
 - 表格标签使用约束闭环：每个表格区块（sections 中带 tableFields 的区块 + 页面级 tableFields）内标签使用是否克制——标签总数是否 <= 5；深色/icon/点状标签是否各自仅 1 次、浅色标签是否 <= 2 次；超出会被 RULE-39 阻断；标签样式未标注（无法自动校验同一样式重复）或中性描述字段（资产类型/IP/域名等）占用标签配额时给出 warning，提示把配额留给风险等级、处置/启用禁用状态等重要业务字段。
 - 字段形态键契约闭环：每个字段数组（formFields/filterFields/tableFields/columns，以及表单/表格区块自由fields中的字典字段）中字段对象的内容是否写在渲染器实际渲染的键上（表单字段rules/tips、筛选项options/description、表格字段display/description）；内容写在不渲染的异态键（如表单字段写options/description）会导致HTML对应列静默空白，会被RULE-41阻断；内容已渲染但键写错位置时给出warning。
+- 下拉选项完整性闭环（条件式）：页面声明 `requirementOptionSets` 时，固定选项型下拉（表单下拉/筛选下拉/单选/多选等）声明的完整选项是否逐项落入表单 `rules`（选项/规则）或筛选 `options`（选项范围）单元格（缺失选项被 RULE-48 以 REQUIRED_OPTION_MISSING 阻断，声明字段不存在以 OPTION_FIELD_NOT_FOUND 阻断）；未声明选项集的选择类字段选项单元格是否出现 等/例如/如：/… 截断标记（出现以 OPTION_TRUNCATION_MARKER 告警，提示只举例未列全）。选型建议：选项单元格先列完整选项、再补其它规则说明，禁止用“等/例如/…”代替逐项枚举。
+- 详情页字段去重闭环（条件式）：详情类页面（详情抽屉页/下钻详情页/详情弹窗）顶部概览卡片/对象摘要已展示的字段（声明 `detailSummaryFields` 为准，未声明时以 `cardFields` 兜底），是否仍在其下方详情描述列表（概览/描述/detail 等区块的 fields/detailFields）重复展示（命中被 RULE-49 以 DETAIL_FIELD_DUPLICATE 告警，提示从描述列表移除或写入 `detailDedupExempt` 说明有意重复）；同一详情描述列表区块内字段名是否重复（重复以 DETAIL_FIELD_DUPLICATED_IN_LIST 阻断）；历史/日志/操作记录类区块与表格字段不参与去重，非详情页不校验。选型建议：概览卡片字段只落在 `cardFields` 或 `detailSummaryFields`，即满足 RULE-36 完整性，无需在描述列表重复堆叠。
 - 需求理解与页面设计追溯闭环：每个页面是否用 taskRefs 关联了至少一个业务任务；requirementUnderstanding 中每个已建模任务是否都有页面承载；核心动作是否有结果反馈（outcome）；判断区块（informationPurpose/decisionPoint）内字段是否说明用途（fieldRole）；AI 推导字段/来源标记是否合法；requirementUnderstanding.status 非 resolved 时不得生成 HTML（RULE-42 阻断）。
 - 设计依据一致性闭环（条件式）：声明顶层 `designContext` 时，页面 `codingGuide.designReferences` 中 `common-design` / `product-design` 来源的 `ref` 是否为精确锚点，且对应**锚点**在 `readLedger` 中为 `status: read`（未读引用、仅索引引用、引用同文档未精读章节会被 RULE-43 阻断）；Product Design 声明 extend/override 的任意能力，其适用页面是否登记同 `ability` 的 product-design 依据（否则 `ABILITY_SOURCE_NOT_REGISTERED`）；Product Design 声明页面模板 override 的页面是否真正采用 `templateBase=product` 且 `productTemplateRef` 非空（否则 `TEMPLATE_OVERRIDE_NOT_APPLIED`），采用 product 模板的页面是否反向登记 `source=product-design` 依据（否则 `TEMPLATE_SOURCE_UNREGISTERED`）。
 - 未核验实现细节隔离闭环：`partial` / `unavailable` 状态下，字段表、编码指导与复用映射中是否未出现未核验的真实导出名（EXPORT_WITHOUT_VERIFY）、产品专有组件名（非 `Ix` 标准组件，COMPONENT_WITHOUT_VERIFY）、真实文件/组件路径或真实可视化基线页面（VISUAL_BASELINE_WITHOUT_VERIFY）——由 RULE-44 在 HTML 生成前阻断。

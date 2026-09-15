@@ -79,6 +79,8 @@ RULES = [
     {"ruleId": "RULE-45", "errorCode": "WIREFRAME_REGION_ORDER_MISMATCH", "name": "线框图区域顺序一致性（warning）：regions 声明顺序应与 ascii 自上而下的绘制顺序一致，出现逆序（后面的区域绘制在更靠上的位置）时提示", "check": "check_wireframe_region_ascii_order", "source": "references/01-workflow/04-demo-output-spec.md 线框图绘制规范 / references/01-workflow/03-demo-page-decomposition.md 区域结构", "tests": "test_wireframe_region_order_mismatch_warns, test_wireframe_region_order_ok_passes"},
     {"ruleId": "RULE-46", "errorCode": "WIREFRAME_DUPLICATE_CONTROL / WIREFRAME_DUPLICATE_REGION", "name": "线框图重复绘制检测（warning）：带标记的控件标签（【】/[]）重复出现时提示；同一内容区域（步骤条/Tab/工具栏/筛选区/分页）在 ascii 中被绘制多次时提示", "check": "check_wireframe_duplicate_control", "source": "references/01-workflow/04-demo-output-spec.md 线框图绘制规范", "tests": "test_wireframe_duplicate_control_warns, test_wireframe_duplicate_region_warns"},
     {"ruleId": "RULE-47", "errorCode": "WIREFRAME_COLUMN_ALIGNMENT", "name": "线框图列对齐一致性（warning）：内容行右边界（右竖线）应在同一列，出现明显错位（两列结构断裂）时提示", "check": "check_wireframe_column_alignment", "source": "references/01-workflow/04-demo-output-spec.md 线框图绘制规范", "tests": "test_wireframe_column_alignment_warns, test_wireframe_full_layout_passes"},
+    {"ruleId": "RULE-48", "errorCode": "REQUIRED_OPTION_MISSING / OPTION_FIELD_NOT_FOUND / OPTION_TRUNCATION_MARKER / OPTION_SET_INVALID / OPTION_SET_INCOMPLETE", "name": "下拉选项完整性（条件式，页面声明 requirementOptionSets 时启用）：固定选项型下拉的完整选项必须逐项落入表单选项/规则(rules)或筛选选项范围(options)单元格，声明选项缺失阻断，声明字段不存在阻断；未声明选项集的选择类字段出现 等/例如/如：/… 截断指纹时告警", "check": "check_option_completeness", "source": "references/01-workflow/04-demo-output-spec.md 11.13 下拉选项完整性（RULE-48）", "tests": "test_requirement_option_missing_fails, test_requirement_option_all_present_passes, test_option_set_field_not_found_fails, test_option_truncation_marker_warns, test_option_completeness_skips_without_declaration"},
+    {"ruleId": "RULE-49", "errorCode": "DETAIL_FIELD_DUPLICATE / DETAIL_FIELD_DUPLICATED_IN_LIST", "name": "详情页字段去重（条件式，仅详情类页面）：概览卡片/对象摘要已展示字段在详情描述列表重复时告警（声明 detailSummaryFields 优先，未声明走 cardFields/摘要区块启发式；excludedFields/detailDedupExempt 豁免，历史/日志/记录类区块与表格字段不参与）；同一详情描述列表内字段重复阻断", "check": "check_detail_field_dedup", "source": "Common Design 详情概览卡片与描述列表字段去重规则 / references/01-workflow/04-demo-output-spec.md 11.14 详情页字段去重（RULE-49）", "tests": "test_detail_field_duplicate_warns, test_detail_summary_fields_declared_warns, test_detail_field_dedup_exempt_passes, test_detail_field_duplicated_in_list_fails, test_detail_field_dedup_skips_non_detail_page, test_detail_summary_card_section_duplicate_warns"},
 ]
 
 # 页面 type（中文）与标准模板的映射
@@ -163,6 +165,50 @@ FIELD_KEY_CONTRACT = {
     "columns":      {"rendered": ("display", "description"), "aliens": ("rules", "tips", "options")},
 }
 
+# 下拉选项完整性（RULE-48）：固定选项型控件与选项单元格渲染键。
+# 选择类控件判定：字段 component / iduxComponent 命中任一关键词即视为固定选项型控件。
+SELECT_COMPONENT_KEYS = (
+    "下拉", "select", "选择器", "单选", "多选", "radio", "checkbox", "combobox",
+)
+# 选项单元格键：按字段形态取渲染器实际渲染的键（与 FIELD_KEY_CONTRACT 对齐）。
+OPTION_CELL_KEYS = {
+    "formFields":   ("rules", "tips"),
+    "filterFields": ("options", "description"),
+}
+DEFAULT_OPTION_CELL_KEYS = ("rules", "options", "display", "description", "tips")
+# 截断指纹：选项单元格出现这些标记说明"只举例未列全"。
+OPTION_TRUNCATION_PATTERNS = (
+    r"等等",
+    r"例如",
+    r"如[:：]",
+    r"…",
+    r"\.\.\.",
+    r"共\s*\d+\s*[个项条]",
+    r"等(?=$|[，,。、；;）)])",
+)
+RULE48_SOURCE = "references/01-workflow/04-demo-output-spec.md 11.13 下拉选项完整性（RULE-48）"
+
+# 详情页字段去重（RULE-49）：概览卡片/对象摘要已展示字段不应在详情描述列表重复（条件式，仅详情类页面）。
+# 概览卡片字段（Zone A）来源：页面声明的 detailSummaryFields（推荐，声明优先）；未声明时取页面级/区块 cardFields 与摘要型区块字段。
+# 详情描述列表型区块（Zone B）：承载“下方字段展示列表”的区块类型关键词
+DETAIL_DESCRIPTION_SECTION_TYPES = (
+    "overview", "descriptions", "description", "detail", "basic-info", "basic", "detail-content",
+    "概览", "描述列表", "描述", "详情", "基本信息", "详情信息", "概要",
+)
+# 摘要卡片型区块（Zone A 兜底）：对象摘要/概览卡片以字段列表承载时使用；
+# 不含 overview/概览（后者是概览内容列表，归 Zone B 详情描述列表）
+DETAIL_SUMMARY_SECTION_TYPES = (
+    "object-summary", "summary-card", "summary", "profile",
+    "对象摘要", "摘要卡片", "摘要信息", "摘要", "概览卡片",
+)
+# 合法重复豁免区块：历史/日志/记录类不参与去重（无论 type，按关键词优先跳过）
+DETAIL_DEDUP_SKIP_SECTION_TYPES = (
+    "history", "timeline", "audit", "operation-log", "change-log", "changelog",
+    "操作记录", "变更记录", "历史", "日志", "审计", "时间线",
+)
+DETAIL_FIELD_ARRAYS = ("detailFields", "fields", "cardFields")
+RULE49_SOURCE = "references/01-workflow/04-demo-output-spec.md 11.14 详情页字段去重（RULE-49）"
+
 # RULE-42 需求理解与页面设计追溯：合法来源标记与字段用途取值
 SOURCE_LABELS = ("requirement", "product-design", "common-design", "code", "ai-fill")
 FIELD_ROLE_LABELS = {
@@ -186,6 +232,28 @@ def _has_text_value(value):
 
 def norm(text):
     return re.sub(r"[-_/\\\s]", "", str(text).lower())
+
+
+_OPTION_SPLIT_RE = re.compile(r"[/、,，;；|｜·\n\r\t]+")
+_OPTION_LABEL_RE = re.compile(r"^[^：:\n]{0,12}[：:]\s*")
+_OPTION_PAREN_RE = re.compile(r"[（(][^）)]*[）)]")
+_OPTION_TRAIL_RE = re.compile(r"(?:等等|等|…+|\.{3,})+$")
+
+
+def option_tokens(text):
+    """把选项单元格文本拆成选项令牌集合。
+
+    逐项拆分后，去掉标签前缀（如"选项："）、括号补充（如"（默认）"）与尾部截断标记
+    （如"低等"的"等"），再归一化，避免"指定终端"被"指定终端组"这类前缀造成误判。
+    """
+    tokens = set()
+    for raw in _OPTION_SPLIT_RE.split(str(text)):
+        seg = _OPTION_PAREN_RE.sub("", raw).strip()
+        seg = _OPTION_LABEL_RE.sub("", seg).strip()
+        seg = _OPTION_TRAIL_RE.sub("", seg).strip("。.；;，,、 ")
+        if seg:
+            tokens.add(norm(seg))
+    return tokens
 
 
 def region_text(region):
@@ -1118,6 +1186,147 @@ class Validator:
                                f"缺失字段：{'、'.join(missing)}",
                                fix="将缺失字段补充到对应区块的字段数组（tableFields/formFields/filterFields/cardFields/fields等），若该页面确实不展示则写入 excludedFields 并说明原因")
 
+    def _collect_option_fields(self, page):
+        """收集页面各字段数组中的字段，返回 [(name, array_key, field_dict)]。"""
+        index = []
+        arrays = ("formFields", "filterFields", "tableFields", "columns",
+                  "cardFields", "fields", "detailFields")
+
+        def collect(container):
+            for key in arrays:
+                for field in container.get(key) or []:
+                    if isinstance(field, dict) and field.get("name"):
+                        index.append((str(field["name"]).strip(), key, field))
+
+        for section in self.page_sections(page):
+            if isinstance(section, dict):
+                collect(section)
+        collect(page)
+        return index
+
+    @staticmethod
+    def _match_option_fields(index, field_name):
+        """按字段名匹配字段（精确或双向包含，避免命名略有差异时漏配）。"""
+        target = norm(field_name)
+        matched = []
+        for name, key, field in index:
+            current = norm(name)
+            if current == target or (
+                len(target) >= 2 and len(current) >= 2
+                and (target in current or current in target)
+            ):
+                matched.append((key, field))
+        return matched
+
+    @staticmethod
+    def _normalize_options(value):
+        """把选项声明归一化为字符串列表（字符串按常见分隔符拆分）。"""
+        if value is None:
+            return []
+        if isinstance(value, str):
+            return [p.strip() for p in re.split(r"[/、,，;；\n]+", value) if p.strip()]
+        if isinstance(value, (list, tuple, set)):
+            return [str(v).strip() for v in value if str(v).strip()]
+        text = str(value).strip()
+        return [text] if text else []
+
+    @staticmethod
+    def _option_cell_text(matched):
+        """取字段渲染出的选项单元格文本（表单 rules/tips，筛选 options/description）。"""
+        parts = []
+        for key, field in matched:
+            for cell_key in OPTION_CELL_KEYS.get(key, DEFAULT_OPTION_CELL_KEYS):
+                value = field.get(cell_key)
+                if not _has_text_value(value):
+                    continue
+                if isinstance(value, (list, tuple, set)):
+                    parts.extend(str(v) for v in value)
+                else:
+                    parts.append(str(value))
+        return "\n".join(parts)
+
+    def check_option_completeness(self):
+        """RULE-48 下拉选项完整性（条件式，页面声明 requirementOptionSets 时启用）。
+
+        - 声明的每个固定选项必须逐项出现在该字段的选项单元格（表单 rules / 筛选 options）；
+          缺失阻断（REQUIRED_OPTION_MISSING），声明字段不存在阻断（OPTION_FIELD_NOT_FOUND）。
+        - 未声明选项集的选择类字段，选项单元格出现 等/例如/如：/… 截断指纹时告警
+          （OPTION_TRUNCATION_MARKER），提示"可能只举例未列全"。
+        """
+        for page, path in self.all_pages:
+            pid = str(page.get("id", ""))
+            index = self._collect_option_fields(page)
+            declared = page.get("requirementOptionSets") or []
+            covered = set()
+            for oi, item in enumerate(declared):
+                opath = f"{path}.requirementOptionSets[{oi}]"
+                if not isinstance(item, dict):
+                    self.add_error(pid, "OPTION_SET_INVALID", "warning", opath,
+                                   "选项集声明项必须是对象（{field, options}）",
+                                   "对象", type(item).__name__,
+                                   source_ref=RULE48_SOURCE,
+                                   fix="改为 {\"field\": \"字段名\", \"options\": [\"选项1\", \"选项2\"]}")
+                    continue
+                fname = str(item.get("field") or item.get("name") or "").strip()
+                options = self._normalize_options(item.get("options"))
+                if not fname or not options:
+                    self.add_error(pid, "OPTION_SET_INCOMPLETE", "warning", opath,
+                                   "选项集声明缺少 field 或 options",
+                                   "field 与 options 均非空",
+                                   f"field={fname!r}, options={options}",
+                                   source_ref=RULE48_SOURCE,
+                                   fix="补齐字段名与完整选项列表（options 为数组）")
+                    continue
+                matched = self._match_option_fields(index, fname)
+                if not matched:
+                    self.add_error(pid, "OPTION_FIELD_NOT_FOUND", "error", opath,
+                                   f"选项集声明的字段未出现在页面任何字段数组：{fname}",
+                                   "字段出现在 formFields/filterFields 等字段数组中",
+                                   "未找到",
+                                   source_ref=RULE48_SOURCE,
+                                   fix="将字段补入对应区块字段数组，或修正字段名")
+                    continue
+                covered.add(norm(fname))
+                tokens = option_tokens(self._option_cell_text(matched))
+                missing = [o for o in options if norm(o) and norm(o) not in tokens]
+                if missing:
+                    self.add_error(pid, "REQUIRED_OPTION_MISSING", "error", opath,
+                                   f"字段「{fname}」的固定选项未完整落入选项单元格：{'、'.join(missing)}",
+                                   "声明选项全部逐项出现在表单选项/规则(rules)或筛选选项范围(options)单元格中",
+                                   f"缺失选项：{'、'.join(missing)}",
+                                   source_ref=RULE48_SOURCE,
+                                   fix="把缺失选项逐项补进该字段的 rules（表单）或 options（筛选）单元格，完整列出，禁止只举例")
+            self._check_option_truncation(pid, path, index, covered)
+
+    def _check_option_truncation(self, pid, path, index, covered):
+        """未声明选项集的选择类字段：选项单元格命中截断指纹时告警。"""
+        seen = set()
+        for name, key, field in index:
+            if key not in ("formFields", "filterFields"):
+                continue
+            if norm(name) in covered:
+                continue
+            comp = " ".join(str(field.get(k, "")) for k in ("component", "iduxComponent")).lower()
+            if not any(token in comp for token in SELECT_COMPONENT_KEYS):
+                continue
+            cell = self._option_cell_text([(key, field)])
+            if not cell:
+                continue
+            for pattern in OPTION_TRUNCATION_PATTERNS:
+                if re.search(pattern, cell, re.MULTILINE):
+                    marker = name + "\u0000" + cell
+                    if marker in seen:
+                        break
+                    seen.add(marker)
+                    self.add_error(pid, "OPTION_TRUNCATION_MARKER", "warning",
+                                   f"{path}.sections[].{key}",
+                                   f"字段「{name}」的固定选项疑似只举例未列全（命中截断标记：{pattern}）",
+                                   "固定选项型字段需逐项完整列出，禁止使用 等/例如/如：/… 等截断表达",
+                                   cell,
+                                   source_ref=RULE48_SOURCE,
+                                   fix="把全部选项逐项写进选项单元格，或在 requirementOptionSets 中声明该字段的完整选项集")
+                    break
+
     def _table_field_names(self, page):
         """表格页展示的字段名（sections 中 tableFields + 页面级 tableFields）。"""
         names = []
@@ -1166,6 +1375,161 @@ class Validator:
             if (tid and tid.startswith("page-detail")) or "详情" in ptype:
                 ids.append(cid)
         return ids
+
+    # ---- 详情页字段去重（RULE-49，条件式，仅详情类页面）----
+    def _is_detail_page(self, page):
+        """详情类页面判定：type 含“详情”或 templateId 以 page-detail 开头/含 detail。"""
+        t = str(page.get("type", ""))
+        tid = str(page.get("templateId", ""))
+        return ("详情" in t) or tid.startswith("page-detail") or ("detail" in tid.lower())
+
+    @staticmethod
+    def _classify_detail_section(section):
+        """区块归类：'skip'（历史/日志/记录，优先）/ 'description'（字段展示列表）/ 'summary'（对象摘要/摘要卡片）/ None。"""
+        traw = str(section.get("type", "")).strip().lower()
+        title = str(section.get("title", "")).strip().lower()
+        combos = [h for h in (traw, title) if h]
+        for h in combos:
+            if any(kw in h for kw in DETAIL_DEDUP_SKIP_SECTION_TYPES):
+                return "skip"
+        for h in combos:
+            if any(kw in h for kw in DETAIL_DESCRIPTION_SECTION_TYPES):
+                return "description"
+        for h in combos:
+            if any(kw in h for kw in DETAIL_SUMMARY_SECTION_TYPES):
+                return "summary"
+        return None
+
+    @staticmethod
+    def _detail_field_name(item):
+        """从字段项取字段名：dict 取 name；字符串取冒号前的名称部分。"""
+        if isinstance(item, dict):
+            nm = item.get("name")
+            return str(nm).strip() if nm else ""
+        if isinstance(item, str):
+            s = item.strip()
+            for sep in ("：", ":"):
+                if sep in s:
+                    s = s.split(sep, 1)[0].strip()
+                    break
+            return s
+        return ""
+
+    def _detail_section_names(self, section, keys):
+        names = []
+        for k in keys:
+            for item in section.get(k) or []:
+                nm = self._detail_field_name(item)
+                if nm:
+                    names.append(nm)
+        return names
+
+    def _detail_name_list(self, value):
+        names = []
+        if isinstance(value, (list, tuple, set)):
+            for v in value:
+                nm = self._detail_field_name(v)
+                if nm:
+                    names.append(nm)
+        elif value is not None:
+            nm = self._detail_field_name(value)
+            if nm:
+                names.append(nm)
+        return names
+
+    def _detail_exempt_names(self, page):
+        exempt = set()
+        for src in (page.get("excludedFields"), page.get("detailDedupExempt")):
+            if isinstance(src, dict):
+                exempt.update(norm(k) for k in src.keys())
+            elif isinstance(src, (list, tuple, set)):
+                exempt.update(norm(str(k)) for k in src)
+        return exempt
+
+    def check_detail_field_dedup(self):
+        """RULE-49 详情页字段去重（条件式，仅详情类页面）。
+
+        - 概览卡片/对象摘要已展示字段不应在详情描述列表重复：
+          声明 detailSummaryFields 时以其为准，未声明时以 cardFields 与摘要型区块兜底；
+          命中即 warning DETAIL_FIELD_DUPLICATE。
+        - 同一详情描述列表区块内字段名重复：error DETAIL_FIELD_DUPLICATED_IN_LIST。
+        - 豁免：excludedFields 与页面级 detailDedupExempt；历史/日志/记录类区块与表格字段不参与。
+        """
+        for page, path in self.all_pages:
+            if not self._is_detail_page(page):
+                continue
+            pid = str(page.get("id", ""))
+            sections = self.page_sections(page)
+            exempt = self._detail_exempt_names(page)
+
+            # ---- Zone B：详情描述列表字段（并检测同一描述列表内重复）----
+            zone_b = {}
+            for si, section in enumerate(sections):
+                if not isinstance(section, dict):
+                    continue
+                if self._classify_detail_section(section) != "description":
+                    continue
+                counts = {}
+                for nm in self._detail_section_names(section, DETAIL_FIELD_ARRAYS):
+                    n = norm(nm)
+                    if not n or n in exempt:
+                        continue
+                    counts.setdefault(n, []).append(nm)
+                    zone_b.setdefault(n, nm)
+                for n, lst in counts.items():
+                    if len(lst) > 1:
+                        self.add_error(pid, "DETAIL_FIELD_DUPLICATED_IN_LIST", "error",
+                                       f"{path}.sections[{si}]",
+                                       f"详情描述列表内字段「{lst[0]}」重复出现 {len(lst)} 次",
+                                       "同一详情描述列表内字段名唯一",
+                                       f"重复 {len(lst)} 次",
+                                       source_ref=RULE49_SOURCE,
+                                       fix="删除描述列表中重复的字段项，同一字段只保留一项")
+            for item in page.get("detailFields") or []:
+                nm = self._detail_field_name(item)
+                n = norm(nm)
+                if n and n not in exempt:
+                    zone_b.setdefault(n, nm)
+            if not zone_b:
+                continue
+
+            # ---- Zone A：概览卡片/对象摘要字段（declared detailSummaryFields 优先，cardFields 兜底）----
+            declared = self._detail_name_list(page.get("detailSummaryFields"))
+            zone_a = []
+            if declared:
+                zone_a = [d for d in declared if norm(d) not in exempt]
+            else:
+                for item in page.get("cardFields") or []:
+                    nm = self._detail_field_name(item)
+                    if nm and norm(nm) not in exempt:
+                        zone_a.append(nm)
+                for section in sections:
+                    if not isinstance(section, dict):
+                        continue
+                    for nm in self._detail_section_names(section, ("cardFields",)):
+                        if norm(nm) not in exempt:
+                            zone_a.append(nm)
+                    if self._classify_detail_section(section) == "summary":
+                        for nm in self._detail_section_names(section, ("fields", "detailFields")):
+                            if norm(nm) not in exempt:
+                                zone_a.append(nm)
+
+            if not zone_a:
+                continue
+
+            # ---- 求交集：概览卡片字段在描述列表重复出现 ----
+            reported = set()
+            for nm in zone_a:
+                n = norm(nm)
+                if n and n in zone_b and n not in reported:
+                    reported.add(n)
+                    self.add_error(pid, "DETAIL_FIELD_DUPLICATE", "warning",
+                                   f"{path}.detailSummaryFields",
+                                   f"概览卡片/对象摘要已展示字段「{nm}」在详情描述列表重复出现",
+                                   "概览卡片/对象摘要已展示的字段不在详情描述列表重复",
+                                   f"字段：{nm}",
+                                   source_ref=RULE49_SOURCE,
+                                   fix="从详情描述列表移除该字段（概览卡片已承载）；若确为有意重复，写入 page.detailDedupExempt 并说明原因")
 
     def check_table_detail_field_consistency(self):
         """RULE-38 表格与详情字段一致性：表格页展示的字段必须在对应详情容器中存在。
@@ -2428,8 +2792,12 @@ class Validator:
         self.check_requirement_fields()
         # ---- 字段形态键契约（RULE-41）：内容必须写在渲染器实际渲染的键上，跨形态套键阻断 ----
         self.check_field_key_contract()
+        # ---- 下拉选项完整性（RULE-48）：固定选项型下拉须完整列出选项，缺项阻断/截断指纹告警 ----
+        self.check_option_completeness()
         # ---- 表格与详情字段一致性闭环（RULE-38）：表格展示字段必须在对应详情容器中存在 ----
         self.check_table_detail_field_consistency()
+        # ---- 详情页字段去重（RULE-49）：概览卡片/对象摘要已展示字段不应在描述列表重复 ----
+        self.check_detail_field_dedup()
         # ---- 表格标签使用约束（RULE-39）：同一表格内标签总数与样式配额（Common Design 标签样式约束兜底）----
         self.check_table_tag_usage()
         # ---- 设计依据可追溯（RULE-40）：声称引用 Design Skill 的决策须登记来源，无来源须标 ai-fill ----

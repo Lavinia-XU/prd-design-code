@@ -1190,6 +1190,127 @@ class TestValidateDemoSpec(unittest.TestCase):
         all_issues = report.get("errors", []) + report.get("warnings", [])
         self.assertFalse(any(e.get("errorCode", "").startswith(("FORM_FIELD_KEY", "FILTER_FIELD_KEY", "TABLE_FIELD_KEY")) for e in all_issues))
 
+    # ---- 下拉选项完整性（RULE-48）：固定选项须完整枚举，禁止举例代替枚举 ----
+    def _filter_page_with_options(self, page, field):
+        for s in page["sections"]:
+            if s.get("type") == "filter":
+                s["filterFields"] = [field]
+        return page
+
+    def test_requirement_option_missing_fails(self):
+        """声明 requirementOptionSets 但选项单元格未列全 -> REQUIRED_OPTION_MISSING 阻断。"""
+        page = base_page()
+        page["requirementOptionSets"] = [{"field": "生效范围", "options": ["全部终端", "指定终端组", "指定终端"]}]
+        page = self._filter_page_with_options(page, {
+            "name": "生效范围", "component": "下拉单选", "iduxComponent": "IxSelect",
+            "options": "全部终端/指定终端组",
+        })
+        code, report = run_validator(make_spec([page]), strict=True)
+        self.assertEqual(code, 1)
+        self.assertIn("REQUIRED_OPTION_MISSING", error_codes(report))
+
+    def test_requirement_option_all_present_passes(self):
+        """声明 requirementOptionSets 且选项单元格完整列出 -> RULE-48 不误报。"""
+        page = base_page()
+        page["requirementOptionSets"] = [{"field": "生效范围", "options": ["全部终端", "指定终端组", "指定终端"]}]
+        page = self._filter_page_with_options(page, {
+            "name": "生效范围", "component": "下拉单选", "iduxComponent": "IxSelect",
+            "options": "全部终端/指定终端组/指定终端",
+        })
+        code, report = run_validator(make_spec([page]), strict=True)
+        all_issues = report.get("errors", []) + report.get("warnings", [])
+        self.assertFalse(any(str(i.get("errorCode", "")).startswith(("REQUIRED_OPTION", "OPTION_")) for i in all_issues))
+
+    def test_option_set_field_not_found_fails(self):
+        """requirementOptionSets 声明的字段不存在于任何字段数组 -> OPTION_FIELD_NOT_FOUND 阻断。"""
+        page = base_page()
+        page["requirementOptionSets"] = [{"field": "不存在的下拉字段", "options": ["A", "B"]}]
+        code, report = run_validator(make_spec([page]), strict=True)
+        self.assertEqual(code, 1)
+        self.assertIn("OPTION_FIELD_NOT_FOUND", error_codes(report))
+
+    def test_option_truncation_marker_warns(self):
+        """选择类字段选项写截断表达（如 '高/中/低等'）-> OPTION_TRUNCATION_MARKER warning。"""
+        page = base_page()
+        page = self._filter_page_with_options(page, {
+            "name": "生效范围", "component": "下拉多选", "iduxComponent": "IxSelect",
+            "options": "全部终端/指定终端组/自定义等",
+        })
+        code, report = run_validator(make_spec([page]), strict=True)
+        self.assertIn("OPTION_TRUNCATION_MARKER", warning_codes(report))
+
+    def test_option_completeness_skips_without_declaration(self):
+        """未声明 requirementOptionSets 且选项单元格无截断标记 -> RULE-48 不误报。"""
+        page = base_page()
+        page = self._filter_page_with_options(page, {
+            "name": "生效范围", "component": "下拉单选", "iduxComponent": "IxSelect",
+            "options": "全部终端/指定终端组",
+        })
+        code, report = run_validator(make_spec([page]), strict=True)
+        all_issues = report.get("errors", []) + report.get("warnings", [])
+        self.assertFalse(any(str(i.get("errorCode", "")).startswith(("REQUIRED_OPTION", "OPTION_")) for i in all_issues))
+
+    # ---- 详情页字段去重（RULE-49）：概览卡片/对象摘要字段不在描述列表重复 ----
+    @staticmethod
+    def _table_with_detail(detail):
+        table = base_page()
+        table["operations"] = [
+            {"id": "OP01", "action": "open-container", "label": "查看详情", "trigger": "行内操作",
+             "targetPageId": "D01", "targetContainerType": "drawer", "confirm": False},
+        ]
+        return [table, detail]
+
+    def test_detail_field_duplicate_warns(self):
+        """概览卡片(cardFields)字段又出现在详情描述列表 -> RULE-49 DETAIL_FIELD_DUPLICATE 告警。"""
+        detail = drawer_detail_page()
+        detail["cardFields"] = [{"name": "策略名称"}, {"name": "状态"}]
+        code, report = run_validator(make_spec(self._table_with_detail(detail)), strict=True)
+        self.assertIn("DETAIL_FIELD_DUPLICATE", warning_codes(report))
+
+    def test_detail_summary_fields_declared_warns(self):
+        """声明 detailSummaryFields 且该字段在描述列表重复 -> RULE-49 告警。"""
+        detail = drawer_detail_page()
+        detail["detailSummaryFields"] = ["策略名称"]
+        code, report = run_validator(make_spec(self._table_with_detail(detail)), strict=True)
+        self.assertIn("DETAIL_FIELD_DUPLICATE", warning_codes(report))
+
+    def test_detail_field_dedup_exempt_passes(self):
+        """detailDedupExempt 豁免的字段不触发去重告警。"""
+        detail = drawer_detail_page()
+        detail["detailSummaryFields"] = ["策略名称"]
+        detail["detailDedupExempt"] = {"策略名称": "需在详情中可编辑，属有意重复"}
+        code, report = run_validator(make_spec(self._table_with_detail(detail)), strict=True)
+        self.assertNotIn("DETAIL_FIELD_DUPLICATE", warning_codes(report))
+        self.assertEqual(code, 0)
+
+    def test_detail_field_duplicated_in_list_fails(self):
+        """同一详情描述列表内字段重复 -> RULE-49 DETAIL_FIELD_DUPLICATED_IN_LIST 阻断。"""
+        detail = drawer_detail_page()
+        detail["sections"] = [
+            {"title": "基本信息", "type": "detail",
+             "detailFields": [{"name": "策略名称"}, {"name": "策略名称"}]},
+        ]
+        code, report = run_validator(make_spec(self._table_with_detail(detail)), strict=True)
+        self.assertIn("DETAIL_FIELD_DUPLICATED_IN_LIST", error_codes(report))
+        self.assertEqual(code, 1)
+
+    def test_detail_field_dedup_skips_non_detail_page(self):
+        """非详情类页面不触发 RULE-49 去重。"""
+        page = base_page()
+        page["cardFields"] = [{"name": "策略名称"}]
+        code, report = run_validator(make_spec([page]), strict=True)
+        self.assertNotIn("DETAIL_FIELD_DUPLICATE", warning_codes(report))
+
+    def test_detail_summary_card_section_duplicate_warns(self):
+        """未声明 detailSummaryFields 时，摘要卡片型区块与描述列表同字段 -> DETAIL_FIELD_DUPLICATE。"""
+        page = drawer_detail_page()
+        page["sections"] = [
+            {"title": "对象摘要", "type": "object-summary", "fields": ["策略名称", "启用状态"]},
+            {"title": "基本信息", "type": "detail", "detailFields": [{"name": "策略名称"}, {"name": "描述"}]},
+        ]
+        code, report = run_validator(make_spec([page]), strict=True)
+        self.assertIn("DETAIL_FIELD_DUPLICATE", warning_codes(report))
+
     # ---- 表格标签使用约束（RULE-39）----
     def test_table_tag_count_exceeded_fails(self):
         """同一表格内标签数量超过 5 -> RULE-39 TABLE_TAG_COUNT_EXCEEDED 阻断。"""

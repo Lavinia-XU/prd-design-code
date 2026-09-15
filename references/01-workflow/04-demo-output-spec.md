@@ -24,7 +24,7 @@
 
 先整体说明页面内不同内容区块之间的位置关系，并遵守该页面类型已定义好的方位位置，不要自行组合新的上下左右关系，避免把页面结构弄混。若页面内有明显白色卡片承载内容，按卡片划分；若没有明显卡片，按业务内容模块划分。若页面有多个内容区块，按先上后下、先左后右逐个描述区块，让读者通过区块描述即可看出页面设计结构关系。
 
-实际输出时应根据页面结构完整列出所有区块，不限于表格区和表单区；常见区块还包括概览区、详情信息区、图表区、操作区、步骤条、提示说明区等。区块划分要确保业务完整性，不要为了套格式把同一个业务对象的工具栏、筛选和列表拆散。以下仅为区块描述格式示例，不代表页面只能包含这些区块。生成HTML的JSON中，表格字段必须使用`tableFields`数组，表单字段必须使用`formFields`数组，脚本会将二者渲染为HTML表格；不要把表格字段或表单字段只写成普通`fields`文本列表。字段内容必须写在对应形态渲染的键上（表单字段用`rules`/`tips`，筛选项用`options`/`description`，表格字段用`display`/`description`，键对照见本文件“字段形态键对照（RULE-41）”小节），跨形态套键会导致HTML对应列静默空白并被RULE-41阻断。需求或规范中明确列出的字段（表格列、表单项、筛选项、详情描述字段、配置项等）必须逐项落入对应区块的字段数组，不得过滤、合并或仅简述；页面对象写入`requirementFieldNames`（需求/规范明确要求的字段名数组）与`excludedFields`（字段名到排除原因的映射），校验器以 RULE-36 检查需求字段是否全部落位，缺失字段阻断生成。
+实际输出时应根据页面结构完整列出所有区块，不限于表格区和表单区；常见区块还包括概览区、详情信息区、图表区、操作区、步骤条、提示说明区等。区块划分要确保业务完整性，不要为了套格式把同一个业务对象的工具栏、筛选和列表拆散。以下仅为区块描述格式示例，不代表页面只能包含这些区块。生成HTML的JSON中，表格字段必须使用`tableFields`数组，表单字段必须使用`formFields`数组，脚本会将二者渲染为HTML表格；不要把表格字段或表单字段只写成普通`fields`文本列表。字段内容必须写在对应形态渲染的键上（表单字段用`rules`/`tips`，筛选项用`options`/`description`，表格字段用`display`/`description`，键对照见本文件“字段形态键对照（RULE-41）”小节），跨形态套键会导致HTML对应列静默空白并被RULE-41阻断。需求或规范中明确列出的字段（表格列、表单项、筛选项、详情描述字段、配置项等）必须逐项落入对应区块的字段数组，不得过滤、合并或仅简述；页面对象写入`requirementFieldNames`（需求/规范明确要求的字段名数组）与`excludedFields`（字段名到排除原因的映射），校验器以 RULE-36 检查需求字段是否全部落位，缺失字段阻断生成。带固定选项的下拉类字段（表单下拉、筛选下拉及单选/多选等枚举控件）必须把选项逐项完整列出，禁止用“等/例如/…”只举例；页面对象写入`requirementOptionSets`（字段名到完整选项列表的声明），校验器以 RULE-48 检查声明选项是否全部落入表单`rules`或筛选`options`单元格（缺失阻断），并对未声明选项集的选择类字段做截断指纹告警（详见本文件 11.13）。
 
 ### Wireframe / ASCII 线框图
 
@@ -204,10 +204,12 @@ HTML说明书标题必须是“XX需求设计说明书”。HTML采用“Markdow
 - 属于已有业务主题或页面体系时，是否已把真实参考页面作为视觉基线并写入 Design Context 和页面总览。
 - 每个页面是否已绑定标准 templateId（或 custom 模板且含 baseTemplateId、customReason、overrideSource、overrideJustification），并填写 templateContract；是否使用了未注册页面类型名称；页面 type、templateId、layout、sections、wireframe、footerActions、componentContract、codingGuide 是否形成闭环；页面 templateContract 是否登记 `templateBase`（common/product）与 `productTemplateRef`（`templateBase=product` 时非空且可定位到 Product Design 模板文档原文），页面模板来源判定是否在 HTML 生成前完成并依据原文。
 - 结构化 wireframe 是否作为唯一可信来源（templateId/navigationType/shell/regions/variants 完整）；多步骤或 Tab 页面是否包含主结构图和每个步骤/Tab 一张完整变体图，变体是否保留公共页面外壳；footerActions 对齐与按钮顺序是否与模板契约一致或已有 override 记录；wireframe.ascii 底部操作区是否已按模板 buttonOrder 绘制模板按钮（不得只画关闭或漏画主操作），底部自定义按钮是否已声明 override；`regions[].position` 相对顺序是否与 wireframe.ascii 区域首次绘制行序一致、页面级单例控件与内容区域是否未重复绘制、内容行右边界是否对齐；`templateContract.override.enabled=true` 时是否已放宽必需区域/区域顺序/必需组件/表格语义断言并在 `override.source` 登记覆盖来源；纯字符串 wireframe 是否已进入 legacy 警告。
+- 表单/筛选中带固定选项的下拉类字段，是否在选项单元格逐项完整列出全部选项、未使用“等/例如/…”只举例；页面是否以 `requirementOptionSets` 声明固定选项字段的完整选项集并被 RULE-48 校验（缺失阻断、截断指纹告警）。
+- 详情页是否已确认顶部概览卡片/对象摘要字段与下方详情描述列表不重复（概览卡片已展示字段不再进描述列表）；是否以 `detailSummaryFields` 声明概览字段、必要时用 `detailDedupExempt` 说明有意重复（RULE-49）。
 
 ## 11. 设计闭环自动校验
 
-设计闭环用于防止已确认的页面、容器、操作与 Tab 在设计说明书生成过程中丢失，并在 HTML 生成前阻断结构不完整的说明书。校验由 `scripts/validate_demo_spec.py` 执行（RULE-28 ~ RULE-44，含字段完整性 RULE-36、表格详情字段一致性 RULE-38、表格标签使用约束 RULE-39、设计依据一致性 RULE-43 与未核验实现细节隔离 RULE-44），生成器 `scripts/generate_demo_spec_html.py` 在 strict 模式下遇到 error 即阻断生成。
+设计闭环用于防止已确认的页面、容器、操作与 Tab 在设计说明书生成过程中丢失，并在 HTML 生成前阻断结构不完整的说明书。校验由 `scripts/validate_demo_spec.py` 执行（RULE-28 ~ RULE-49，含字段完整性 RULE-36、表格详情字段一致性 RULE-38、表格标签使用约束 RULE-39、设计依据一致性 RULE-43、未核验实现细节隔离 RULE-44、下拉选项完整性 RULE-48 与详情页字段去重 RULE-49），生成器 `scripts/generate_demo_spec_html.py` 在 strict 模式下遇到 error 即阻断生成。
 
 ### 11.1 页面清单闭环（RULE-28）
 
@@ -221,6 +223,8 @@ HTML说明书标题必须是“XX需求设计说明书”。HTML采用“Markdow
   - 同 ID 的 name / type / containerType 不一致 -> MANIFEST_METADATA_MISMATCH（error）
   - 弹窗/抽屉容器没有任何入口（无 open-container 操作引用且无文本引用）-> ORPHAN_CONTAINER（已确认容器 error，未确认容器 warning）
   - 需求/规范明确列出的字段（requirementFieldNames）未落入对应区块字段数组（tableFields/formFields/filterFields/cardFields 等）且无 excludedFields 排除原因 -> REQUIRED_FIELD_MISSING（error，RULE-36）
+  - 固定选项型下拉声明的完整选项（requirementOptionSets）未全部落入表单 `rules` 或筛选 `options` 单元格 -> REQUIRED_OPTION_MISSING（error）；声明字段不存在 -> OPTION_FIELD_NOT_FOUND（error）；未声明选项集的选择类字段选项单元格出现 等/例如/如：/… 截断指纹 -> OPTION_TRUNCATION_MARKER（warning，RULE-48）
+  - 详情类页面中，概览卡片/对象摘要已展示字段（detailSummaryFields 声明，或 cardFields/摘要型区块启发式）又在详情描述列表重复出现 -> DETAIL_FIELD_DUPLICATE（warning）；同一详情描述列表内字段名重复 -> DETAIL_FIELD_DUPLICATED_IN_LIST（error，RULE-49）
 
 ```json
 "overview": {
@@ -508,3 +512,63 @@ Product Design 已登记降级：当某组件令牌已被页面的 Product Desig
 **业务自定义底部按钮**：底部操作区允许出现模板 buttonOrder 之外的业务按钮（以业务为准），但必须通过 `templateContract.override` 声明覆盖来源；未声明即被 RULE-37 判为 `FOOTER_ASCII_CUSTOM_BUTTON` 阻断。
 
 **模板 override 对结构校验的影响**：页面 `templateContract.override.enabled = true` 时，RULE-09/10（必需区域）、RULE-11（区域顺序）、RULE-12（必需组件）、RULE-14（表格语义）对该页自动放宽（校验器跳过对应结构断言），结构以 `templateContract.override.source` 声明的 Product Design 页面模板定义为准；RULE-20（footer 对齐）与 RULE-37（底部按钮文案/自定义按钮）本就读 override。放宽后仍须保留 `override.source` 登记，不得省略。
+
+### 11.13 下拉选项完整性（RULE-48）
+
+固定选项型下拉（表单下拉、筛选下拉，以及单选/多选等枚举控件）在设计说明书中必须**逐项完整列出全部选项**，禁止用“等 / 例如 / 如：/ …”只举例，否则 Coding 阶段会照抄示例、漏掉未列出的选项。校验器对“选项/规则”（表单 `rules`）与“选项范围”（筛选 `options`）单元格做完整性校验，**列全优先于规则**：选项单元格应先列出完整选项，再补充其它规则/校验说明。
+
+**声明约定**：页面对象增加 `requirementOptionSets`，逐字段声明需求文档给出的完整选项集（与 `requirementFieldNames` 同为“声明—校验”闭环）：
+
+```json
+"requirementOptionSets": [
+  {"field": "风险等级", "options": ["高", "中", "低"]},
+  {"field": "处置状态", "options": ["待处置", "处置中", "已处置", "已忽略"], "source": "requirement"}
+]
+```
+
+- `field`：字段名（对应字段数组中的 `name`，支持精确或双向包含匹配）。
+- `options`：需求文档要求的完整选项列表（数组；也兼容以 `/`、`、`、`,`、`;` 等分隔的字符串）。
+- `source`：可选，选项来源标记（requirement / product-design / common-design / code / ai-fill）。
+
+**校验项**（条件式：页面声明 `requirementOptionSets` 时启用）：
+
+| 场景 | 级别 | errorCode |
+|---|---|---|
+| 声明选项未全部出现在该字段表单 `rules` 或筛选 `options` 单元格 | error | REQUIRED_OPTION_MISSING |
+| 声明选项集的字段未出现在页面任何字段数组 | error | OPTION_FIELD_NOT_FOUND |
+| 选择类字段（component/iduxComponent 命中下拉/select/单选/多选等）选项单元格出现 等/例如/如：/… 截断指纹（未声明选项集） | warning | OPTION_TRUNCATION_MARKER |
+| 选项集声明项非对象（{field, options}） | warning | OPTION_SET_INVALID |
+| 选项集声明缺少 field 或 options | warning | OPTION_SET_INCOMPLETE |
+
+**选项令牌匹配**：校验按选项分隔符（`/`、`、`、`,`、`;`、换行等）拆分单元格，去掉标签前缀（如“选项：”）、括号补充（如“（默认）”）与尾部截断标记（如“低等”的“等”）后逐项归一比对，避免“指定终端”被“指定终端组”这类前缀误判。
+
+**示例**：声明 `{"field": "生效范围", "options": ["全部终端", "指定终端组", "指定终端"]}`，但筛选字段 `options` 只写 `全部终端/指定终端组`，则 RULE-48 以 `REQUIRED_OPTION_MISSING` 阻断并指出缺失选项 `指定终端`；写成 `全部终端/指定终端组/自定义等`（未声明选项集）则触发 `OPTION_TRUNCATION_MARKER` 告警。
+
+### 11.14 详情页字段去重（RULE-49）
+
+详情类页面（抽屉详情页 / 下钻详情页 / 详情弹窗）顶部常有“对象摘要 / 详情概览卡片”，已展示名称、状态等关键字段；Common Design 明确这些字段不应在下方“详情描述列表”中重复展示。本校验作为兜底，避免同一字段（如启用状态）在概览卡片、基本信息描述列表等多处以不同形态重复出现。
+
+**区域定义**：
+- Zone A（概览卡片 / 对象摘要字段）：页面声明的 `detailSummaryFields` 优先；未声明时取页面级/区块 `cardFields`，以及摘要卡片型区块（`type`/`title` 命中 summary-card/object-summary/summary/profile/对象摘要/摘要卡片/摘要/概览卡片）的 `fields`/`detailFields`。注意 overview/概览 属概览内容列表，归 Zone B。
+- Zone B（详情描述列表字段）：区块 `type`/`title` 命中描述列表型（overview/descriptions/description/detail/detail-content/basic-info/概览/描述列表/描述/详情/基本信息/详情信息/概要）的 `fields`/`detailFields`/`cardFields`，以及页面级 `detailFields`。
+
+**声明约定（推荐，与 RULE-36/48 同为“声明—校验”闭环）**：页面对象增加 `detailSummaryFields`，显式声明概览卡片/对象摘要已展示的字段名数组；未声明时回退为 `cardFields` + 摘要型区块的启发式判定。
+
+```json
+"type": "抽屉详情页",
+"detailSummaryFields": ["策略名称", "启用状态"],
+"detailDedupExempt": {"启用状态": "概览用徽标、详情需可编辑，属有意重复"}
+```
+
+**校验项**（条件式：仅详情类页面，且同时存在概览卡片/摘要字段与描述列表字段时启用）：
+
+| 场景 | 级别 | errorCode |
+|---|---|---|
+| 概览卡片/对象摘要已展示字段又在详情描述列表重复出现 | warning | DETAIL_FIELD_DUPLICATE |
+| 同一详情描述列表区块内字段名重复出现 | error | DETAIL_FIELD_DUPLICATED_IN_LIST |
+
+**豁免与排除**：`excludedFields` 与页面级 `detailDedupExempt`（字段名到原因的映射，或字段名数组）中的字段不参与去重；历史/日志/记录/时间线类区块（history/timeline/audit/操作记录/变更记录/历史/日志/审计/时间线）与 `tableFields` 不参与，避免把“状态变更记录表”误判为重复。
+
+**与 RULE-36 的关系**：概览卡片字段只需落在 Zone A（`cardFields`/摘要区块/`detailSummaryFields` 对应字段）即满足 RULE-36 字段完整性（RULE-36 统计任意字段数组），**去重不违反完整性**，无需为“防漏”而在描述列表重复。
+
+**示例**：详情抽屉页 `cardFields` 为 `[策略名称, 启用状态]`，基本信息描述列表 `detailFields` 又含 `策略名称`，则触发 `DETAIL_FIELD_DUPLICATE`；若确有需要（如状态既做概览徽标又需可编辑），写入 `detailDedupExempt` 即不再告警。
