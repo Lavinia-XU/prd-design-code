@@ -280,8 +280,57 @@ def normalize_component_rows(rows):
         item = dict(row)
         if not item.get("iduxComponent"):
             item["iduxComponent"] = item.get("componentName") or item.get("idux") or item.get("idux_component") or ""
+        form = str(item.get("iduxComponentForm") or "").strip()
+        if form:
+            base = str(item.get("iduxComponent") or "").strip()
+            item["iduxComponent"] = f"{base}（{form}）" if base else form
         normalized.append(item)
     return normalized
+
+
+# 按钮/可点击操作表列定义（RULE-50）：操作 | 触发方式 | 使用组件 | 文案或字段 | Demo反馈 | 来源
+ACTION_COLUMNS = [
+    ("name", "操作"),
+    ("trigger", "触发方式"),
+    ("component", "使用组件"),
+    ("content", "文案或字段"),
+    ("feedback", "Demo反馈"),
+    ("source", "来源"),
+]
+
+
+def normalize_action_rows(actions):
+    """将区块 actions 归一化为表格行；兼容旧的字符串写法（"操作：行为"）。"""
+    rows = []
+    for item in actions or []:
+        if isinstance(item, dict):
+            row = dict(item)
+            text = str(row.get("text") or row.get("copy") or "").strip()
+            fields = row.get("fields")
+            if isinstance(fields, (list, tuple)):
+                fields = "；".join(str(f) for f in fields)
+            fields = str(fields or "").strip()
+            content = text
+            if fields:
+                content = f"{text}\n字段：{fields}".strip() if text else f"字段：{fields}"
+            if not content:
+                content = str(row.get("content") or row.get("rules") or "").strip()
+            row["content"] = content
+            row.setdefault("name", row.get("action") or row.get("label") or "")
+            row.setdefault("trigger", row.get("confirmType") or row.get("mode") or "")
+            row.setdefault("component", row.get("iduxComponent") or row.get("componentName") or "")
+            row.setdefault("feedback", row.get("demoFeedback") or row.get("result") or "")
+            row.setdefault("source", row.get("designSource") or "")
+            rows.append(row)
+        else:
+            text = str(item)
+            name, content = text, ""
+            for sep in ("：", ":"):
+                if sep in text:
+                    name, content = text.split(sep, 1)
+                    break
+            rows.append({"name": name.strip(), "trigger": "", "component": "", "content": content.strip(), "feedback": "", "source": ""})
+    return rows
 
 
 def markdown_restore_requirement(restore):
@@ -346,9 +395,11 @@ def markdown_page(page, inherited_nav=None):
     lines.extend(["", "### 页面内容区块"])
     for block in page.get("sections", []):
         lines.extend([f"#### {block.get('title', '未命名区块')}", str(block.get('description', ''))])
-        for key, label in [("toolbar", "工具栏/筛选搜索"), ("actions", "按钮/可点击操作"), ("displayRules", "展示形式与取值范围"), ("interactionNotes", "交互、反馈与状态说明"), ("validationRules", "校验、联动与边界状态")]:
+        for key, label in [("toolbar", "工具栏/筛选搜索"), ("displayRules", "展示形式与取值范围"), ("interactionNotes", "交互、反馈与状态说明"), ("validationRules", "校验、联动与边界状态")]:
             if block.get(key):
                 lines.extend([f"**{label}**", markdown_list(block.get(key))])
+        if block.get("actions"):
+            lines.extend(["**按钮/可点击操作**", markdown_table(normalize_action_rows(block.get("actions")), ACTION_COLUMNS)])
         if block.get("filterComponent") or block.get("filterComponentDescription"):
             lines.extend(["**筛选区组件说明**", markdown_list([item for item in [block.get("filterComponent"), block.get("filterComponentDescription")] if item])])
         if block.get("filterFields"):
@@ -497,8 +548,11 @@ def render_block_detail(block):
         if html_text:
             details.append(html_text)
 
+    if block.get("actions"):
+        html_text = optional_table_block("按钮/可点击操作", normalize_action_rows(block.get("actions")), ACTION_COLUMNS)
+        if html_text:
+            details.append(html_text)
     detail_map = [
-        ("actions", "按钮/可点击操作"),
         ("displayRules", "展示形式与取值范围"),
         ("interactionNotes", "交互、反馈与状态说明"),
         ("validationRules", "校验、联动与边界状态"),

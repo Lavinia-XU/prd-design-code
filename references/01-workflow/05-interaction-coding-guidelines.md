@@ -120,13 +120,13 @@
 
 页面级 Coding 指导中的每个开发项必须使用以下固定 JSON 字段：
 
-- 基础身份：`id`（稳定ID，格式如 P01-C01）、`scope`（固定枚举）、`name`（开发对象名称）、`mode`（开发方式枚举）；
+- 基础身份：`id`（稳定ID，格式如 P01-C01；入口挂载点开发项可用 `<容器页ID>-E01` 或 `host:<宿主标识>-E01` 以定位宿主）、`scope`（固定枚举）、`name`（开发对象名称）、`mode`（开发方式枚举）；
 - 代码映射：`mappingRef`（指向 Implementation Mapping Gate 映射表条目）、`mappingStatus`（verified / pending / blocked）、`target.path`（真实代码路径）、`target.export`（导出名称）；未经过代码核验时 `path` 不得编造，可留空并标记 pending 或 blocked；
 - 设计依据：`sourceRefs`（页面区块、表格字段或映射表条目引用）、`designReferences`（命中的 Design Skill 规则）、`visualBaselineRef`（视觉基线参考页面）；
 - 实现要求：`requirements`（列表，把开发描述拆分为可执行要求）、`dependencies`（依赖的其他开发项或对象）、`states`（loading / empty / search-no-result / error 等）、`mockContract`（数据结构与操作后更新方式）、`prohibitedChanges`（禁止改动项）；
 - 验收标准：`acceptanceCriteria`（列表）、`verificationChecks`（验证方式）。
 
-`scope` 固定枚举：page-shell / navigation / toolbar / filter / table / form / drawer / modal / business-component / mock-data / visual-validation。
+`scope` 固定枚举：page-shell / navigation / toolbar / filter / table / form / drawer / modal / business-component / mock-data / visual-validation / entry-point。
 
 `mode` 固定枚举：reuse-framework / component-reuse / direct-reference / new-development。
 
@@ -280,6 +280,7 @@ Coding Plan 必须同时产出"说明书核销清单"，作为 Coding 执行完�
 
 - 清单直接复用 HTML 页面级 AI Coding 指导的已有结构（页面、区块、开发项及其字段、操作、状态契约），禁止重新发明或扩写清单；
 - 字段、操作、状态挂在所属开发项下核销，不单独平铺成独立清单；
+- 当顶层声明 `requirementEntryPoints` 时，核销清单必须逐条包含每个入口挂载点（含 out-of-scope 宿主入口的对应开发项）；入口开发项挂在打开容器页面的开发项下核销，不得因入口不属于任何本次页面而漏列；
 - 每项核销状态仅限"已实现 / 部分实现 / 未实现"，部分实现或未实现项附一句话原因；
 - 核销动作在 Coding 执行完成后一次性完成，编码过程中不中断更新。
 

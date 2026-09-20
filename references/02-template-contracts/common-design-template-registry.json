@@ -4,6 +4,7 @@
   "description": "Common Design 标准页面模板注册表。本文件是 Common Design 页面模板定义的机器可读快照，来源于 common-design/references/02-template/01-page-types.md；所有规则来源于 Common Design 页面类型定义，禁止凭 AI 经验新增模板结构。页面必须绑定本注册表中的 templateId，无法匹配时必须使用 custom 模板并填写 override。",
   "templates": {
     "page-table-basic": {
+      "name": "基础表格页",
       "source": "common-design/references/02-template/01-page-types.md#page-table-basic",
       "navigationTypes": [
         "left-shaped",
@@ -39,6 +40,7 @@
       }
     },
     "page-table-tree": {
+      "name": "左树表格页",
       "source": "common-design/references/02-template/01-page-types.md#page-table-tree",
       "navigationTypes": [
         "left-shaped",
@@ -75,6 +77,7 @@
       }
     },
     "page-table-overview": {
+      "name": "概览表格页",
       "source": "common-design/references/02-template/01-page-types.md#page-table-overview",
       "navigationTypes": [
         "left-shaped",
@@ -111,6 +114,7 @@
       }
     },
     "page-table-overview-tree": {
+      "name": "概览左树表格页",
       "source": "common-design/references/02-template/01-page-types.md#page-table-overview-tree",
       "navigationTypes": [
         "left-shaped",
@@ -150,8 +154,9 @@
         "rule": ""
       }
     },
-    "page-list-modal": {
-      "source": "common-design/references/02-template/01-page-types.md#page-list-modal",
+    "list-modal": {
+      "name": "列表弹窗",
+      "source": "common-design/references/02-template/01-page-types.md#list-modal",
       "navigationTypes": [],
       "requiredRegions": [
         "modal-shell",
@@ -188,8 +193,9 @@
         "rule": ""
       }
     },
-    "page-list-drawer": {
-      "source": "common-design/references/02-template/01-page-types.md#page-list-drawer",
+    "list-drawer": {
+      "name": "列表抽屉",
+      "source": "common-design/references/02-template/01-page-types.md#list-drawer",
       "navigationTypes": [],
       "requiredRegions": [
         "drawer-shell",
@@ -216,7 +222,7 @@
       },
       "footer": {
         "required": true,
-        "alignment": "right",
+        "alignment": "left",
         "buttonOrder": [
           "confirm",
           "cancel"
@@ -228,6 +234,7 @@
       }
     },
     "page-detail-drilldown": {
+      "name": "下钻详情页",
       "source": "common-design/references/02-template/01-page-types.md#page-detail-drilldown",
       "navigationTypes": [
         "left-shaped",
@@ -258,8 +265,9 @@
         "rule": ""
       }
     },
-    "page-detail-drawer": {
-      "source": "common-design/references/02-template/01-page-types.md#page-detail-drawer",
+    "detail-drawer": {
+      "name": "详情抽屉",
+      "source": "common-design/references/02-template/01-page-types.md#detail-drawer",
       "navigationTypes": [],
       "requiredRegions": [
         "drawer-shell",
@@ -278,7 +286,7 @@
       },
       "footer": {
         "required": true,
-        "alignment": "right",
+        "alignment": "left",
         "buttonOrder": [
           "close"
         ]
@@ -288,32 +296,35 @@
         "rule": ""
       }
     },
-    "page-detail-log": {
-      "source": "common-design/references/02-template/01-page-types.md#page-detail-log",
-      "navigationTypes": [
-        "left-shaped",
-        "l-shaped"
-      ],
+    "log-detail-drawer": {
+      "name": "日志详情抽屉",
+      "source": "common-design/references/02-template/01-page-types.md#log-detail-drawer",
+      "navigationTypes": [],
       "requiredRegions": [
-        "global-navigation",
-        "title-bar",
-        "log-filter",
-        "log-content",
-        "pagination"
+        "drawer-shell",
+        "drawer-header",
+        "detail-content",
+        "drawer-footer"
       ],
       "requiredComponents": {
-        "title-bar": [
-          "IxHeader-prefix"
+        "shell": [
+          "IxDrawer"
         ],
-        "log-content": [
-          "IxTimeline",
-          "IxTable"
+        "detail-content": [
+          "IxProDesc"
+        ],
+        "footer": [
+          "IxButton"
         ]
       },
       "footer": {
-        "required": false,
-        "alignment": "",
-        "buttonOrder": []
+        "required": true,
+        "alignment": "left",
+        "buttonOrder": [
+          "previous",
+          "next-or-complete",
+          "close"
+        ]
       },
       "variants": {
         "required": false,
@@ -321,6 +332,7 @@
       }
     },
     "page-form-config": {
+      "name": "配置表单页",
       "source": "common-design/references/02-template/01-page-types.md#page-form-config",
       "navigationTypes": [
         "left-shaped",
@@ -355,6 +367,7 @@
       }
     },
     "page-form-stepper": {
+      "name": "下钻步骤条配置页",
       "source": "common-design/references/02-template/01-page-types.md#page-form-stepper",
       "navigationTypes": [
         "left-shaped",
@@ -393,8 +406,9 @@
         "rule": "主结构图 + 每个步骤一张完整变体图"
       }
     },
-    "page-form-modal": {
-      "source": "common-design/references/02-template/01-page-types.md#page-form-modal",
+    "form-modal": {
+      "name": "表单弹窗",
+      "source": "common-design/references/02-template/01-page-types.md#form-modal",
       "navigationTypes": [],
       "requiredRegions": [
         "modal-shell",
@@ -427,8 +441,9 @@
         "rule": ""
       }
     },
-    "page-form-drawer": {
-      "source": "common-design/references/02-template/01-page-types.md#page-form-drawer",
+    "form-drawer": {
+      "name": "表单抽屉",
+      "source": "common-design/references/02-template/01-page-types.md#form-drawer",
       "navigationTypes": [],
       "requiredRegions": [
         "drawer-shell",
@@ -450,7 +465,7 @@
       },
       "footer": {
         "required": true,
-        "alignment": "right",
+        "alignment": "left",
         "buttonOrder": [
           "confirm",
           "cancel"
@@ -462,6 +477,7 @@
       }
     },
     "page-dashboard": {
+      "name": "Dashboard",
       "source": "common-design/references/02-template/01-page-types.md#page-dashboard",
       "navigationTypes": [
         "left-shaped",
@@ -491,5 +507,5 @@
       }
     }
   },
-  "syncNote": "同步规则：本文件为机器可读快照，仅用于校验器确定性校验。当已读取的 Common Design 页面模板定义与本文件不一致时，以 Common Design 为准，并将差异记录到 Design Context 待同步；Product Design 若声明了页面模板覆盖（override），以 Product Design 为准。"
+  "syncNote": "同步规则：本文件为机器可读快照，仅用于校验器确定性校验。当已读取的 Common Design 页面模板定义与本文件不一致时，以 Common Design 为准，并将差异记录到 Design Context 待同步；Product Design 若声明了页面模板覆盖（override），以 Product Design 为准。 按钮对齐：抽屉（list-drawer/form-drawer/detail-drawer）底部按钮统一左对齐（left），弹窗（list-modal/form-modal）保持右对齐（right），与 Common Design 01-page-types.md 的对应模板条目一致；本文件为快照，若与 Common Design 不一致以 Common Design 为准并记录差异。 页面类型更名（2026）：弹窗/抽屉不再称“页”——列表弹窗(list-modal)、列表抽屉(list-drawer)、详情抽屉(detail-drawer)、日志详情抽屉(log-detail-drawer)、表单弹窗(form-modal)、表单抽屉(form-drawer)；日志详情原为整页，已按 Common Design §1.9 更正为抽屉。中文页面类型名以本注册表 name 字段为准，TYPE_TEMPLATE_MAP 由本注册表派生。"
 }

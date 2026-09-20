@@ -18,13 +18,13 @@
 
 ## 页面类型
 
-<填写页面类型，如基础表格页、抽屉表单页、自定义页面类型等>
+<填写页面类型，如基础表格页、表单抽屉、自定义页面类型等>
 
 ## 页面内容区块
 
 先整体说明页面内不同内容区块之间的位置关系，并遵守该页面类型已定义好的方位位置，不要自行组合新的上下左右关系，避免把页面结构弄混。若页面内有明显白色卡片承载内容，按卡片划分；若没有明显卡片，按业务内容模块划分。若页面有多个内容区块，按先上后下、先左后右逐个描述区块，让读者通过区块描述即可看出页面设计结构关系。
 
-实际输出时应根据页面结构完整列出所有区块，不限于表格区和表单区；常见区块还包括概览区、详情信息区、图表区、操作区、步骤条、提示说明区等。区块划分要确保业务完整性，不要为了套格式把同一个业务对象的工具栏、筛选和列表拆散。以下仅为区块描述格式示例，不代表页面只能包含这些区块。生成HTML的JSON中，表格字段必须使用`tableFields`数组，表单字段必须使用`formFields`数组，脚本会将二者渲染为HTML表格；不要把表格字段或表单字段只写成普通`fields`文本列表。字段内容必须写在对应形态渲染的键上（表单字段用`rules`/`tips`，筛选项用`options`/`description`，表格字段用`display`/`description`，键对照见本文件“字段形态键对照（RULE-41）”小节），跨形态套键会导致HTML对应列静默空白并被RULE-41阻断。需求或规范中明确列出的字段（表格列、表单项、筛选项、详情描述字段、配置项等）必须逐项落入对应区块的字段数组，不得过滤、合并或仅简述；页面对象写入`requirementFieldNames`（需求/规范明确要求的字段名数组）与`excludedFields`（字段名到排除原因的映射），校验器以 RULE-36 检查需求字段是否全部落位，缺失字段阻断生成。带固定选项的下拉类字段（表单下拉、筛选下拉及单选/多选等枚举控件）必须把选项逐项完整列出，禁止用“等/例如/…”只举例；页面对象写入`requirementOptionSets`（字段名到完整选项列表的声明），校验器以 RULE-48 检查声明选项是否全部落入表单`rules`或筛选`options`单元格（缺失阻断），并对未声明选项集的选择类字段做截断指纹告警（详见本文件 11.13）。
+实际输出时应根据页面结构完整列出所有区块，不限于表格区和表单区；常见区块还包括概览区、详情信息区、图表区、操作区、步骤条、提示说明区等。区块划分要确保业务完整性，不要为了套格式把同一个业务对象的工具栏、筛选和列表拆散。**例外（复用业务组件容器）**：拆解出来的容器若命中 Product Design 业务封装组件（或代码识别已知业务封装）且属于需求延伸容器，则**不在本说明书单独描述该页面**——不写页面内容区块、不画线框图、不写底部操作，只在宿主页面的内容区块/线框图中写一句"点击 X 打开 Y（复用 <组件名>，不单独绘制）"，并把该组件登记为开发项与设计依据；自绘样式会与业务实现不一致、误导编码（详见 11.24 RULE-59，声明复用后又自绘会被 REUSE_CONTAINER_OVER_DESCRIBED 阻断）。以下仅为区块描述格式示例，不代表页面只能包含这些区块。生成HTML的JSON中，表格字段必须使用`tableFields`数组，表单字段必须使用`formFields`数组，脚本会将二者渲染为HTML表格；不要把表格字段或表单字段只写成普通`fields`文本列表。字段内容必须写在对应形态渲染的键上（表单字段用`rules`/`tips`，筛选项用`options`/`description`，表格字段用`display`/`description`，键对照见本文件“字段形态键对照（RULE-41）”小节），跨形态套键会导致HTML对应列静默空白并被RULE-41阻断。需求或规范中明确列出的字段（表格列、表单项、筛选项、详情描述字段、配置项等）必须逐项落入对应区块的字段数组，不得过滤、合并或仅简述；页面对象写入`requirementFieldNames`（需求/规范明确要求的字段名数组）与`excludedFields`（字段名到排除原因的映射），校验器以 RULE-36 检查需求字段是否全部落位，缺失字段阻断生成。带固定选项的下拉类字段（表单下拉、筛选下拉及单选/多选等枚举控件）必须把选项逐项完整列出，禁止用“等/例如/…”只举例；页面对象写入`requirementOptionSets`（字段名到完整选项列表的声明），校验器以 RULE-48 检查声明选项是否全部落入表单`rules`或筛选`options`单元格（缺失阻断），并对未声明选项集的选择类字段做截断指纹告警（详见本文件 11.13）。需求源枚举表含分组/层级列时（`requirementOptionSets[].dimension=group/hierarchy`，或 `sourceColumns` 声明 ≥2 列自动视为分组）必须在选项单元格保留该维度（“组名：选项A/选项B”或“父级 → 子级”），压平为单层列表会被 RULE-48 以 OPTION_DIMENSION_LOST 告警；承载该维度的控件形态不在此判定，按 RULE-54 依 Common Design widget patterns（`03-patterns/07-widget-patterns/`）判定并锚点级登记依据。
 
 ### Wireframe / ASCII 线框图
 
@@ -37,7 +37,7 @@
 - `regions`：区域数组，每项包含`id`、`templateRegion`（对应模板必需区域）、`position`、`required`、`component`、`content`；
 - `variants`：多步骤或Tab页面必须输出主结构图和每个步骤/Tab一张完整变体图，每张变体包含`preserveRegions`（保留公共外壳区域）与`changedRegions`（变化区域）及`ascii`。
 
-每个页面必须同时填写`templateContract`（templateId/baseTemplateId/templateBase/productTemplateRef/navigationType/templateSource/requiredRegions/optionalRegions/regionOrder/footerContract/componentContract/wireframeContract/override），与结构化wireframe形成闭环；`componentContract` 除按区域声明骨架/字段组件外，须用 `patternComponents` 承载 Pattern 层（如筛选方式 Pattern）算出的组件结论，每项含 `when` / `components` / `source` / `ability`，并同步登记 `codingGuide.designReferences` 的对应 ability 依据，不得使 Pattern 结论遗留在 Pattern 层；`templateBase`取值`common`（默认，模板结构与线框样式继承 Common Design 页面模板）或`product`（匹配 Product Design 声明该页模板 override，模板结构与线框样式以 Product Design 页面模板为准）；`templateBase=product` 时必须填写`productTemplateRef`，指向 Product Design 页面模板文档原文锚点（格式`<文档路径>#<章节/模板条目>`）；模板结构、覆盖范围、必需区域、区域顺序与 footer 契约结论必须基于模板文档原文精读得出并登记到`codingGuide.designReferences`，禁止仅凭索引、摘要或他方转述下结构结论；页面type、templateId、layout、sections、wireframe、footerActions、componentContract和codingGuide必须一致，禁止出现模板结构与线框结构冲突。模板注册表见references/02-template-contracts/common-design-template-registry.json，生成HTML前由scripts/validate_demo_spec.py自动校验，校验失败阻断HTML生成。
+每个页面必须同时填写`templateContract`（templateId/baseTemplateId/templateBase/productTemplateRef/navigationType/templateSource/requiredRegions/optionalRegions/regionOrder/footerContract/componentContract/wireframeContract/override），与结构化wireframe形成闭环；`componentContract` 除按区域声明骨架/字段组件外，须用 `patternComponents` 承载 Pattern 层（如筛选方式 Pattern）算出的组件结论，每项含 `when` / `components` / `source` / `ability`，并同步登记 `codingGuide.designReferences` 的对应 ability 依据，不得使 Pattern 结论遗留在 Pattern 层；`templateBase`取值`common`（默认，模板结构与线框样式继承 Common Design 页面模板）或`product`（匹配 Product Design 声明该页模板 override，模板结构与线框样式以 Product Design 页面模板为准）；`templateBase=product` 时必须填写`productTemplateRef`，指向 Product Design 页面模板文档原文锚点（格式`<文档路径>#<章节/模板条目>`）；模板结构、覆盖范围、必需区域、区域顺序与 footer 契约结论必须基于模板文档原文精读得出并登记到`codingGuide.designReferences`，禁止仅凭索引、摘要或他方转述下结构结论；页面type、templateId、layout、sections、wireframe、footerActions、componentContract和codingGuide必须一致，禁止出现模板结构与线框结构冲突。模板注册表见references/02-template-contracts/common-design-template-registry.json，生成HTML前由scripts/validate_demo_spec.py自动校验，校验失败阻断HTML生成。页面模板 ID 取值口径（强制）：`templateId` 只允许两种写法——①当前模板注册表中的标准模板 ID（无论最终以 Common Design 还是 Product Design 为准，底层结构均取该标准模板，Product Design 覆盖用`templateBase=product`+非空`productTemplateRef`表达）；②`custom`（Product Design 在标准模板之外自定义了页面模板时：`templateId="custom"`+`baseTemplateId`填最接近的当前注册表标准模板 ID+`override.enabled=true`+`override.source`写明 Product Design 模板出处+`override.reason`+`override.affectedRules`，并同步填写`templateBase=product`与非空`productTemplateRef`）。禁止把 Product Design 自定义模板 ID 直接写入`templateId`（RULE-04 以 TEMPLATE_NOT_REGISTERED 阻断），禁止把 Product Design 自定义页面类型名写入页面`type`（RULE-06 以 UNREGISTERED_TYPE 阻断）；页面类型中文名一律以当前模板注册表`name`为准（历史名"步骤条配置页""仪表盘页"已分别改为"下钻步骤条配置页"与"Dashboard"，旧名废弃）。历史旧模板 ID（`page-list-modal`/`page-list-drawer`/`page-detail-drawer`/`page-detail-log`/`page-form-modal`/`page-form-drawer`）仅作兼容识别（RULE-43 覆盖判定自动归一为当前 ID），不得作为新产出；出现在`templateSource`/`layoutSource`/组件来源等模板引用文本中会被 RULE-56 以 LEGACY_TEMPLATE_ID_REF 告警。
 
 HTML说明书中的线框图部分只展示对确认页面结构有用的内容：先展示完整ASCII线框图，线框图下方再补充线框说明（wireframeNote）、线框图结构依据和线框变体；线框变体必须包含对应步骤/Tab的`ascii`线框图才展示，缺少线框图的变体不输出。模板契约（templateId、navigationType、templateSource、模板必需区域、区域顺序、底部操作契约）不属于面向用户的线框图展示内容，移入页面级AI Coding指导作为AI Coding的结构化输入；`regions`数组仅用于模板契约校验与区域一致性检查，不渲染为表格展示；区域对应的组件和内容由页面内容区块（sections）承载。
 
@@ -69,7 +69,8 @@ HTML说明书中的线框图部分只展示对确认页面结构有用的内容�
 │          │ │ 分区标题# 服务器配置                                   │  │
 │          │ │ 配置名称      [________________________](带字数计数)   │  │
 │          │ │ 服务器地址    [________________________ *]             │  │
-│          │ │ 端口          [____]  连接协议 LDAPv3● LDAPv2○ LDAPSv3○│  │
+│          │ │ 端口            [____]                             │  │
+│          │ │ 连接协议        LDAPv3● LDAPv2○ LDAPSv3○             │  │
 │          │ │ 企业目录根范围 [________________________________ *]    │  │
 │          │ │ 用户查询范围   [________________________________ *]    │  │
 │          │ │ OU 查询范围    [________________________________ *]    │  │
@@ -93,6 +94,26 @@ HTML说明书中的线框图部分只展示对确认页面结构有用的内容�
 └──────────┴──────────────────────────────────────────────────────────────┘
 ```
 
+表单独列口径（强制，RULE-57）：表单配置项必须**每行一个配置项**，label 在左、控件在右、水平同一行；禁止把两个配置项画在同一行（如上例"端口"与"连接协议"必须分两行）。表单布局真值以已读取的 Common Design 表单规范为准，须锚点级登记到 `codingGuide.designReferences` 并在 `readLedger` 命中 `status=read`；线框出现一行多配置项给 `FORM_LAYOUT_MULTI_COLUMN`（warning），label 与控件不在同一行给 `FORM_LAYOUT_LABEL_NOT_INLINE`（warning），表单布局依据未登记或未精读给 `FORM_LAYOUT_BASIS_UNREAD`（warning）。详见 11.22 表单单列布局闭环（RULE-57）。
+
+#### 示例：表单单列（表单弹窗 / 表单抽屉）
+
+容器形态（弹窗/抽屉）不改变表单布局口径：容器内仍是"每行一个配置项"。
+
+```text
+┌──────────────────────────────────────────────┐
+│ 新建策略                              关闭 × │
+├──────────────────────────────────────────────┤
+│ 表单配置内容区（单列）                        │
+│ 策略名称      [________________ *]            │
+│ 生效范围      [请选择          ▾]             │
+│ 优先级        [___]                           │
+│ 生效时间      [2026-08-05 00:00]              │
+├──────────────────────────────────────────────┤
+│                        [确定] [取消]          │
+└──────────────────────────────────────────────┘
+```
+
 ### 示例：表格区
 
 先说明表格区在页面中的相对位置、承载对象和主要操作，再按以下格式描述表格。表格上方的按钮区、筛选区和搜索区通常属于表格工具栏 toolbar，不单独拆成多个区块，而是跟随表格作为一个表格区描述。表格不仅要说明字段，还要说明每个字段的展示形式；默认展示形式为普通文本，也可以根据字段含义使用单标签、多标签、数字、可点击文本、可点击数字、图标+文字等形式。
@@ -104,7 +125,7 @@ HTML说明书中的线框图部分只展示对确认页面结构有用的内容�
   - 平铺筛选：适合筛选项较少或需要高频操作的列表页；在筛选区组件说明中统一列出各独立组件名称（组件名来源见本节末“组件名来源规则”），筛选字段表格不再单独标注iDux组件名称，但需说明选项范围、默认值和匹配方式。
   - 高级搜索框：适合筛选项较多、不适合全部平铺展示的列表页；必须说明使用一个高级搜索组件（组件名来源见本节末“组件名来源规则”）承载整体筛选；内部字段不展开控件外观，筛选字段表格不再单独标注iDux组件名称，只需说明每个字段的筛选方式，例如单选、多选、模糊搜索、精确搜索、时间范围筛选。
   - 当需求没有明确筛选条件时，优先根据表格字段语义自动补充查询区；不要因为需求未提到筛选条件就默认不设置筛选。自动补齐的筛选项控件类型按本节末“组件名来源规则”确定，本 Skill 不枚举组件映射规则；若字段不足以明确判断，至少补齐名称搜索、状态筛选和时间筛选。对于这类自动补齐的筛选项，需要在页面说明和页面级Coding指导里写明补齐的字段、控件类型和补齐依据，避免被误认为遗漏。若筛选项较多或需要组合管理，应在页面说明中直接使用“高级搜索框”整体描述，不要逐项展开内部筛选字段。
-  - 组件名来源规则：匹配 Product Design 且其 Component 层（或 coverage 中 capability 为 `component` / `pattern` 的能力）已登记该业务封装组件时，组件名与用法以 Product Design 业务组件为准，并须在页面 `codingGuide.designReferences` 登记 `source=product-design` 与对应 `ability`（未登记以 RULE-43 `ABILITY_SOURCE_NOT_REGISTERED` 阻断）；Product Design 未登记该能力时，以已读取 Common Design 组件映射表（`common-design/references/05-components/idux-component-map.md`）为准；两者均未覆盖时，标注为 AI 补齐的语义级能力描述。Product Design 已登记的 Component Reference 优先于 Common Design 通用组件，严禁一律写死为 Common Design 通用组件。
+  - 组件名来源规则：匹配 Product Design 且其 Component 层（或 coverage 中 capability 为 `component` / `pattern` 的能力）已登记该业务封装组件时，组件名与用法以 Product Design 业务组件为准，并须在页面 `codingGuide.designReferences` 登记 `source=product-design` 与对应 `ability`（未登记以 RULE-43 `ABILITY_SOURCE_NOT_REGISTERED` 阻断）；Product Design 未登记该能力时，以已读取 Common Design 组件映射表（`common-design/references/05-components/idux-component-map.md`）为准；两者均未覆盖时，标注为 AI 补齐的语义级能力描述。Product Design 已登记的 Component Reference 优先于 Common Design 通用组件，严禁一律写死为 Common Design 通用组件。组件**形态（variant）**的来源分两层、各管一段：**命名/枚举真值**以已读取的 Common Design 组件映射（`common-design/references/05-components/idux-component-map.md`，按组件锚点精读）为准——当某组件登记了多种形态（如 IxTag 的多种标签样式、IxSelect 下拉面板的搜索/新增/树/分组、单选/多选的 radio/卡片）时，须在字段 `iduxComponentForm` 写明本页选用的形态，并以 `formCandidates` 登记该组件在 Common Design 中的形态候选；**选择依据真值**以 Common Design widget patterns（`common-design/references/03-patterns/07-widget-patterns/`，按“目录级索引 + 命中控件对应文件精读”读取，Product Design 侧 pattern 文档同等可用）为准，判定依据须锚点级登记到页面 `codingGuide.designReferences` 且在 `readLedger` 命中 `status=read`（RULE-54，warning 级）。缺组件映射依据或依据未精读命中、缺 widget pattern 选择依据或依据未精读命中，分别告警 `COMPONENT_FORM_SOURCE_UNREAD`、`COMPONENT_FORM_RULE_UNREAD`；单形态组件留空 `formCandidates` 即可、零负担。禁止凭直觉自造形态，禁止未读 widget patterns 判定依据就选定形态。
 - 表格字段：
 
 | 字段名称 | 展示形式 | 组件名称 | 说明 |
@@ -204,12 +225,20 @@ HTML说明书标题必须是“XX需求设计说明书”。HTML采用“Markdow
 - 属于已有业务主题或页面体系时，是否已把真实参考页面作为视觉基线并写入 Design Context 和页面总览。
 - 每个页面是否已绑定标准 templateId（或 custom 模板且含 baseTemplateId、customReason、overrideSource、overrideJustification），并填写 templateContract；是否使用了未注册页面类型名称；页面 type、templateId、layout、sections、wireframe、footerActions、componentContract、codingGuide 是否形成闭环；页面 templateContract 是否登记 `templateBase`（common/product）与 `productTemplateRef`（`templateBase=product` 时非空且可定位到 Product Design 模板文档原文），页面模板来源判定是否在 HTML 生成前完成并依据原文。
 - 结构化 wireframe 是否作为唯一可信来源（templateId/navigationType/shell/regions/variants 完整）；多步骤或 Tab 页面是否包含主结构图和每个步骤/Tab 一张完整变体图，变体是否保留公共页面外壳；footerActions 对齐与按钮顺序是否与模板契约一致或已有 override 记录；wireframe.ascii 底部操作区是否已按模板 buttonOrder 绘制模板按钮（不得只画关闭或漏画主操作），底部自定义按钮是否已声明 override；`regions[].position` 相对顺序是否与 wireframe.ascii 区域首次绘制行序一致、页面级单例控件与内容区域是否未重复绘制、内容行右边界是否对齐；`templateContract.override.enabled=true` 时是否已放宽必需区域/区域顺序/必需组件/表格语义断言并在 `override.source` 登记覆盖来源；纯字符串 wireframe 是否已进入 legacy 警告。
-- 表单/筛选中带固定选项的下拉类字段，是否在选项单元格逐项完整列出全部选项、未使用“等/例如/…”只举例；页面是否以 `requirementOptionSets` 声明固定选项字段的完整选项集并被 RULE-48 校验（缺失阻断、截断指纹告警）。
+- 表单/筛选中带固定选项的下拉类字段，是否在选项单元格逐项完整列出全部选项、未使用“等/例如/…”只举例；页面是否以 `requirementOptionSets` 声明固定选项字段的完整选项集并被 RULE-48 校验（缺失阻断、截断指纹告警）；需求源枚举表含分组/层级列时是否保留该维度（声明 `dimension=group/hierarchy` 或 `sourceColumns` ≥2 列），选项单元格未被压成单层列表（压平以 OPTION_DIMENSION_LOST 告警），且承载该维度的控件形态已按 RULE-54 依 widget patterns 判定并登记依据。
 - 详情页是否已确认顶部概览卡片/对象摘要字段与下方详情描述列表不重复（概览卡片已展示字段不再进描述列表）；是否以 `detailSummaryFields` 声明概览字段、必要时用 `detailDedupExempt` 说明有意重复（RULE-49）。
+- 详情页是否已确认顶部概览卡片/对象摘要的**操作按钮**（编辑/重启/删除等对象级操作）未在底部按钮栏（`footerActions`）重复出现（概览卡片承载对象级操作、底部按钮栏只保留关闭/上一个/下一个/取消/确定）；必要时以 `detailActionDedupExempt` 说明有意重复（RULE-58）。
+- 按钮/可点击操作是否已改为表格（操作/触发方式/使用组件/文案或字段/Demo反馈/来源）？高影响操作（可配置+自动识别）是否写明确认文案（缺失阻断）；涉及二次确认或局部面板的操作是否写清组件与文案/字段；组件与文案来源是否优先取自 Product Design（其次 Common Design）的 pattern 并登记锚点、未由 AI 自拟（RULE-50）。
+- 线框图中表格关联按钮（批量操作、子功能入口等）是否统一绘制在表格区左上角工具栏，未出现在表格框下方或工具栏之外的区域（RULE-51）。
+- PRD 点名的每个入口挂载点是否已在 `requirementEntryPoints` 逐条声明；in-scope 入口是否落到宿主页面区块操作或 `operations` 并绘入宿主线框图；out-of-scope 宿主是否已在 `entryHosts` 登记（含 Tier1 精读、宿主线框图、开发项）；宿主为既有页面时是否已建立其既有形态视觉基线（RULE-52）。
+- 定位到既有页面（入口宿主、复用/相似页面）时是否登记了可核验的身份证据（逐级导航路径 + 路由/菜单标识 + 标题 + 命中代码实体 + 命中依据）；是否未以文件名/目录名作为定位依据；是否对形近候选逐条排除、是否与 PRD 声明路径对证末级语义（RULE-53）。
+- 多形态组件（在已读取的 Common Design 组件映射中登记了多种形态，如 IxTag 多种标签样式、IxSelect 下拉面板的搜索/新增/树/分组、单选/多选的 radio/卡片）是否在 `iduxComponentForm` 写明本页选用的形态，且 `formCandidates` 取自组件映射的登记形态；形态的**选择依据**是否已按命中的 `03-patterns/07-widget-patterns/` 判定小节读取并锚点级登记（`designReferences` + `readLedger` 命中 `status=read`）；声明了 `formCandidates`（>1）却未选形态、所选形态不在候选内、缺组件映射依据、缺 widget pattern 选择依据（或依据未精读命中）会被 RULE-54 告警（warning）。
+- 表单承载页（配置表单页、下钻步骤条配置页、表单弹窗、表单抽屉，或含表单配置区块的页面）的线框是否**单列**——每行一个配置项、label 在左控件在右且水平同一行，未把两个及以上配置项画在同一行（含 variants 图）；表单布局依据（Common Design 表单规范）是否已锚点级登记并精读；一行多配置项以 FORM_LAYOUT_MULTI_COLUMN 告警、label 与控件不同行以 FORM_LAYOUT_LABEL_NOT_INLINE 告警、依据未登记或未精读以 FORM_LAYOUT_BASIS_UNREAD 告警（RULE-57，均 warning）。
+- 需求延伸容器（按钮点击/表格字段点击/详情字段点击/行操作/导入导出触发的弹窗、抽屉、子页面）若命中 Product Design 业务封装组件或代码已知业务封装功能，是否**未单独描述该容器**：不画线框图、不写页面内容区块与底部操作，只在宿主页面写明"点击 X 打开 Y（复用 <组件名>，不单独绘制）"，并把复用组件登记为开发项与依据；未按此降级而自绘的会以 REUSE_CONTAINER_OVER_DESCRIBED 阻断（RULE-59，其余为 warning）；需求直接点名的页面不受此口径影响，必须完整产出。
 
 ## 11. 设计闭环自动校验
 
-设计闭环用于防止已确认的页面、容器、操作与 Tab 在设计说明书生成过程中丢失，并在 HTML 生成前阻断结构不完整的说明书。校验由 `scripts/validate_demo_spec.py` 执行（RULE-28 ~ RULE-49，含字段完整性 RULE-36、表格详情字段一致性 RULE-38、表格标签使用约束 RULE-39、设计依据一致性 RULE-43、未核验实现细节隔离 RULE-44、下拉选项完整性 RULE-48 与详情页字段去重 RULE-49），生成器 `scripts/generate_demo_spec_html.py` 在 strict 模式下遇到 error 即阻断生成。
+设计闭环用于防止已确认的页面、容器、操作、需求入口与 Tab 在设计说明书生成过程中丢失，并在 HTML 生成前阻断结构不完整的说明书。校验由 `scripts/validate_demo_spec.py` 执行（RULE-28 ~ RULE-59，含字段完整性 RULE-36、表格详情字段一致性 RULE-38、表格标签使用约束 RULE-39、设计依据一致性 RULE-43、未核验实现细节隔离 RULE-44、下拉选项完整性 RULE-48、详情页字段去重 RULE-49、按钮/可点击操作表 RULE-50、表格区按钮位置 RULE-51、需求入口落位闭环 RULE-52、页面定位证据闭环 RULE-53、组件形态描述 RULE-54、能力发现完整性 RULE-55、模板 ID 一致性与覆盖兜底 RULE-56、表单单列布局闭环 RULE-57、详情页操作去重 RULE-58 与复用业务组件容器闭环 RULE-59），生成器 `scripts/generate_demo_spec_html.py` 在 strict 模式下遇到 error 即阻断生成。
 
 ### 11.1 页面清单闭环（RULE-28）
 
@@ -223,8 +252,14 @@ HTML说明书标题必须是“XX需求设计说明书”。HTML采用“Markdow
   - 同 ID 的 name / type / containerType 不一致 -> MANIFEST_METADATA_MISMATCH（error）
   - 弹窗/抽屉容器没有任何入口（无 open-container 操作引用且无文本引用）-> ORPHAN_CONTAINER（已确认容器 error，未确认容器 warning）
   - 需求/规范明确列出的字段（requirementFieldNames）未落入对应区块字段数组（tableFields/formFields/filterFields/cardFields 等）且无 excludedFields 排除原因 -> REQUIRED_FIELD_MISSING（error，RULE-36）
-  - 固定选项型下拉声明的完整选项（requirementOptionSets）未全部落入表单 `rules` 或筛选 `options` 单元格 -> REQUIRED_OPTION_MISSING（error）；声明字段不存在 -> OPTION_FIELD_NOT_FOUND（error）；未声明选项集的选择类字段选项单元格出现 等/例如/如：/… 截断指纹 -> OPTION_TRUNCATION_MARKER（warning，RULE-48）
+  - 固定选项型下拉声明的完整选项（requirementOptionSets）未全部落入表单 `rules` 或筛选 `options` 单元格 -> REQUIRED_OPTION_MISSING（error）；声明字段不存在 -> OPTION_FIELD_NOT_FOUND（error）；未声明选项集的选择类字段选项单元格出现 等/例如/如：/… 截断指纹 -> OPTION_TRUNCATION_MARKER（warning，RULE-48）；需求源枚举表含分组/层级列（声明 `dimension=group/hierarchy` 或 `sourceColumns` ≥2 列）但选项单元格被压成单层列表、未保留该维度 -> OPTION_DIMENSION_LOST（warning，RULE-48）
   - 详情类页面中，概览卡片/对象摘要已展示字段（detailSummaryFields 声明，或 cardFields/摘要型区块启发式）又在详情描述列表重复出现 -> DETAIL_FIELD_DUPLICATE（warning）；同一详情描述列表内字段名重复 -> DETAIL_FIELD_DUPLICATED_IN_LIST（error，RULE-49）
+  - 页面含概览卡片/对象摘要区块且该区块声明 `actions` 时：概览卡片已承载的对象级操作（编辑/重启/删除等）又出现在底部按钮栏 `footerActions` -> DETAIL_SUMMARY_ACTION_DUPLICATE（warning，RULE-58；按操作名同义归一比较，`detailActionDedupExempt`/`excludedActions` 豁免）
+  - 声明复用业务组件的需求延伸容器（`reuseBusinessComponent.decision=reuse`）仍自绘线框/区块字段/底部操作 -> REUSE_CONTAINER_OVER_DESCRIBED（**error**，RULE-59）；复用依据未锚点级登记或未精读命中、`basis=code` 缺 `codeEvidence` -> REUSE_BASIS_UNREAD（warning）；宿主页面未交代复用 -> REUSE_HOST_NOTE_MISSING（warning）；`trigger` 非法 / `hostPageId` 缺失或不在范围 / 容器无宿主入口 -> REUSE_SCOPE_INVALID（warning）；容器已有宿主入口且已引用 Product Design 业务组件依据却未声明复用 -> REUSE_CANDIDATE_UNMARKED（warning）
+  - 高影响操作缺二次确认文案 -> ACTION_CONFIRM_TEXT_MISSING（error）；涉及二次确认/局部面板但缺组件、或声明组件却无文案/字段 -> ACTION_COMPONENT_MISSING / ACTION_CONTENT_MISSING（warning）；组件/文案来源缺失、标为 ai-fill、缺锚点或取值非法 -> ACTION_SOURCE_NOT_TRACED（warning）；操作行缺名称 -> ACTION_NAME_MISSING（warning，RULE-50）
+  - 线框图中表格关联按钮（批量操作/子功能入口等）绘制在表格框下方 -> TABLE_BUTTON_MISPLACED（warning）；批量操作按钮未置于表格区左上角工具栏 -> TABLE_ACTION_NOT_IN_TOOLBAR（warning，RULE-51）
+  - 表单承载页（配置表单页/下钻步骤条配置页/表单弹窗/表单抽屉，或含表单配置区块）线框 ascii（含 variants）同一行出现 >=2 个已声明表单字段 -> FORM_LAYOUT_MULTI_COLUMN（warning）；字段名与控件不在同一行（label 独占一行、控件在下一行）-> FORM_LAYOUT_LABEL_NOT_INLINE（warning）；表单布局依据（Common Design 表单规范）未锚点级登记或未在 readLedger 命中 status=read -> FORM_LAYOUT_BASIS_UNREAD（warning，RULE-57）
+  - coverage/capabilitySweep 声明 appliesTo 却未命中任何页面 -> TEMPLATE_COVERAGE_UNAPPLIED（warning）；templateSource/layoutSource/组件来源引用已废弃旧模板 ID -> LEGACY_TEMPLATE_ID_REF（warning，RULE-56）
 
 ```json
 "overview": {
@@ -279,7 +314,7 @@ HTML说明书标题必须是“XX需求设计说明书”。HTML采用“Markdow
   {"tabId": "tab-source", "name": "来源与识别依据"}
 ],
 "wireframe": {
-  "templateId": "page-detail-drawer",
+  "templateId": "detail-drawer",
   "variants": [
     {"tabId": "tab-overview", "preserveRegions": ["title-bar", "object-summary", "tab-bar", "footer"],
      "changedRegions": ["tab-content"], "ascii": "┌────────────────────────────┐\n│ 标题栏：对象详情     [关闭] │\n├────────────────────────────┤\n│ 对象摘要：对象A 关键属性    │\n├────────────────────────────┤\n│ Tab行：概览 | 来源          │\n├────────────────────────────┤\n│ 概览内容：                  │\n│ 字段1  值1                 │\n│ 字段2  值2                 │\n├────────────────────────────┤\n│                [关闭]│\n└────────────────────────────┘"},
@@ -335,6 +370,7 @@ HTML说明书标题必须是“XX需求设计说明书”。HTML采用“Markdow
 - 绘制区域关键词（REGION_ASCII_KEYS）与模板区域对应：标题栏/筛选/工具栏/表格/分页/表单/弹窗/抽屉/摘要/步骤/Tab/底部操作等；纯结构区域（global-navigation、modal-shell、drawer-shell、title-bar）不参与该一致性检查。校验按行/邻域判定：结构化 ascii 中区域关键词须出现在含框线字符（`│`/`|`/`─`/`┌` 等）的行上，纯字符串 ascii 退化为按分隔符分段匹配，避免整段文本顺带提及即算"已绘制"。
 - HTML 生成时若 ascii 过短或无区域绘制痕迹，线框区块渲染提示，提醒检查。
 - 线框图样式来源：模板结构与线框样式一律以运行时可读取的 Common Design 页面模板文档（如 02-template/01-page-types.md）为准，本 Skill 不保存页面模板线框图参考。
+- 入口挂载点绘制约定：当顶层声明 `requirementEntryPoints` 时，in-scope 入口必须在宿主页面线框图中绘制触发元素（按钮/行内操作）与打开容器关系；out-of-scope 宿主必须在说明书中绘制宿主页面结构并以显式标记高亮入口位置（如 `【xx入口】`），同时画出点击后打开的容器关系。只画入口自己的容器（弹窗/抽屉）而不画宿主结构，视为未绘制（RULE-52 `ENTRY_NOT_DRAWN`）。
 
 数据示例（合法完整线框图）：
 ```text
@@ -354,7 +390,7 @@ HTML说明书标题必须是“XX需求设计说明书”。HTML采用“Markdow
 
 表格展示部分字段、详情展示完整字段时，表格字段与详情字段必须保持一致：表格页 `tableFields` 中展示的每个字段，都必须在对应详情容器页的字段数组（`detailFields`/`cardFields`/`fields`/`tableFields` 等）中存在对应项，防止"表格有、详情没有"或表格与详情字段对不上的情况。Common Design 已明确"表格展示的字段与详情抽屉字段保持一致"规则，本校验作为自动兜底。
 
-- 详情容器识别：表格页 `operations` 中 `action=open-container` 且目标为详情类容器（页面 type 含"详情"或 templateId 以 `page-detail` 开头），以及 `children` 挂载的详情容器；表格页无详情容器时不校验（非"表格有详情"场景）。
+- 详情容器识别：表格页 `operations` 中 `action=open-container` 且目标为详情类容器（页面 type 含"详情"，或 `templateContract.templateId` 含 `detail`，如 `detail-drawer`/`log-detail-drawer`/`page-detail-drilldown`），以及 `children` 挂载的详情容器；表格页无详情容器时不校验（非"表格有详情"场景）。
 - 字段匹配：字段名去除空格/下划线/括号等符号后精确匹配，或一方包含另一方（双方长度 >= 2）视为对应。
 - 校验项（error 阻断）：
   - 表格展示的字段在关联详情容器中不存在 -> TABLE_DETAIL_FIELD_MISMATCH（error，RULE-38）
@@ -425,7 +461,7 @@ Common Design 已明确标签（IxTag）样式使用约束：同一个表格内�
 
 结构化载体（顶层 `designContext`）：
 
-路径占位声明：`common-design/...` 路径为 Common Design 的真实路径，可直接引用（页面模板固定在 `references/02-template/`，组件映射固定在 `references/05-components/`）；`product-design/...` 路径**本 Skill 一律不预置**——Product Design 的目录结构随产品而异，其文档路径与章节锚点必须取自当前实际加载的 Product Design Skill，示例中一律写作 `<product-design 文档路径>#<章节锚点>` 占位。引用路径与真实目录不一致时，`designReferences.ref` 既无法在 `readLedger` 锚点级命中（RULE-43 阻断），也无法供人工直达原文复核。
+路径占位声明：`common-design/...` 路径为 Common Design 的真实路径，可直接引用（页面模板固定在 `references/02-template/`，组件映射固定在 `references/05-components/`，组件形态使用判定固定在 `references/03-patterns/07-widget-patterns/`，目录级读取用 `common-design/references/03-patterns/07-widget-patterns/#*` 留索引痕迹，作为依据时必须精确到命中文件的小节锚点）；`product-design/...` 路径**本 Skill 一律不预置**——Product Design 的目录结构随产品而异，其文档路径与章节锚点必须取自当前实际加载的 Product Design Skill，示例中一律写作 `<product-design 文档路径>#<章节锚点>` 占位。引用路径与真实目录不一致时，`designReferences.ref` 既无法在 `readLedger` 锚点级命中（RULE-43 阻断），也无法供人工直达原文复核。
 
 ```json
 "designContext": {
@@ -437,6 +473,11 @@ Common Design 已明确标签（IxTag）样式使用约束：同一个表格内�
       {"capability": "template", "relation": "override", "appliesTo": ["page-table-overview"]},
       {"capability": "filtering", "relation": "override", "appliesTo": ["page-table-overview"]},
       {"capability": "theme", "relation": "extend", "appliesTo": []}
+    ],
+    "capabilitySweep": [
+      {"capability": "template", "decision": "hit", "reason": "覆盖概览页模板", "appliesTo": ["page-table-overview"]},
+      {"capability": "filtering", "decision": "hit", "reason": "覆盖筛选区形态", "appliesTo": ["page-table-overview"], "evidenceRef": "<product-design 文档路径>#<章节锚点>"},
+      {"capability": "theme", "decision": "not-hit", "reason": "本需求不涉及主题层"}
     ]
   },
   "readLedger": [
@@ -496,7 +537,7 @@ Product Design 已登记降级：当某组件令牌已被页面的 Product Desig
 
 结构校验除正向断言（RULE-09/10/11/12 要求必需区域存在、顺序正确、组件齐备）外，还需反向核对结构化 `regions`、底部按钮与 `wireframe.ascii` 实际绘制是否互相印证。
 
-底部操作区按钮（RULE-37）：`wireframe.ascii` 底部操作区必须按模板 `footer.buttonOrder` 绘制按钮，且按钮文案落在模板允许的标签集合内。
+底部操作区按钮（RULE-37）：`wireframe.ascii` 底部操作区必须按模板 `footer.buttonOrder` 绘制按钮，且按钮文案落在模板允许的标签集合内。按钮文案与语义槽位的对应关系由校验器的槽位标签集合统一登记：`previous`（上一步/上一个）、`next-or-complete`（下一步/下一个/完成/提交）、`cancel`（取消）、`confirm`（确定/确认/保存）、`close`（关闭）；日志详情抽屉按 Common Design §1.9 使用"上一个/下一个/关闭"，抽屉类页面底部按钮统一左对齐（left），弹窗类页面保持右对齐（right）。
 
 | 场景 | 级别 | errorCode |
 |---|---|---|
@@ -513,22 +554,26 @@ Product Design 已登记降级：当某组件令牌已被页面的 Product Desig
 
 **模板 override 对结构校验的影响**：页面 `templateContract.override.enabled = true` 时，RULE-09/10（必需区域）、RULE-11（区域顺序）、RULE-12（必需组件）、RULE-14（表格语义）对该页自动放宽（校验器跳过对应结构断言），结构以 `templateContract.override.source` 声明的 Product Design 页面模板定义为准；RULE-20（footer 对齐）与 RULE-37（底部按钮文案/自定义按钮）本就读 override。放宽后仍须保留 `override.source` 登记，不得省略。
 
-### 11.13 下拉选项完整性（RULE-48）
+### 11.13 下拉选项完整性与维度保留（RULE-48）
 
-固定选项型下拉（表单下拉、筛选下拉，以及单选/多选等枚举控件）在设计说明书中必须**逐项完整列出全部选项**，禁止用“等 / 例如 / 如：/ …”只举例，否则 Coding 阶段会照抄示例、漏掉未列出的选项。校验器对“选项/规则”（表单 `rules`）与“选项范围”（筛选 `options`）单元格做完整性校验，**列全优先于规则**：选项单元格应先列出完整选项，再补充其它规则/校验说明。
+固定选项型下拉（表单下拉、筛选下拉，以及单选/多选等枚举控件）在设计说明书中必须**逐项完整列出全部选项**，禁止用“等 / 例如 / 如：/ …”只举例，否则 Coding 阶段会照抄示例、漏掉未列出的选项。校验器对“选项/规则”（表单 `rules`）与“选项范围”（筛选 `options`）单元格做完整性校验，**列全优先于规则**：选项单元格应先列出完整选项，再补充其它规则/校验说明。除**选项值完整性**外，需求源枚举表含**分组/层级列**时还必须保留**维度**：值齐但维度被压平成单层列表，同样会导致 Coding 出不了分组/树形下拉，属本条规则职责。
 
 **声明约定**：页面对象增加 `requirementOptionSets`，逐字段声明需求文档给出的完整选项集（与 `requirementFieldNames` 同为“声明—校验”闭环）：
 
 ```json
 "requirementOptionSets": [
   {"field": "风险等级", "options": ["高", "中", "低"]},
-  {"field": "处置状态", "options": ["待处置", "处置中", "已处置", "已忽略"], "source": "requirement"}
+  {"field": "处置状态", "options": ["待处置", "处置中", "已处置", "已忽略"], "source": "requirement"},
+  {"field": "生效范围", "dimension": "group", "sourceColumns": ["终端组", "终端"],
+   "options": ["全部终端", "终端组A", "终端1", "终端组B", "终端2"]}
 ]
 ```
 
 - `field`：字段名（对应字段数组中的 `name`，支持精确或双向包含匹配）。
 - `options`：需求文档要求的完整选项列表（数组；也兼容以 `/`、`、`、`,`、`;` 等分隔的字符串）。
 - `source`：可选，选项来源标记（requirement / product-design / common-design / code / ai-fill）。
+- `dimension`：可选，需求源枚举表的维度标记，取值 `flat`（默认，单层）/ `group`（分组）/ `hierarchy`（层级/树/级联）；也可直接写中文“分组 / 层级”。
+- `sourceColumns`：可选，需求源枚举表的列名数组（如 `["终端组", "终端"]`）；声明 ≥2 列即视为 `group`（源表“分组列 + 值列”结构）。仅当 `dimension=group/hierarchy` 或 `sourceColumns` ≥2 列时才启用维度校验，缺省 `flat` 零负担。
 
 **校验项**（条件式：页面声明 `requirementOptionSets` 时启用）：
 
@@ -539,14 +584,19 @@ Product Design 已登记降级：当某组件令牌已被页面的 Product Desig
 | 选择类字段（component/iduxComponent 命中下拉/select/单选/多选等）选项单元格出现 等/例如/如：/… 截断指纹（未声明选项集） | warning | OPTION_TRUNCATION_MARKER |
 | 选项集声明项非对象（{field, options}） | warning | OPTION_SET_INVALID |
 | 选项集声明缺少 field 或 options | warning | OPTION_SET_INCOMPLETE |
+| 声明了 `dimension=group/hierarchy`（或 `sourceColumns` ≥2 列）但选项单元格被压成单层列表，未保留分组/层级维度 | warning | OPTION_DIMENSION_LOST |
+
+**维度保留的口径分工**（避免两处口径漂移）：
+- **是否保留维度**属于本条规则（需求事实保全）：分组写成“组名：选项A/选项B/…”，层级写成“父级 → 子级”，或用分组标签/缩进表达；禁止压平为单层列表。
+- **用什么控件承载该维度**（分组下拉、树形下拉、带搜索的树等）**不在本条规则判定**，按 RULE-54 由 Common Design widget patterns（`03-patterns/07-widget-patterns/`）判定，并把命中的判定小节锚点登记到 `codingGuide.designReferences` 且 `readLedger` 命中 `status=read`（缺依据或未精读由 RULE-54 告警）。
 
 **选项令牌匹配**：校验按选项分隔符（`/`、`、`、`,`、`;`、换行等）拆分单元格，去掉标签前缀（如“选项：”）、括号补充（如“（默认）”）与尾部截断标记（如“低等”的“等”）后逐项归一比对，避免“指定终端”被“指定终端组”这类前缀误判。
 
-**示例**：声明 `{"field": "生效范围", "options": ["全部终端", "指定终端组", "指定终端"]}`，但筛选字段 `options` 只写 `全部终端/指定终端组`，则 RULE-48 以 `REQUIRED_OPTION_MISSING` 阻断并指出缺失选项 `指定终端`；写成 `全部终端/指定终端组/自定义等`（未声明选项集）则触发 `OPTION_TRUNCATION_MARKER` 告警。
+**示例**：声明 `{"field": "生效范围", "options": ["全部终端", "指定终端组", "指定终端"]}`，但筛选字段 `options` 只写 `全部终端/指定终端组`，则 RULE-48 以 `REQUIRED_OPTION_MISSING` 阻断并指出缺失选项 `指定终端`；写成 `全部终端/指定终端组/自定义等`（未声明选项集）则触发 `OPTION_TRUNCATION_MARKER` 告警。声明 `{"field": "生效范围", "dimension": "group", "options": ["终端组A", "终端1", "终端2"]}` 但选项单元格只写 `终端组A/终端1/终端2`（压平）则触发 `OPTION_DIMENSION_LOST` 告警；写成 `终端组A：终端1/终端2` 保留维度则不告警。
 
 ### 11.14 详情页字段去重（RULE-49）
 
-详情类页面（抽屉详情页 / 下钻详情页 / 详情弹窗）顶部常有“对象摘要 / 详情概览卡片”，已展示名称、状态等关键字段；Common Design 明确这些字段不应在下方“详情描述列表”中重复展示。本校验作为兜底，避免同一字段（如启用状态）在概览卡片、基本信息描述列表等多处以不同形态重复出现。
+详情类页面（详情抽屉 / 下钻详情页 / 详情弹窗）顶部常有“对象摘要 / 详情概览卡片”，已展示名称、状态等关键字段；Common Design 明确这些字段不应在下方“详情描述列表”中重复展示。本校验作为兜底，避免同一字段（如启用状态）在概览卡片、基本信息描述列表等多处以不同形态重复出现。
 
 **区域定义**：
 - Zone A（概览卡片 / 对象摘要字段）：页面声明的 `detailSummaryFields` 优先；未声明时取页面级/区块 `cardFields`，以及摘要卡片型区块（`type`/`title` 命中 summary-card/object-summary/summary/profile/对象摘要/摘要卡片/摘要/概览卡片）的 `fields`/`detailFields`。注意 overview/概览 属概览内容列表，归 Zone B。
@@ -555,7 +605,7 @@ Product Design 已登记降级：当某组件令牌已被页面的 Product Desig
 **声明约定（推荐，与 RULE-36/48 同为“声明—校验”闭环）**：页面对象增加 `detailSummaryFields`，显式声明概览卡片/对象摘要已展示的字段名数组；未声明时回退为 `cardFields` + 摘要型区块的启发式判定。
 
 ```json
-"type": "抽屉详情页",
+"type": "详情抽屉",
 "detailSummaryFields": ["策略名称", "启用状态"],
 "detailDedupExempt": {"启用状态": "概览用徽标、详情需可编辑，属有意重复"}
 ```
@@ -571,4 +621,438 @@ Product Design 已登记降级：当某组件令牌已被页面的 Product Desig
 
 **与 RULE-36 的关系**：概览卡片字段只需落在 Zone A（`cardFields`/摘要区块/`detailSummaryFields` 对应字段）即满足 RULE-36 字段完整性（RULE-36 统计任意字段数组），**去重不违反完整性**，无需为“防漏”而在描述列表重复。
 
-**示例**：详情抽屉页 `cardFields` 为 `[策略名称, 启用状态]`，基本信息描述列表 `detailFields` 又含 `策略名称`，则触发 `DETAIL_FIELD_DUPLICATE`；若确有需要（如状态既做概览徽标又需可编辑），写入 `detailDedupExempt` 即不再告警。
+**示例**：详情抽屉 `cardFields` 为 `[策略名称, 启用状态]`，基本信息描述列表 `detailFields` 又含 `策略名称`，则触发 `DETAIL_FIELD_DUPLICATE`；若确有需要（如状态既做概览徽标又需可编辑），写入 `detailDedupExempt` 即不再告警。
+
+### 11.15 按钮/可点击操作表（RULE-50）
+
+每个区块的"按钮/可点击操作"以**表格**输出，列顺序固定为：**操作 | 触发方式 | 使用组件 | 文案或字段 | Demo反馈 | 来源**。没有二次确认的操作直接写明交互行为；涉及二次确认或"局部面板"（小到不足以单独画线框图）的操作，必须在同一行写清**用什么组件**以及**对应文案或字段**。
+
+**行字段定义**（区块 `actions` 数组元素，兼容旧的字符串写法）：
+
+| 键 | 含义 | 必填场景 |
+|---|---|---|
+| `name` | 操作名称（删除/禁用/移动…） | 必填 |
+| `trigger` | 触发方式/确认方式（直接生效、标准确认弹窗、弹窗+管理员密码、局部面板、打开弹窗/抽屉…） | 涉及确认/面板时必填 |
+| `component` | 使用组件（确认弹窗、面板、具体组件名） | 涉及二次确认/局部面板时必填 |
+| `text` | 文案（确认标题+正文，可多行） | 高影响操作必填 |
+| `fields` | 面板/弹窗内的字段或组件（数组或文本，如"选择框 + 之前/之后 下拉框"） | 面板/弹窗含表单时填 |
+| `feedback` | Demo 反馈/点击结果（删除后从列表移除、状态变为已禁用…） | 建议填写 |
+| `impact` | 影响级别（`high`/`normal`），缺省自动识别 | 可选 |
+| `confirm` | 是否二次确认（布尔），缺省按触发方式识别 | 可选 |
+| `source` | 组件与文案的设计来源：`product-design` / `common-design` / `requirement` / `code` / `ai-fill` | 提供组件或文案时必填 |
+| `sourceRef` | 来源可定位引用（`<文档路径>#<章节/模板条目>`） | `source` 为 product-design / common-design 时必填 |
+
+**高影响操作的识别（自动识别 + 可配置）**：
+
+- 自动识别：`impact: high` 或 `confirm: true`；`name` 命中默认高影响操作名或关键词即视为高影响。默认名：删除、禁用、重启、业务下线、批量处置、未保存离开；默认关键词：删除、禁用、停用、重启、下线、批量处置、批量删除、批量禁用、未保存、离开、移除、注销、清空、覆盖、解绑、提权、强制、处置、销毁、报废、重置。上述仅为示例基线。
+- 可配置：spec 顶层或页面级 `actionRules` 可扩展/豁免（均为扩展语义）——`highImpactActions` 追加高影响操作名；`highImpactKeywords` 追加高影响关键词；`exempt` 指定跳过高影响校验的操作名（仍应人工确认）。
+
+**组件与文案来源（硬约束）**：组件与文案**不得由 AI 自拟**，必须优先从 Product Design、其次从 Common Design 的 pattern 中查找；同一能力两者都定义时**以 Product Design 为准**。因此每个提供组件/文案的行都必须标注 `source`，设计库来源还须给出 `sourceRef` 锚点。
+
+**校验项（error 阻断 / warning 提示）**：
+
+| 场景 | 级别 | errorCode |
+|---|---|---|
+| 高影响操作缺少二次确认文案 | error | ACTION_CONFIRM_TEXT_MISSING |
+| 操作涉及二次确认/局部面板但未写明使用组件 | warning | ACTION_COMPONENT_MISSING |
+| 声明了弹窗/面板组件但既无文案也未列字段 | warning | ACTION_CONTENT_MISSING |
+| 组件/文案来源缺失、标为 ai-fill、缺锚点或取值非法 | warning | ACTION_SOURCE_NOT_TRACED |
+| 操作行缺少操作名称 | warning | ACTION_NAME_MISSING |
+
+**兼容**：`actions` 仍可写字符串列表（如"查询：按条件刷新表格"），此类旧写法按单列渲染、不参与 RULE-50 校验。
+
+**示例 A：高影响操作表**
+
+| 操作 | 触发方式 | 使用组件 | 文案或字段 | Demo反馈 | 来源 |
+|---|---|---|---|---|---|
+| 删除 | 标准确认弹窗 | IxModal.confirm | 确认删除吗？<br>删除后，数据不可恢复，请谨慎操作。 | 删除成功后从列表移除 | common-design#modal |
+| 禁用 | 标准确认弹窗 | IxModal.confirm | 确认禁用吗？<br>禁用后，相关业务可能受影响，请谨慎操作。 | 状态变为已禁用 | common-design#modal |
+| 业务下线 | 弹窗 + 管理员密码 | 确认弹窗 + 密码输入 | 确认下线吗？<br>下线后，业务访问可能受到影响，请谨慎操作。 | 状态变为已下线或下线中 | product-design#<锚点> |
+| 批量处置 | 标准确认弹窗 | IxModal.confirm | 确认执行批量处置吗？<br>将对选中的对象执行批量操作，请谨慎操作。 | 批量更新状态或提示部分成功 | common-design#modal |
+| 未保存离开 | 标准确认弹窗 | IxModal.confirm | 确认离开吗？<br>当前修改未保存，离开后不会生效，请谨慎操作。 | 保存、放弃、继续编辑 | common-design#modal |
+
+**示例 B：局部面板 + 二级弹窗（移动）**
+
+| 操作 | 触发方式 | 使用组件 | 文案或字段 | Demo反馈 | 来源 |
+|---|---|---|---|---|---|
+| 移动 | 局部面板（置顶直接生效；指定位置再出弹窗） | 下拉面板 + 确认弹窗 | 字段：目标类型选择框、之前/之后 下拉框；文案：确认移动到指定位置吗？ | 置顶即时生效；指定位置确认后插入到目标项前后 | product-design#<锚点> |
+
+### 11.16 表格区按钮位置（RULE-51）
+
+表格区所有按钮（**批量操作**，以及**其他子功能入口按钮**，如新增/导入/导出/列设置等）必须**统一绘制在表格区左上角工具栏**，禁止绘制在表格框下方或其他区域。
+
+**判定逻辑（warning）**：
+- 定位 ascii 线框图中的表格框：取"内部含 `|` 分隔数据行"的最小嵌套盒子，记录其上/下边界行号。
+- `TABLE_BUTTON_MISPLACED`：表格关联按钮关键词（批量/列设置/列配置/导入/导出/刷新/更多/排序/置顶/移动/新增/新建/设置/删除/编辑/停用/启用）出现在表格框**下边界之下**的行（分页行、底部操作区行、纯边框行除外）。
+- `TABLE_ACTION_NOT_IN_TOOLBAR`：`批量`类按钮出现在表格工具栏区域之外（工具栏区域 = 紧邻表格框上方一行至表格框内部）。
+- 表格页判定为"含 `|` 分隔数据行的嵌套盒子"；无表格框的 ascii（弹窗/表单等）自动跳过。
+
+**校验项（warning 提示）**：
+
+| 场景 | 级别 | errorCode |
+|---|---|---|
+| 表格关联按钮绘制在表格框下方 | warning | TABLE_BUTTON_MISPLACED |
+| 批量操作按钮未置于表格区左上角工具栏 | warning | TABLE_ACTION_NOT_IN_TOOLBAR |
+
+**示例（错误）**：
+
+```
+│ ┌──────────────┐ │
+│ │ 名称 | 状态   │ │
+│ └──────────────┘ │
+│ [批量操作] [新增] │   <- 错误：表格按钮绘制在表格框下方
+```
+
+**示例（正确）**：
+
+```
+│ [批量操作] [新增] │   <- 正确：表格按钮置于表格区左上角工具栏
+│ ┌──────────────┐ │
+│ │ 名称 | 状态   │ │
+│ └──────────────┘ │
+```
+
+### 11.17 需求入口落位闭环（RULE-52）
+
+防止 PRD 明确点名的入口位置在页面拆解与线框图绘制中被静默丢失。典型场景：除对象管理页自身的"新增"按钮外，还要在另一个既有页面（如安全事件页告警列表行内操作）加入口，打开同一个配置容器，结果入口未落位、编码漏做。
+
+**前置声明（条件式）**：只要 PRD 点名入口，就必须在 demo-spec 顶层声明 `requirementEntryPoints`（每个入口挂载点一条），范围外宿主另在顶层 `entryHosts` 登记；未声明 `requirementEntryPoints` 时本规则不启用，不产生任何校验项。字段定义见 references/01-workflow/01-output-templates.md 第 4.3 节。
+
+**校验项**：
+
+| 场景 | 级别 | errorCode |
+|---|---|---|
+| 入口挂载点缺少 host/hostScope/location/trigger/container，或 hostScope 非法 | error | ENTRY_POINT_INCOMPLETE |
+| in-scope 宿主页面不存在于 `pages`，或宿主页面的 `sections` 操作 / `operations` 中未出现该触发元素与打开容器 | error | ENTRY_POINT_NOT_PLACED |
+| out-of-scope 宿主未在 `entryHosts` 登记、未完成 Tier1 精读、或缺对应开发项、或开发项悬空 | error | ENTRY_HOST_UNREGISTERED |
+| 宿主线框图（或 `entryHosts[].wireframe`）没有入口绘制痕迹 | warning | ENTRY_NOT_DRAWN |
+
+**落位判定**：
+
+- in-scope：宿主页面 `sections` 的 `actions` 行、或页面 `operations`（`open-container` 的 `targetPageId`）、或页面 JSON 文本中出现该入口的 `trigger` / `container` 之一，即视为已落位；否则 ENTRY_POINT_NOT_PLACED。
+- out-of-scope：`entryHosts` 中以 `id`/`name` 命中宿主，且满足 `read=true` 或 `readTier=tier1`，且 `devItem` 非空并能在任一页面 `codingGuide.pageItems` 中找到，即视为已闭环；缺任一项即 ENTRY_HOST_UNREGISTERED。
+- 绘制痕迹：宿主线框图 `ascii`（in-scope）或 `entryHosts[].wireframe`（out-of-scope）中出现 `trigger`、`container` 或"入口"字样，即视为已绘制；否则 ENTRY_NOT_DRAWN。
+
+**示例（合法）**：
+
+```json
+{
+  "requirementEntryPoints": [
+    {"id": "EP01", "host": "P002", "hostScope": "in-scope", "location": "白名单列表工具栏",
+     "trigger": "新增", "container": "P003", "source": "PRD F1"},
+    {"id": "EP02", "host": "安全事件页", "hostScope": "out-of-scope", "location": "告警列表操作列",
+     "trigger": "加入行为白名单", "container": "P003", "source": "PRD F1",
+     "hostEvidence": {
+       "navPath": ["安全事件", "事件详情", "告警列表"],
+       "prdNavPath": ["安全事件", "事件详情", "告警列表"],
+       "route": "/security/events/:id?tab=alarm-list",
+       "title": "告警列表",
+       "tabs": ["事件详情", "告警列表", "告警链"],
+       "codeRefs": ["src/pages/security/alarm-list/index.tsx"],
+       "matchedBy": ["route", "tab", "title"],
+       "candidates": ["alarm-list", "alert-list"],
+       "rejected": [{"candidate": "alert-list", "reason": "该页面为告警链，非告警列表"}]
+     }}
+  ],
+  "entryHosts": [
+    {"id": "安全事件页", "name": "安全事件页/告警列表", "scope": "out-of-scope",
+     "read": true, "readTier": "tier1", "wireframe": "【告警列表操作列：加入行为白名单】",
+     "devItem": "P003-E01"}
+  ]
+}
+```
+
+其中 `P003-E01` 必须存在于打开容器页面（P003）的 `codingGuide.pageItems`（`scope` 建议 `entry-point`）。
+
+**示例（错误）**：PRD 点名"告警列表加入行为白名单"，但只声明了对象管理页自身的"新增"入口，PRD 点名的告警列表入口未出现在 `requirementEntryPoints`，或出现在其中但宿主未登记、线框图无入口 -> 触发 ENTRY_POINT_NOT_PLACED / ENTRY_HOST_UNREGISTERED / ENTRY_NOT_DRAWN。
+
+### 11.18 页面定位证据闭环（RULE-53）
+
+防止"定位宿主页面/复用页面时按文件名近似匹配"导致的张冠李戴。典型场景：应在"安全事件 → 事件详情 → 告警列表"Tab 加入口，AI 读到名为 `alert-list` 的文件就据此判定入口位置，而 `alert-list` 实为"告警链"页面，"告警列表"是 `alarm-list`，于是入口落到了错误的页面语义上。
+
+**前置声明（条件式）**：声明 `requirementEntryPoints`（其中 `out-of-scope` 宿主）或顶层 `pageIdentityRefs` 时本规则启用；`in-scope` 宿主仅在显式提供 `hostEvidence` 时校验。字段定义见 references/01-workflow/01-output-templates.md 第 4.4 节。
+
+**校验项**：
+
+| 场景 | 级别 | errorCode |
+|---|---|---|
+| 缺身份证据或证据不全（`navPath` 空；代码模式缺 `route`/`codeRefs`；退化模式缺 `title` 与 `tabs`） | error | HOST_IDENTITY_UNVERIFIED |
+| `matchedBy` 含文件名/目录名（filename/dir/path 等），或不含任何强锚点 | error | HOST_IDENTITY_FILENAME_ONLY |
+| 存在多个形近/近义候选（`candidates` > 1）但未记录排除理由（`rejected` 为空） | warning | HOST_IDENTITY_AMBIGUOUS |
+| 代码导航路径末级与 PRD 声明路径末级对不上 | error | HOST_NAVPATH_MISMATCH |
+
+**判定要点**：
+
+- 强锚点：`route` / `menu` / `tab` / `title` / `component` 等；文件名类（`filename`/`file`/`dir`/`path` 等）一律不作为定位依据。
+- 退化模式（`identitySource: "degraded"`）：环境无代码或不完整时，以 `title`（标题/组件导出名）+ `tabs`/`navPath`（侧边栏/Tab 文案）对证，允许缺 `route`/`codeRefs`。
+- 路径对证：`hostEvidence.prdNavPath` 与 `hostEvidence.navPath` 的末级须语义一致（如均为"告警列表"），否则判为疑似的张冠李戴。
+
+**示例（合法 / 错误）**：合法证据见 11.17 示例中 EP02 的 `hostEvidence`；错误示例——`matchedBy: ["filename"]` 触发 HOST_IDENTITY_FILENAME_ONLY；`navPath` 末级为"告警链"而 `prdNavPath` 末级为"告警列表"触发 HOST_NAVPATH_MISMATCH。
+
+### 11.19 组件形态描述（RULE-54）
+
+防止"表格/表单字段只写组件名、未说明选用哪种形态"导致 Coding 还原不出正确外观。典型场景：`IxTag` 有多种标签样式，`IxSelect` 下拉面板按选项数量/层级有多种形态（带搜索框/支持新增/用树组件/需分组），单选/多选控件有多种形态（radio/卡片/下拉）。
+
+**前置声明（条件式）**：字段声明了 >1 个形态候选 `formCandidates` 时本规则启用；仅一个候选或未声明的字段不校验（单形态组件零负担）。
+
+**取值口径（两层来源，各管一段）**：
+- 命名/枚举真值：形态清单与命名以已读取的 Common Design 组件映射（`common-design/references/05-components/idux-component-map.md`，按组件锚点精读）为准，本 Skill 不内置形态目录；命中匹配的 Product Design 已登记业务封装时以 Product Design 为准。
+- 选择依据真值：本页该选哪一种形态，以 Common Design widget patterns（`common-design/references/03-patterns/07-widget-patterns/`）为判定依据，按"目录级索引 `#*` 定位命中控件对应文件 + 精读其判定小节"读取（避免整目录通读）；Product Design 侧 pattern 文档同等可用。
+- 两层依据都必须锚点级登记到页面 `codingGuide.designReferences` 且 `readLedger` 命中 `status=read`；`index-only` 视为未读（RULE-43 阻断）。只写形态不读依据、或读了依据不登记，都会被告警。
+
+**校验项**：
+
+| 场景 | 级别 | errorCode |
+|---|---|---|
+| 字段声明了多个形态候选 `formCandidates` 但未写 `iduxComponentForm` | warning | COMPONENT_FORM_MISSING |
+| `iduxComponentForm` 取值不在 `formCandidates` 内 | warning | COMPONENT_FORM_UNKNOWN |
+| 声明了多形态候选，但页面未登记 Common Design 组件映射依据（或依据未精读命中） | warning | COMPONENT_FORM_SOURCE_UNREAD |
+| 声明了多形态候选，但未登记 widget patterns 形态选择依据（或依据未精读命中） | warning | COMPONENT_FORM_RULE_UNREAD |
+
+**展示**：`iduxComponentForm` 并入既有"iDux组件名称"列展示（形如 `IxTag（深色标签）`），不新增列；由生成器 `scripts/generate_demo_spec_html.py` 的 `normalize_component_rows` 拼接。
+
+**示例**：
+
+```json
+[
+  {"name": "风险等级", "display": "单标签", "iduxComponent": "IxTag", "iduxComponentForm": "深色标签", "formCandidates": ["深色标签", "描边标签", "状态标签"], "description": "高/中/低，使用红/橙/蓝标签"},
+  {"name": "生效范围", "component": "下拉单选", "iduxComponent": "IxSelect", "iduxComponentForm": "下拉面板支持按名称搜索", "formCandidates": ["下拉面板支持按名称搜索", "下拉面板支持新增", "树形下拉"], "required": "是", "rules": "全部终端 / 指定终端组", "tips": "选择指定终端组时联动展示终端组多选"},
+  {"name": "触发方式", "component": "单选卡片", "iduxComponent": "IxRadioGroup", "iduxComponentForm": "卡片形态", "formCandidates": ["基础 radio 形态", "卡片形态"], "required": "是", "rules": "自动/手动", "tips": ""}
+]
+```
+
+**依据登记示例（两层依据 + 精读留痕）**（widget pattern 的具体文件名以 Common Design 实际目录为准，示例仅为占位；Product Design 侧同理写作 `<product-design 文档路径>#<章节锚点>`）：
+
+```json
+"codingGuide": {
+  "designReferences": [
+    {"source": "common-design", "ref": "common-design/references/05-components/idux-component-map.md#IxSelect"},
+    {"source": "common-design", "ref": "common-design/references/03-patterns/07-widget-patterns/select-pattern.md#下拉面板形态选择"}
+  ]
+},
+"designContext": {
+  "readLedger": [
+    {"ref": "common-design/references/05-components/idux-component-map.md#IxSelect", "status": "read"},
+    {"ref": "common-design/references/03-patterns/07-widget-patterns/#*", "status": "index-only"},
+    {"ref": "common-design/references/03-patterns/07-widget-patterns/select-pattern.md#下拉面板形态选择", "status": "read"}
+  ]
+}
+```
+
+错误示例：声明 `formCandidates: ["深色标签", "描边标签"]` 却未写 `iduxComponentForm` → COMPONENT_FORM_MISSING（warning）；写 `iduxComponentForm: "彩色卡片"`（不在候选内）→ COMPONENT_FORM_UNKNOWN（warning）。
+
+### 11.20 能力发现完整性（RULE-55）
+
+针对"Product Design 未读完就输出设计说明书"导致的典型漏读（该用 Product Design 业务组件的用成了 Common Design）：以**匹配到的 Product Design 自身声明的 `coverage`** 为真值，要求对其声明的**每一项能力**都显式判定"命中 / 未命中"，避免静默遗漏；判定为命中的能力必须已精读。
+
+**前置声明（条件式）**：`designContext.productDesign.matched=true` 且 `coverage` 非空时本规则启用。
+
+**结构化载体（`designContext.productDesign.capabilitySweep`）**：每项 `{ "capability": <能力名>, "decision": "hit|not-hit", "reason": <判定理由>, "appliesTo": [...], "evidenceRef": "<product-design 文档路径>#<章节锚点>" }`。
+
+**取值口径**：能力清单来源于**当前实际加载的 Product Design**（其 Coverage / 能力声明）；本 Skill 不预置任何产品能力表或产品文档路径。控件特征（如资产/资产组选择、启禁用、数字范围、资产信息等）仅作为判定时的**辅助信号**，用于触发"是否需要复核该能力"，具体命中与否以 Product Design 声明为准。
+
+**校验项**：
+
+| 场景 | 级别 | errorCode |
+|---|---|---|
+| `coverage` 声明的某项能力在 `capabilitySweep` 中缺失，或判定非法（非 hit/not-hit） | warning | ABILITY_NOT_SWEPT |
+| `capabilitySweep` 判定为 hit 的能力缺少 `evidenceRef`，或其 `evidenceRef` 未在 `readLedger` 中锚点级命中 `status=read` | warning | ABILITY_HIT_NOT_READ |
+
+**示例**：
+
+```json
+"productDesign": {
+  "matched": true,
+  "skillId": "<product-design-skill-id>",
+  "coverage": [
+    {"capability": "component", "relation": "override", "appliesTo": ["page-table-basic"]}
+  ],
+  "capabilitySweep": [
+    {"capability": "component", "decision": "hit", "reason": "启用资产信息业务封装组件", "appliesTo": ["page-table-basic"], "evidenceRef": "<product-design 文档路径>#资产信息"}
+  ]
+}
+```
+
+错误示例：`coverage` 声明能力 `component` 却无对应 `capabilitySweep` 项 → ABILITY_NOT_SWEPT（warning）；`capabilitySweep` 判定 hit 但 `evidenceRef` 指向未精读锚点 → ABILITY_HIT_NOT_READ（warning）。
+
+### 11.21 模板 ID 一致性与覆盖兜底（RULE-56）
+
+页面类型更名（`page-list-modal`→`list-modal` 等 6 项）后，Product Design 侧的 `coverage`/`capabilitySweep` 与页面的模板引用文本常滞后使用旧 ID，导致"既不报错也不生效"的静默漏判。本规则为此类漏判兜底。
+
+**前置声明（条件式）**：声明顶层 `designContext`，或任一页面携带模板引用文本（`templateContract.templateSource`/`wireframe.layoutSource`）时启用。
+
+**ID 归一（兼容识别）**：覆盖判定时旧 ID 自动归一为当前注册表 ID（`page-list-modal`→`list-modal`、`page-list-drawer`→`list-drawer`、`page-detail-drawer`→`detail-drawer`、`page-detail-log`→`log-detail-drawer`、`page-form-modal`→`form-modal`、`page-form-drawer`→`form-drawer`），保证 Product Design 声明即使仍写旧 ID，模板覆盖也照常被强制（RULE-43 生效，不静默跳过）。归一仅用于识别，不代表旧 ID 是合法产出。
+
+**校验项**：
+
+| 场景 | 级别 | errorCode |
+|---|---|---|
+| `productDesign.coverage[].appliesTo` 或 `capabilitySweep[].appliesTo` 声明了适用模板，但归一后未命中本次任何页面 | warning | TEMPLATE_COVERAGE_UNAPPLIED |
+| `templateContract.templateSource`、`wireframe.layoutSource`、`restoreRequirement.components[].source` 等模板引用文本中出现已废弃旧 ID | warning | LEGACY_TEMPLATE_ID_REF |
+
+**示例**：
+
+```json
+"designContext": {
+  "productDesign": {
+    "matched": true,
+    "coverage": [
+      {"capability": "template", "relation": "override", "appliesTo": ["page-list-drawer"]}
+    ]
+  }
+}
+```
+
+上例页面 `templateContract.templateId=list-drawer` 时，`appliesTo` 归一后命中：该页必须 `templateBase=product` 且 `productTemplateRef` 非空（否则 RULE-43 阻断），且不产生 TEMPLATE_COVERAGE_UNAPPLIED。
+
+错误示例：`appliesTo: ["detail-drawer"]` 但本次没有任何 `detail-drawer` 页面 → TEMPLATE_COVERAGE_UNAPPLIED（warning）；`layoutSource: "Common Design page-form-drawer"` → LEGACY_TEMPLATE_ID_REF（warning）。
+
+### 11.22 表单单列布局闭环（RULE-57）
+
+条件式启用：页面为**表单承载页**时启用——即模板为配置表单页（`page-form-config`）、下钻步骤条配置页（`page-form-stepper`）、表单弹窗（`form-modal`）、表单抽屉（`form-drawer`）之一，或页面含表单配置区块（sections 含 `formFields` 或区块标题/类型含"表单/配置项/录入"）。
+
+口径（强制）：
+
+- 表单配置项必须**单列**：每行一个配置项，label 在左、控件在右、**水平同一行**；容器形态（弹窗/抽屉/页面）不改变该口径；
+- 禁止把两个及以上配置项画在同一行（含 `variants[].ascii`）；
+- 表单布局真值以**已读取的 Common Design 表单规范**为准（本 Skill 不内置表单布局真值、不给表单类模板挂布局契约），结论须锚点级登记到页面 `codingGuide.designReferences` 并在 `readLedger` 命中 `status=read`；
+- 控件形态（下拉面板变体、标签样式等）不在此规则内，按 11.19 / RULE-54 由 widget patterns 判定。
+
+校验项（均 warning，不阻断出图）：
+
+| 错误码 | 触发条件 | 期望 |
+| --- | --- | --- |
+| `FORM_LAYOUT_MULTI_COLUMN` | 线框 ascii（含 variants）同一行出现 >=2 个已声明表单字段 | 每行一个配置项（label 左、控件右、水平同一行） |
+| `FORM_LAYOUT_LABEL_NOT_INLINE` | 某行仅有字段名且无控件占位，下一行有控件占位且无字段名 | label 与控件在同一行 |
+| `FORM_LAYOUT_BASIS_UNREAD` | 未按锚点登记表单规范依据，或该依据未在 `readLedger` 命中 `status=read`（index-only 视为未精读） | `designReferences` 含表单规范锚点且 `readLedger` 为 read |
+
+字段名来源：sections 中 `formFields`（含页面级 `formFields`），未声明 `formFields` 时不做多列判定（避免误伤非表单区块）。
+
+依据登记示例：
+
+```json
+{
+  "codingGuide": {
+    "designReferences": [
+      {"source": "common-design", "ref": "<Common Design 表单规范文档>#<表单布局章节>"}
+    ]
+  },
+  "designContext": {
+    "readLedger": [
+      {"ref": "<Common Design 表单规范文档>#<表单布局章节>", "status": "read"}
+    ]
+  }
+}
+```
+
+错误示例：ascii 中 `策略名称 [____]    生效范围 [请选择]`（一行两字段）→ FORM_LAYOUT_MULTI_COLUMN；ascii 中 label 独占一行、控件在下一行 → FORM_LAYOUT_LABEL_NOT_INLINE；表单弹窗未登记表单规范依据 → FORM_LAYOUT_BASIS_UNREAD。
+
+
+### 11.23 详情页操作去重（RULE-58）
+
+**目的**：详情类页面顶部概览卡片/对象摘要已承载的操作按钮（编辑/重启/删除等对象级操作），不得在底部按钮栏重复出现；底部按钮栏只保留页面级动作（关闭/上一个/下一个/取消/确定）。与 RULE-49（字段去重）同源：概览卡片已经承载的内容（字段或操作），不在同一页面的其他位置重复堆叠，避免同一动作在两处以不同形态出现、编码时重复实现。
+
+**触发条件（条件式）**：页面声明了底部按钮栏（`footerActions` 非空），且存在**概览卡片/对象摘要区块**（区块 `type`/`title` 命中 summary-card / object-summary / 摘要卡片 / 对象摘要 / 概览卡片 等）并在该区块声明了 `actions`。两个条件任一不满足即跳过。
+
+**判定口径**：
+
+- 概览卡片操作取区块 `actions[]` 的操作名（`name`/`action`/`label`/`title` 任一），底部按钮栏操作取 `footerActions[]` 的操作名（`label`/`name` 任一）；
+- 比较前做**同义归一**：编辑/修改/更改/维护 归一为「编辑」，重启/重新启动/启动 归一为「重启」，删除/移除/解绑 归一为「删除」，启用/开启、禁用/停用、导出、同步、复制/克隆等同理（别名词表见 `scripts/validate_demo_spec.py` 的 `DETAIL_ACTION_ALIASES`），避免"概览卡片写编辑、底部写修改"这类同义重复被漏判；
+- 命中即告警 `DETAIL_SUMMARY_ACTION_DUPLICATE`（warning，不阻断出图）。
+
+**豁免**：
+
+- 页面级 `detailActionDedupExempt: ["重启"]`（数组，按操作名或归一名称匹配）；
+- 区块级 `excludedActions` / `actionExempt`（在概览卡片区块内声明）。
+
+**推荐写法**：对象级操作（编辑/重启/删除/导出等）只写在概览卡片区块的 `actions`；页面级动作（关闭/上一个/下一个/取消/确定）只写在 `footerActions`。两边职责不重叠即天然通过。
+
+**正确示例**：
+
+```json
+{
+  "sections": [
+    {"title": "对象摘要", "type": "summary-card",
+     "cardFields": [{"name": "策略名称", "iduxComponent": "IxText"}],
+     "actions": [
+       {"name": "编辑", "kind": "normal", "iduxComponent": "IxButton"},
+       {"name": "重启", "kind": "high-impact", "trigger": "标准确认弹窗", "text": "确认重启该策略？"}
+     ]}
+  ],
+  "footerActions": [{"label": "关闭", "kind": "close"}]
+}
+```
+
+**错误示例（会被告警）**：
+
+```json
+{
+  "sections": [
+    {"title": "对象摘要", "type": "summary-card",
+     "actions": [{"name": "重启"}]}
+  ],
+  "footerActions": [{"label": "关闭", "kind": "close"}, {"label": "重启", "kind": "normal"}]
+}
+```
+
+上例「重启」已在概览卡片承载，又出现在底部按钮栏 -> `DETAIL_SUMMARY_ACTION_DUPLICATE`（warning）；应从 `footerActions` 移除，或改为仅在底部承载（概览卡片不再声明该操作）。
+
+
+### 11.24 复用业务组件容器闭环（RULE-59）
+
+**目的**：需求延伸出来的弹窗/抽屉/页面若命中 Product Design 业务封装组件（或代码识别已明确知道的业务封装功能），其样式以实现代码为准，本说明书**不再单独描述该容器**——不画线框图、不写页面内容区块、不写底部操作，只在**宿主页面**用一句话交代"点击 X 打开 Y（复用 <组件名>，不单独绘制）"。原因：自绘样式与业务封装实现不一致，会误导编码者按新样式开发，破坏与业务规范的一致性（如"资产适用规则检测"弹窗本就是业务封装功能，被自绘后 AI 按新样式实现）。
+
+**适用范围（硬约束，不可扩大）**：仅适用于**需求延伸容器**——由宿主页面的动作触发、本身可能来自 Product Design 规范默认能力的容器，`trigger` 取值限定为：`按钮点击`、`表格字段点击`、`详情字段点击`、`行操作`、`导入`、`导出`。**需求直接点名的页面（主页面）不允许复用降级**，必须完整产出线框图与页面内容说明；容器必须有位于本次范围内的宿主页面入口，独立页面（无宿主入口）声明复用会被判为范围非法。
+
+**写法**：
+
+```json
+{
+  "id": "B04",
+  "name": "资产适用规则检测",
+  "type": "表单弹窗",
+  "reuseBusinessComponent": {
+    "decision": "reuse",
+    "componentRef": "product-design/references/<文档>.md#资产适用规则检测组件",
+    "hostPageId": "P01",
+    "trigger": "按钮点击",
+    "basis": "product-design"
+  },
+  "wireframe": {"templateId": "form-modal", "regions": [], "ascii": ""},
+  "sections": [],
+  "footerActions": [],
+  "codingGuide": {
+    "designReferences": [
+      {"source": "product-design", "ref": "product-design/references/<文档>.md#资产适用规则检测组件"}
+    ],
+    "pageItems": [
+      {"id": "B04-C01", "scope": "reuse-business-component", "name": "资产适用规则检测",
+       "mode": "reuse", "target": {"path": "product-design", "export": "AssetRuleCheckModal"},
+       "requirements": ["复用业务封装组件，不单独实现"],
+       "acceptanceCriteria": ["样式以业务实现为准"]}
+    ]
+  }
+}
+```
+
+宿主页面（P01）线框或内容说明中必须同时出现**容器名称（或 ID/组件名）**与复用标记（`复用`/`不单独`/`业务封装`/`直接使用`之一），例如"点击[资产适用规则检测]打开弹窗，复用 Product Design 组件，不单独绘制"。
+
+**依据要求（与 RULE-43/54 一致，不新建真值源）**：
+
+- `basis: "product-design"`：`componentRef` 指向的文档必须在 `codingGuide.designReferences` 中按 `source=product-design` 锚点级登记，且在 `designContext.readLedger` 命中 `status=read`（仅 `index-only` 不算）；
+- `basis: "code"`：必须填写 `codeEvidence`（形如 `src/xxx#Symbol`）；
+- `basis` 只允许 `product-design` / `code`。
+
+**校验项**：
+
+- 声明复用却仍自绘（`wireframe.ascii`、`wireframe.regions`、区块 `formFields`/`tableFields`/`detailFields`/`cardFields`/`filterFields`、`footerActions` 任一非空）-> `REUSE_CONTAINER_OVER_DESCRIBED`（**error**，阻断出图）
+- 依据不可用（未锚点级登记 / 未精读命中 / `basis=code` 缺 `codeEvidence` / `basis` 取值非法）-> `REUSE_BASIS_UNREAD`（warning）
+- 宿主页面未交代复用（无线框痕迹、无复用标记）-> `REUSE_HOST_NOTE_MISSING`（warning）
+- 超出适用范围（`trigger` 非法、`hostPageId` 缺失或不在本次范围、容器无宿主入口）-> `REUSE_SCOPE_INVALID`（warning）
+- 反向提示：容器（templateId 含 modal/drawer）已有宿主入口且 `designReferences` 已引用 Product Design 业务组件依据，却未声明复用 -> `REUSE_CANDIDATE_UNMARKED`（warning，提示确认是否应复用而非自绘）
+
+**豁免与保留**：声明复用的容器不参与"必需区域 / 区域顺序 / 必需组件 / 弹窗抽屉外壳与底部 / 底部对齐与按钮顺序 / 线框绘制质量 / 线框区域绘制 / 表单单列布局"校验（这类校验都建立在"该容器要按模板自绘"的前提上）；但**模板契约（`type`↔`templateId`）与容器入口落位（`ORPHAN_CONTAINER`）仍然生效**——复用容器同样必须能被宿主页面找到。
+
+**正确示例**：上例结构即为正确写法——容器无 ascii、无区块、无底部操作，宿主页面写明复用对象，容器保留一条 `mode=reuse` 的开发项指向业务组件。
+
+**错误示例（会阻断）**：容器声明 `decision=reuse`，却仍写出 `wireframe.ascii`（如自绘"弹窗标题/策略名称[____]/确定"）、`sections[].formFields`、`footerActions` -> `REUSE_CONTAINER_OVER_DESCRIBED`（error），并可能连带 `REUSE_HOST_NOTE_MISSING`。此时应删除自绘内容，改为在宿主页面交代复用。

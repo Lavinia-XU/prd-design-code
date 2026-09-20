@@ -88,9 +88,11 @@ Design Skill 的读取采用“索引优先、Reference 按需”的方式。
 - 五层是“能力识别参考框架”，不是“必须逐层读取的清单”。
 - 命中才读：仅在某层存在与当前需求匹配的内容时，才读取对应 Reference。
 - 未命中留痕：未命中的层在 Design Context 中记录“未命中/不适用”及原因，不产生读取。
+- 能力发现全扫（机器校验，RULE-55）：匹配到 Product Design 时，必须对其 Coverage 声明的**每项能力**在 Design Context 的 `productDesign.capabilitySweep` 中显式判定 命中/未命中并留痕（判定为命中的能力须附 `evidenceRef` 且锚点级命中 `readLedger` 的 status: read）。控件特征（如资产/资产组选择、启禁用、数字范围、资产信息等）仅作为复核信号，用于触发“该能力是否需要判定”，具体命中与否以其声明为准；本 Skill 不预置任何产品能力表。漏项或判定非法由 RULE-55 `ABILITY_NOT_SWEPT` 告警，命中项未精读由 `ABILITY_HIT_NOT_READ` 告警。
 - 禁止将五层理解为全量读取清单，禁止无差别读取 Design Skill 中全部 Reference。
-- 同步规则：读取 Common Design 页面模板（Template 层）后，必须与本 Skill 的模板注册表（references/02-template-contracts/common-design-template-registry.json）对比；当 Common Design 模板定义与注册表不一致时，以 Common Design 为准，并将差异记录到 Design Context 待同步。Product Design 若声明了页面模板覆盖（override），以 Product Design 为准。
+- 同步规则：读取 Common Design 页面模板（Template 层）后，必须与本 Skill 的模板注册表（references/02-template-contracts/common-design-template-registry.json）对比；当 Common Design 模板定义与注册表不一致时，以 Common Design 为准，并将差异记录到 Design Context 待同步。Product Design 若声明了页面模板覆盖（override），以 Product Design 为准。典型已同步项：抽屉（list-drawer/form-drawer/detail-drawer/log-detail-drawer）底部按钮左对齐（left），弹窗（list-modal/form-modal）右对齐（right）。模板 ID 以注册表为准（2026 更名：弹窗/抽屉不再称“页”，page-list-modal→list-modal、page-list-drawer→list-drawer、page-detail-drawer→detail-drawer、page-detail-log→log-detail-drawer、page-form-modal→form-modal、page-form-drawer→form-drawer）；旧 ID 只在覆盖判定中被自动归一为当前 ID（RULE-56），不得作为新产出，模板引用文本中出现旧 ID 会被 `LEGACY_TEMPLATE_ID_REF` 告警。
 - 组件映射优先级：读取 Component 层时，匹配 Product Design 且其 Component 层（或 coverage 中 capability 为 `component` / `pattern` 的能力）已登记该业务封装组件时，组件名与用法以 Product Design 为准，并登记 `source=product-design` + `ability`；未登记时以 Common Design 组件映射表为准；严禁将组件名一律写死为 Common Design 通用组件。Pattern 层输出的 `component_requirements` 必须回填到页面 `componentContract.patternComponents`，并同步登记 `codingGuide.designReferences` 对应 ability 依据。
+- 组件形态（variant）两层来源：**命名/枚举**以 Common Design 组件映射（`common-design/references/05-components/idux-component-map.md` 的组件锚点）为准；**形态选择依据**以 Common Design widget patterns（`common-design/references/03-patterns/07-widget-patterns/`，目录级索引 `#*` + 命中控件对应文件精读）为准，Product Design 侧 pattern 文档同等可用。两层依据都必须在页面 `codingGuide.designReferences` 锚点级登记并在 `readLedger` 命中 `status=read`（`index-only` 不算已读），否则 RULE-54 以 `COMPONENT_FORM_SOURCE_UNREAD` / `COMPONENT_FORM_RULE_UNREAD` 告警；形态候选与选用形态须取自组件映射的登记形态，禁止自造形态名。
 
 ### 3.2 页面模板来源判定与登记（强制）
 
@@ -104,7 +106,8 @@ Design Skill 的读取采用“索引优先、Reference 按需”的方式。
 - 页面模板结构、覆盖范围、必需区域、区域顺序与 footer 契约等结论，必须由主设计者基于 Product Design / Common Design 模板文档原文精读得出；禁止仅凭 Reference Index、摘要、他方转述或文件名推断模板结构结论。
 - 引用的模板文档必须可定位到原文（`<文档路径>#<章节/模板条目>`），供复核者直达原文核对；`productTemplateRef` 与 `designReferences.ref` 均须满足该格式。
 - 判定结论同时写入 Design Context（见第 6 节“页面模板层覆盖判定”）与页面 JSON `templateContract`，二者一致。
-- 覆盖判定必须落为可校验的结构化数据：Design Context 的 `productDesign.coverage` 记录能力关系（inherit / extend / override）与适用页面（`appliesTo` 填 templateId，为空表示全部页面）。Product Design 声明页面模板 override 且页面命中时，页面 `templateContract.templateBase` 必须为 `product` 且 `productTemplateRef` 非空，否则以 RULE-43 `TEMPLATE_OVERRIDE_NOT_APPLIED` 阻断；采用 product 模板的页面必须反向登记 `source=product-design` 依据，否则以 `TEMPLATE_SOURCE_UNREGISTERED` 阻断。
+- 覆盖判定必须落为可校验的结构化数据：Design Context 的 `productDesign.coverage` 记录能力关系（inherit / extend / override）与适用页面（`appliesTo` 填 templateId，为空表示全部页面；旧 ID 在判定时自动归一为当前注册表 ID，保证 Product Design 侧滞后使用旧 ID 时覆盖仍被强制）。Product Design 声明页面模板 override 且页面命中时，页面 `templateContract.templateBase` 必须为 `product` 且 `productTemplateRef` 非空，否则以 RULE-43 `TEMPLATE_OVERRIDE_NOT_APPLIED` 阻断；采用 product 模板的页面必须反向登记 `source=product-design` 依据，否则以 `TEMPLATE_SOURCE_UNREGISTERED` 阻断；声明了 `appliesTo` 却归一后未命中本次任何页面，由 RULE-56 `TEMPLATE_COVERAGE_UNAPPLIED` 告警（提示覆盖声明与本次页面范围脱节，避免静默失效）。
+- Product Design 自定义页面模板的 ID 口径：页面 `templateId` 只能取“当前注册表标准模板 ID”（Product Design 覆盖底层结构仍用该标准模板）或 `custom`（Product Design 定义了标准模板之外的页面模板时：`templateId=custom` + `baseTemplateId` 填最接近的注册表标准模板 ID + `override.enabled=true` + `override.source/reason/affectedRules`，并同步 `templateBase=product` 与非空 `productTemplateRef`）。禁止把 Product Design 自定义模板 ID 直接写入 `templateId`（RULE-04 `TEMPLATE_NOT_REGISTERED` 阻断），禁止把其自定义页面类型名写入页面 `type`（RULE-06 `UNREGISTERED_TYPE` 阻断）。
 
 ---
 

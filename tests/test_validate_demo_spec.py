@@ -9,8 +9,8 @@
   2. 缺少分页失败
   3. 缺少标题栏失败
   4. 基础表格页误画成普通卡片失败
-  5. 弹窗列表页缺少关闭入口失败
-  6. 抽屉列表页 footer 对齐错误失败
+  5. 列表弹窗缺少关闭入口失败
+  6. 列表抽屉 footer 对齐错误失败
   7. 配置表单页 footer 右对齐失败
   8. 步骤条页面使用 IxTabs 而不是 IxStepper 失败
   9. 多步骤页面缺少步骤变体失败
@@ -145,17 +145,17 @@ def modal_regions():
 
 
 def modal_page(**overrides):
-    """合法弹窗表单页（page-form-modal），用于操作目标闭环与孤儿容器测试。"""
+    """合法表单弹窗（form-modal），用于操作目标闭环与孤儿容器测试。"""
     page = base_page()
     page.update({
         "id": "P02",
         "name": "批量编辑主机资产",
-        "type": "弹窗表单页",
+        "type": "表单弹窗",
         "templateContract": {
-            "templateId": "page-form-modal",
+            "templateId": "form-modal",
             "baseTemplateId": "",
             "navigationType": "left-shaped",
-            "templateSource": "common-design/references/02-template/01-page-types.md#page-form-modal",
+            "templateSource": "common-design/references/02-template/01-page-types.md#form-modal",
             "requiredRegions": ["modal-shell", "modal-header", "form-content", "modal-footer"],
             "optionalRegions": [],
             "regionOrder": ["modal-shell", "modal-header", "form-content", "modal-footer"],
@@ -165,9 +165,9 @@ def modal_page(**overrides):
             "override": {"enabled": False, "source": "", "reason": "", "affectedRules": []},
         },
         "wireframe": {
-            "templateId": "page-form-modal",
+            "templateId": "form-modal",
             "navigationType": "left-shaped",
-            "layoutSource": "Common Design page-form-modal",
+            "layoutSource": "Common Design form-modal",
             "shell": {
                 "globalNavigation": False,
                 "titleBar": {"required": True, "type": "modal", "component": ""},
@@ -225,34 +225,34 @@ def tabbed_page(tabs, variants, section_tab_ids=None, **overrides):
 
 
 def drawer_detail_page(**overrides):
-    """合法抽屉详情页（page-detail-drawer），用于表格与详情字段一致性（RULE-38）测试。"""
+    """合法详情抽屉（detail-drawer），用于表格与详情字段一致性（RULE-38）测试。"""
     page = base_page()
     page.update({
         "id": "D01",
         "name": "策略详情",
-        "type": "抽屉详情页",
+        "type": "详情抽屉",
         "templateContract": {
-            "templateId": "page-detail-drawer",
+            "templateId": "detail-drawer",
             "baseTemplateId": "",
             "navigationType": "",
-            "templateSource": "common-design/references/02-template/01-page-types.md#page-detail-drawer",
+            "templateSource": "common-design/references/02-template/01-page-types.md#detail-drawer",
             "requiredRegions": ["drawer-shell", "drawer-header", "object-summary", "detail-content", "drawer-footer"],
             "optionalRegions": [],
             "regionOrder": ["drawer-shell", "drawer-header", "object-summary", "detail-content", "drawer-footer"],
-            "footerContract": {"required": True, "alignment": "right", "buttonOrder": ["close"]},
+            "footerContract": {"required": True, "alignment": "left", "buttonOrder": ["close"]},
             "componentContract": {"shell": ["IxDrawer"], "object-summary": ["IxDescriptions"]},
             "wireframeContract": {},
             "override": {"enabled": False, "source": "", "reason": "", "affectedRules": []},
         },
         "wireframe": {
-            "templateId": "page-detail-drawer",
+            "templateId": "detail-drawer",
             "navigationType": "",
-            "layoutSource": "Common Design page-detail-drawer",
+            "layoutSource": "Common Design detail-drawer",
             "shell": {
                 "globalNavigation": False,
                 "titleBar": {"required": True, "type": "drawer", "component": ""},
                 "contentContainer": {"required": True, "type": "drawer-content"},
-                "footer": {"required": True, "alignment": "right", "height": "56px"},
+                "footer": {"required": True, "alignment": "left", "height": "56px"},
             },
             "regions": [
                 {"id": "drawer-shell", "templateRegion": "drawer-shell", "position": "top", "required": True, "content": "抽屉外壳"},
@@ -351,12 +351,12 @@ class TestValidateDemoSpec(unittest.TestCase):
         )
 
     def test_modal_missing_close_fails(self):
-        """5. 弹窗列表页缺少关闭入口失败。"""
+        """5. 列表弹窗缺少关闭入口失败。"""
         page = base_page(
-            id="P02", name="选择策略弹窗", type="弹窗列表页",
+            id="P02", name="选择策略弹窗", type="列表弹窗",
             templateContract={
-                "templateId": "page-list-modal", "baseTemplateId": "", "navigationType": "",
-                "templateSource": "common-design/references/02-template/01-page-types.md#page-list-modal",
+                "templateId": "list-modal", "baseTemplateId": "", "navigationType": "",
+                "templateSource": "common-design/references/02-template/01-page-types.md#list-modal",
                 "requiredRegions": ["modal-shell", "modal-header", "filter", "table", "pagination", "modal-footer"],
                 "optionalRegions": [], "regionOrder": ["modal-shell", "modal-header", "filter", "table", "pagination", "modal-footer"],
                 "footerContract": {"required": True, "alignment": "right", "buttonOrder": ["confirm", "cancel"]},
@@ -365,8 +365,8 @@ class TestValidateDemoSpec(unittest.TestCase):
             },
         )
         page["wireframe"] = {
-            "templateId": "page-list-modal", "navigationType": "",
-            "layoutSource": "Common Design page-list-modal",
+            "templateId": "list-modal", "navigationType": "",
+            "layoutSource": "Common Design list-modal",
             "shell": {"globalNavigation": False, "titleBar": {"required": False, "type": "", "component": ""},
                       "contentContainer": {"required": True, "type": "modal"}, "footer": {"required": True, "alignment": "right", "height": "56px"}},
             "regions": [
@@ -388,22 +388,22 @@ class TestValidateDemoSpec(unittest.TestCase):
         )
 
     def test_drawer_footer_alignment_fails(self):
-        """6. 抽屉列表页 footer 对齐错误失败（模板要求右对齐）。"""
+        """6. 列表抽屉 footer 对齐错误失败（模板要求左对齐，声明 right 即错）。"""
         page = base_page(
-            id="P02", name="选择策略抽屉", type="抽屉列表页",
+            id="P02", name="选择策略抽屉", type="列表抽屉",
             templateContract={
-                "templateId": "page-list-drawer", "baseTemplateId": "", "navigationType": "",
-                "templateSource": "common-design/references/02-template/01-page-types.md#page-list-drawer",
+                "templateId": "list-drawer", "baseTemplateId": "", "navigationType": "",
+                "templateSource": "common-design/references/02-template/01-page-types.md#list-drawer",
                 "requiredRegions": ["drawer-shell", "drawer-header", "object-context", "filter", "table", "pagination", "drawer-footer"],
                 "optionalRegions": [], "regionOrder": ["drawer-shell", "drawer-header", "object-context", "filter", "table", "pagination", "drawer-footer"],
-                "footerContract": {"required": True, "alignment": "left", "buttonOrder": ["confirm", "cancel"]},
+                "footerContract": {"required": True, "alignment": "right", "buttonOrder": ["confirm", "cancel"]},
                 "componentContract": {"shell": ["IxDrawer"], "table": ["IxTable"], "pagination": ["IxPagination"], "footer": ["IxButton"]},
                 "wireframeContract": {}, "override": {"enabled": False, "source": "", "reason": "", "affectedRules": []},
             },
         )
         page["wireframe"] = {
-            "templateId": "page-list-drawer", "navigationType": "",
-            "layoutSource": "Common Design page-list-drawer",
+            "templateId": "list-drawer", "navigationType": "",
+            "layoutSource": "Common Design list-drawer",
             "shell": {"globalNavigation": False, "titleBar": {"required": False, "type": "", "component": ""},
                       "contentContainer": {"required": True, "type": "drawer"}, "footer": {"required": True, "alignment": "right", "height": "56px"}},
             "regions": [
@@ -460,7 +460,7 @@ class TestValidateDemoSpec(unittest.TestCase):
     def test_stepper_uses_tabs_fails(self):
         """8. 步骤条页面使用 IxTabs 而不是 IxStepper 失败。"""
         page = base_page(
-            id="P02", name="策略配置向导", type="步骤条配置页",
+            id="P02", name="策略配置向导", type="下钻步骤条配置页",
             templateContract={
                 "templateId": "page-form-stepper", "baseTemplateId": "", "navigationType": "left-shaped",
                 "templateSource": "common-design/references/02-template/01-page-types.md#page-form-stepper",
@@ -498,7 +498,7 @@ class TestValidateDemoSpec(unittest.TestCase):
     def test_multi_step_missing_variants_fails(self):
         """9. 多步骤页面缺少步骤变体失败。"""
         page = base_page(
-            id="P02", name="策略配置向导", type="步骤条配置页",
+            id="P02", name="策略配置向导", type="下钻步骤条配置页",
             templateContract={
                 "templateId": "page-form-stepper", "baseTemplateId": "", "navigationType": "left-shaped",
                 "templateSource": "common-design/references/02-template/01-page-types.md#page-form-stepper",
@@ -640,7 +640,7 @@ class TestValidateDemoSpec(unittest.TestCase):
                 "summary": "测试",
                 "pageOverview": [
                     {"id": "P01", "name": "策略列表", "type": "基础表格页"},
-                    {"id": "P02", "name": "批量编辑主机资产", "type": "弹窗表单页", "containerType": "modal"},
+                    {"id": "P02", "name": "批量编辑主机资产", "type": "表单弹窗", "containerType": "modal"},
                 ],
             },
             "pages": [base_page()],
@@ -1239,6 +1239,65 @@ class TestValidateDemoSpec(unittest.TestCase):
         code, report = run_validator(make_spec([page]), strict=True)
         self.assertIn("OPTION_TRUNCATION_MARKER", warning_codes(report))
 
+    def test_option_dimension_lost_warns(self):
+        """声明 dimension=group 但选项单元格被压成单层列表 -> OPTION_DIMENSION_LOST warning。"""
+        page = base_page()
+        page["requirementOptionSets"] = [{
+            "field": "生效范围", "dimension": "group",
+            "options": ["全部终端", "指定终端组", "指定终端"],
+        }]
+        page = self._filter_page_with_options(page, {
+            "name": "生效范围", "component": "下拉单选", "iduxComponent": "IxSelect",
+            "options": "全部终端/指定终端组/指定终端",
+        })
+        code, report = run_validator(make_spec([page]), strict=True)
+        self.assertEqual(code, 0, f"report={report}")
+        self.assertIn("OPTION_DIMENSION_LOST", warning_codes(report))
+
+    def test_option_dimension_kept_passes(self):
+        """声明 dimension=group 且选项单元格保留“组名：选项”结构 -> 不误报。"""
+        page = base_page()
+        page["requirementOptionSets"] = [{
+            "field": "生效范围", "dimension": "group",
+            "options": ["终端组A", "终端1", "终端2", "终端组B", "终端3"],
+        }]
+        page = self._filter_page_with_options(page, {
+            "name": "生效范围", "component": "下拉多选", "iduxComponent": "IxSelect",
+            "options": "终端组A：终端1/终端2；终端组B：终端3",
+        })
+        code, report = run_validator(make_spec([page]), strict=True)
+        all_issues = report.get("errors", []) + report.get("warnings", [])
+        self.assertFalse(any(i.get("errorCode") == "OPTION_DIMENSION_LOST" for i in all_issues))
+
+    def test_option_dimension_inferred_from_columns_warns(self):
+        """未写 dimension 但 sourceColumns 声明 >=2 列（分组列+值列）-> 视为 group 并校验。"""
+        page = base_page()
+        page["requirementOptionSets"] = [{
+            "field": "生效范围", "sourceColumns": ["终端组", "终端"],
+            "options": ["终端组A", "终端1", "终端组B", "终端2"],
+        }]
+        page = self._filter_page_with_options(page, {
+            "name": "生效范围", "component": "下拉单选", "iduxComponent": "IxSelect",
+            "options": "终端组A/终端1/终端组B/终端2",
+        })
+        code, report = run_validator(make_spec([page]), strict=True)
+        self.assertIn("OPTION_DIMENSION_LOST", warning_codes(report))
+
+    def test_option_dimension_flat_skips(self):
+        """dimension 缺省（flat）时不做维度校验 -> 单层列表不误报。"""
+        page = base_page()
+        page["requirementOptionSets"] = [{
+            "field": "生效范围",
+            "options": ["全部终端", "指定终端组", "指定终端"],
+        }]
+        page = self._filter_page_with_options(page, {
+            "name": "生效范围", "component": "下拉单选", "iduxComponent": "IxSelect",
+            "options": "全部终端/指定终端组/指定终端",
+        })
+        code, report = run_validator(make_spec([page]), strict=True)
+        all_issues = report.get("errors", []) + report.get("warnings", [])
+        self.assertFalse(any(i.get("errorCode") == "OPTION_DIMENSION_LOST" for i in all_issues))
+
     def test_option_completeness_skips_without_declaration(self):
         """未声明 requirementOptionSets 且选项单元格无截断标记 -> RULE-48 不误报。"""
         page = base_page()
@@ -1310,6 +1369,161 @@ class TestValidateDemoSpec(unittest.TestCase):
         ]
         code, report = run_validator(make_spec([page]), strict=True)
         self.assertIn("DETAIL_FIELD_DUPLICATE", warning_codes(report))
+
+    # ---- 按钮/可点击操作表（RULE-50）----
+    @staticmethod
+    def _page_with_actions(actions, rules=None):
+        page = base_page()
+        page["sections"][-1]["actions"] = actions
+        if rules is not None:
+            page["actionRules"] = rules
+        return page
+
+    def test_action_high_impact_missing_text_fails(self):
+        """高影响操作（删除）缺二次确认文案 -> ACTION_CONFIRM_TEXT_MISSING 阻断。"""
+        page = self._page_with_actions([
+            {"name": "删除", "trigger": "标准确认弹窗", "component": "IxModal.confirm",
+             "source": "common-design", "sourceRef": "common-design/references/05-components/idux-component-map.md#modal"}
+        ])
+        code, report = run_validator(make_spec([page]), strict=True)
+        self.assertEqual(code, 1)
+        self.assertIn("ACTION_CONFIRM_TEXT_MISSING", error_codes(report))
+
+    def test_action_high_impact_complete_passes(self):
+        """高影响操作写全组件、文案与来源 -> 无 ACTION_ 问题。"""
+        page = self._page_with_actions([
+            {"name": "删除", "trigger": "标准确认弹窗", "component": "IxModal.confirm",
+             "text": "确认删除吗？\n删除后，数据不可恢复，请谨慎操作。", "feedback": "删除成功后从列表移除",
+             "source": "common-design", "sourceRef": "common-design/references/05-components/idux-component-map.md#modal"}
+        ])
+        code, report = run_validator(make_spec([page]), strict=True)
+        allc = error_codes(report) | warning_codes(report)
+        self.assertFalse(any(c and c.startswith("ACTION_") for c in allc))
+
+    def test_action_source_ai_fill_warns(self):
+        """组件/文案来源标为 ai-fill（AI 自拟）-> ACTION_SOURCE_NOT_TRACED 告警。"""
+        page = self._page_with_actions([
+            {"name": "移动", "trigger": "局部面板", "component": "下拉面板",
+             "fields": ["目标类型选择框", "之前/之后 下拉框"], "source": "ai-fill"}
+        ])
+        code, report = run_validator(make_spec([page]), strict=True)
+        self.assertIn("ACTION_SOURCE_NOT_TRACED", warning_codes(report))
+
+    def test_action_component_missing_warns(self):
+        """操作涉及二次确认/局部面板但未写组件 -> ACTION_COMPONENT_MISSING 告警。"""
+        page = self._page_with_actions([
+            {"name": "移动", "trigger": "局部面板", "text": "确认移动吗？",
+             "source": "common-design", "sourceRef": "common-design/references/x.md#y"}
+        ])
+        code, report = run_validator(make_spec([page]), strict=True)
+        self.assertIn("ACTION_COMPONENT_MISSING", warning_codes(report))
+
+    def test_action_legacy_string_skipped(self):
+        """旧字符串写法（actions 为字符串列表）兼容，不触发 RULE-50。"""
+        page = self._page_with_actions(["查询：按条件刷新表格", "重置：清空条件并恢复默认列表"])
+        code, report = run_validator(make_spec([page]), strict=True)
+        allc = error_codes(report) | warning_codes(report)
+        self.assertFalse(any(c and c.startswith("ACTION_") for c in allc))
+
+    def test_action_rules_configurable(self):
+        """actionRules 可扩展高影响操作名并支持豁免。"""
+        page = self._page_with_actions(
+            [{"name": "灰度放量", "trigger": "标准确认弹窗", "component": "IxModal.confirm"}],
+            rules={"highImpactActions": ["灰度放量"]},
+        )
+        code, report = run_validator(make_spec([page]), strict=True)
+        self.assertIn("ACTION_CONFIRM_TEXT_MISSING", error_codes(report))
+        page2 = self._page_with_actions(
+            [{"name": "灰度放量", "trigger": "标准确认弹窗", "component": "IxModal.confirm"}],
+            rules={"highImpactActions": ["灰度放量"], "exempt": ["灰度放量"]},
+        )
+        code2, report2 = run_validator(make_spec([page2]), strict=True)
+        self.assertNotIn("ACTION_CONFIRM_TEXT_MISSING", error_codes(report2))
+
+    # ---- 表格区按钮位置（RULE-51，线框图）----
+    @staticmethod
+    def _page_with_ascii(ascii_text):
+        page = base_page()
+        page["wireframe"]["ascii"] = ascii_text
+        return page
+
+    def test_table_button_below_table_warns(self):
+        """表格关联按钮绘制在表格框下方 -> RULE-51 TABLE_BUTTON_MISPLACED 告警。"""
+        page = self._page_with_ascii(
+            "┌──────────────────┐\n"
+            "│ 页面标题          │\n"
+            "├──────────────────┤\n"
+            "│ ┌──────────────┐ │\n"
+            "│ │ 名称 | 状态   │ │\n"
+            "│ │ A | 高        │ │\n"
+            "│ └──────────────┘ │\n"
+            "│ [批量操作] [新增] │\n"
+            "│ 上一页 1 2 下一页 │\n"
+            "└──────────────────┘"
+        )
+        code, report = run_validator(make_spec([page]), strict=True)
+        self.assertIn("TABLE_BUTTON_MISPLACED", warning_codes(report))
+
+    def test_table_button_in_toolbar_passes(self):
+        """表格按钮置于表格框上方工具栏 -> 不产生 RULE-51 提示。"""
+        page = self._page_with_ascii(
+            "┌──────────────────┐\n"
+            "│ 页面标题          │\n"
+            "├──────────────────┤\n"
+            "│ [批量操作] [新增] │\n"
+            "│ ┌──────────────┐ │\n"
+            "│ │ 名称 | 状态   │ │\n"
+            "│ │ A | 高        │ │\n"
+            "│ └──────────────┘ │\n"
+            "│ 上一页 1 2 下一页 │\n"
+            "└──────────────────┘"
+        )
+        code, report = run_validator(make_spec([page]), strict=True)
+        all_issues = report.get("errors", []) + report.get("warnings", [])
+        self.assertFalse(any(str(i.get("errorCode", "")) in ("TABLE_BUTTON_MISPLACED", "TABLE_ACTION_NOT_IN_TOOLBAR") for i in all_issues))
+
+    def test_table_pagination_not_flagged(self):
+        """表格框下方仅分页/边框 -> 不误报。"""
+        page = self._page_with_ascii(
+            "┌──────────────────┐\n"
+            "│ 页面标题          │\n"
+            "├──────────────────┤\n"
+            "│ ┌──────────────┐ │\n"
+            "│ │ 名称 | 状态   │ │\n"
+            "│ └──────────────┘ │\n"
+            "│ 上一页 1 2 下一页 共 20 条 │\n"
+            "└──────────────────┘"
+        )
+        code, report = run_validator(make_spec([page]), strict=True)
+        all_issues = report.get("errors", []) + report.get("warnings", [])
+        self.assertFalse(any(str(i.get("errorCode", "")) in ("TABLE_BUTTON_MISPLACED", "TABLE_ACTION_NOT_IN_TOOLBAR") for i in all_issues))
+
+    def test_table_batch_action_outside_warns(self):
+        """批量操作按钮绘制在表格工具栏之外（如概览区）-> TABLE_ACTION_NOT_IN_TOOLBAR 告警。"""
+        page = self._page_with_ascii(
+            "┌──────────────────┐\n"
+            "│ ┌──────────────┐ │\n"
+            "│ │ [批量删除]     │ │\n"
+            "│ └──────────────┘ │\n"
+            "│ ┌──────────────┐ │\n"
+            "│ │ 名称 | 状态   │ │\n"
+            "│ └──────────────┘ │\n"
+            "└──────────────────┘"
+        )
+        code, report = run_validator(make_spec([page]), strict=True)
+        self.assertIn("TABLE_ACTION_NOT_IN_TOOLBAR", warning_codes(report))
+
+    def test_table_button_check_skips_without_table(self):
+        """ascii 中无表格框 -> RULE-51 跳过，不误报。"""
+        page = self._page_with_ascii(
+            "┌──────────────────┐\n"
+            "│ 页面标题          │\n"
+            "│ [批量操作]        │\n"
+            "└──────────────────┘"
+        )
+        code, report = run_validator(make_spec([page]), strict=True)
+        all_issues = report.get("errors", []) + report.get("warnings", [])
+        self.assertFalse(any(str(i.get("errorCode", "")) in ("TABLE_BUTTON_MISPLACED", "TABLE_ACTION_NOT_IN_TOOLBAR") for i in all_issues))
 
     # ---- 表格标签使用约束（RULE-39）----
     def test_table_tag_count_exceeded_fails(self):
@@ -1742,6 +1956,986 @@ class TestValidateDemoSpec(unittest.TestCase):
         code, report = run_validator(make_spec([page]), strict=True)
         self.assertNotEqual(code, 0)
         self.assertIn("PATH_WITHOUT_VERIFY", error_codes(report))
+
+    # ---- 需求入口落位闭环（RULE-52，条件式）：PRD 点名入口必须有落点 ----
+    @staticmethod
+    def _entry(scope="in-scope", host="P01", container="P02", evidence=None):
+        entry = {"id": "EP01", "host": host, "hostScope": scope, "location": "操作列",
+                 "trigger": "加入行为白名单", "container": container, "source": "PRD F1"}
+        if evidence is not None:
+            entry["hostEvidence"] = evidence
+        return entry
+
+    @staticmethod
+    def _entry_host_with_op(ascii_text=None):
+        """宿主页 P01 带"加入行为白名单"入口（open-container 指向 P02）。"""
+        host = base_page()
+        host["children"] = ["P02"]
+        host["operations"] = [
+            {"id": "OP01", "action": "open-container", "label": "加入行为白名单",
+             "trigger": "行内操作", "targetPageId": "P02", "targetContainerType": "modal",
+             "confirm": False},
+        ]
+        if ascii_text is not None:
+            host["wireframe"]["ascii"] = ascii_text
+        return host
+
+    @staticmethod
+    def _entry_host_ascii():
+        return (
+            "┌ 标题栏 ─────────────────┐\n"
+            "│ [筛选] [工具栏]        │\n"
+            "├──────────┬─────────────┤\n"
+            "│ 表格列1   │ 加入行为白名单入口│\n"
+            "├──────────┴─────────────┤\n"
+            "│ [分页] 上一页 1 2 下一页 │\n"
+            "└────────────────────────┘"
+        )
+
+    def test_entry_point_in_scope_placed_passes(self):
+        """in-scope 宿主页面已落位入口且线框图已绘制 -> RULE-52 通过。"""
+        host = self._entry_host_with_op(ascii_text=self._entry_host_ascii())
+        spec = make_spec([host, modal_page()])
+        spec["requirementEntryPoints"] = [self._entry()]
+        code, report = run_validator(spec, strict=True)
+        self.assertEqual(code, 0, f"report={report}")
+        self.assertFalse(any(str(e.get("errorCode", "")).startswith("ENTRY_") for e in report.get("errors", [])))
+        self.assertFalse(any(w.get("errorCode") == "ENTRY_NOT_DRAWN" for w in report.get("warnings", [])))
+
+    def test_entry_point_not_placed_fails(self):
+        """in-scope 宿主页面未落位入口 -> ENTRY_POINT_NOT_PLACED 阻断。"""
+        spec = make_spec([base_page()])
+        spec["requirementEntryPoints"] = [self._entry()]
+        code, report = run_validator(spec, strict=True)
+        self.assertEqual(code, 1)
+        self.assertIn("ENTRY_POINT_NOT_PLACED", error_codes(report))
+
+    def test_entry_point_not_drawn_warns(self):
+        """in-scope 入口已落位但线框图未绘制入口 -> ENTRY_NOT_DRAWN warning，不阻断。"""
+        host = self._entry_host_with_op()  # 默认 ascii 无入口痕迹
+        spec = make_spec([host, modal_page()])
+        spec["requirementEntryPoints"] = [self._entry()]
+        code, report = run_validator(spec, strict=True)
+        self.assertEqual(code, 0, f"report={report}")
+        self.assertIn("ENTRY_NOT_DRAWN", warning_codes(report))
+
+    def test_entry_point_out_of_scope_unregistered_fails(self):
+        """out-of-scope 宿主未在 entryHosts 登记 -> ENTRY_HOST_UNREGISTERED 阻断。"""
+        spec = make_spec([base_page()])
+        spec["requirementEntryPoints"] = [self._entry(scope="out-of-scope", host="安全事件页", container="bw-alert-modal")]
+        code, report = run_validator(spec, strict=True)
+        self.assertEqual(code, 1)
+        self.assertIn("ENTRY_HOST_UNREGISTERED", error_codes(report))
+
+    def test_entry_point_out_of_scope_registered_passes(self):
+        """out-of-scope 宿主已登记（Tier1 精读 + 开发项 + 线框图）-> RULE-52 通过。"""
+        spec = make_spec([base_page()])
+        spec["requirementEntryPoints"] = [self._entry(scope="out-of-scope", host="安全事件页", container="bw-alert-modal",
+                                                      evidence=self._evidence())]
+        spec["entryHosts"] = [
+            {"id": "安全事件页", "name": "安全事件页/告警列表", "scope": "out-of-scope",
+             "read": True, "readTier": "tier1", "wireframe": "【告警列表操作列：加入行为白名单入口】",
+             "devItem": "P01-C01"},
+        ]
+        code, report = run_validator(spec, strict=True)
+        self.assertEqual(code, 0, f"report={report}")
+        self.assertFalse(any(str(e.get("errorCode", "")).startswith("ENTRY_") for e in report.get("errors", [])))
+        self.assertFalse(any(str(e.get("errorCode", "")).startswith("HOST_") for e in report.get("errors", [])))
+        self.assertFalse(any(w.get("errorCode") == "ENTRY_NOT_DRAWN" for w in report.get("warnings", [])))
+
+    def test_entry_point_out_of_scope_missing_dev_item_fails(self):
+        """out-of-scope 宿主已登记但缺对应开发项 -> ENTRY_HOST_UNREGISTERED 阻断。"""
+        spec = make_spec([base_page()])
+        spec["requirementEntryPoints"] = [self._entry(scope="out-of-scope", host="安全事件页", container="bw-alert-modal")]
+        spec["entryHosts"] = [
+            {"id": "安全事件页", "read": True, "readTier": "tier1", "wireframe": "x", "devItem": ""},
+        ]
+        code, report = run_validator(spec, strict=True)
+        self.assertEqual(code, 1)
+        self.assertIn("ENTRY_HOST_UNREGISTERED", error_codes(report))
+
+    def test_entry_point_out_of_scope_dangling_dev_item_fails(self):
+        """out-of-scope 宿主登记了不存在的开发项 -> ENTRY_HOST_UNREGISTERED 阻断。"""
+        spec = make_spec([base_page()])
+        spec["requirementEntryPoints"] = [self._entry(scope="out-of-scope", host="安全事件页", container="bw-alert-modal")]
+        spec["entryHosts"] = [
+            {"id": "安全事件页", "read": True, "readTier": "tier1", "wireframe": "x", "devItem": "P99-E01"},
+        ]
+        code, report = run_validator(spec, strict=True)
+        self.assertEqual(code, 1)
+        self.assertIn("ENTRY_HOST_UNREGISTERED", error_codes(report))
+
+    def test_entry_point_incomplete_fails(self):
+        """入口挂载点缺必需字段 -> ENTRY_POINT_INCOMPLETE 阻断。"""
+        spec = make_spec([base_page()])
+        spec["requirementEntryPoints"] = [{"id": "EP01", "host": "P01", "hostScope": "in-scope"}]
+        code, report = run_validator(spec, strict=True)
+        self.assertEqual(code, 1)
+        self.assertIn("ENTRY_POINT_INCOMPLETE", error_codes(report))
+
+    def test_entry_point_skips_without_declaration(self):
+        """未声明 requirementEntryPoints -> RULE-52 不启用、不误报。"""
+        code, report = run_validator(make_spec([base_page()]), strict=True)
+        all_issues = report.get("errors", []) + report.get("warnings", [])
+        self.assertFalse(any(str(i.get("errorCode", "")).startswith("ENTRY_") for i in all_issues))
+
+    # ---- 页面定位证据闭环（RULE-53，条件式）：禁止文件名定位、防张冠李戴 ----
+    @staticmethod
+    def _evidence(**over):
+        ev = {
+            "navPath": ["安全事件", "事件详情", "告警列表"],
+            "prdNavPath": ["安全事件", "事件详情", "告警列表"],
+            "route": "/security/events/:id?tab=alarm-list",
+            "title": "告警列表",
+            "tabs": ["事件详情", "告警列表", "告警链"],
+            "codeRefs": ["src/pages/security/alarm-list/index.tsx"],
+            "matchedBy": ["route", "tab", "title"],
+            "identitySource": "code",
+            "candidates": ["alarm-list", "alert-list"],
+            "rejected": [{"candidate": "alert-list", "reason": "该页面为告警链，非告警列表"}],
+        }
+        ev.update(over)
+        return ev
+
+    def test_page_identity_ref_valid_passes(self):
+        """pageIdentityRefs 携带合规身份证据 -> RULE-53 通过。"""
+        spec = make_spec([base_page()])
+        spec["pageIdentityRefs"] = [{"id": "REF01", "name": "告警列表", "evidence": self._evidence()}]
+        code, report = run_validator(spec, strict=True)
+        self.assertEqual(code, 0, f"report={report}")
+
+    def test_page_identity_missing_evidence_fails(self):
+        """pageIdentityRefs 缺身份证据 -> HOST_IDENTITY_UNVERIFIED 阻断。"""
+        spec = make_spec([base_page()])
+        spec["pageIdentityRefs"] = [{"id": "REF01", "name": "告警列表"}]
+        code, report = run_validator(spec, strict=True)
+        self.assertEqual(code, 1)
+        self.assertIn("HOST_IDENTITY_UNVERIFIED", error_codes(report))
+
+    def test_host_identity_filename_only_fails(self):
+        """命中依据含文件名 -> HOST_IDENTITY_FILENAME_ONLY 阻断。"""
+        spec = make_spec([base_page()])
+        spec["pageIdentityRefs"] = [{"id": "REF01", "name": "告警列表",
+                                     "evidence": self._evidence(matchedBy=["filename", "title"])}]
+        code, report = run_validator(spec, strict=True)
+        self.assertEqual(code, 1)
+        self.assertIn("HOST_IDENTITY_FILENAME_ONLY", error_codes(report))
+
+    def test_host_identity_navpath_mismatch_fails(self):
+        """代码路径末级与 PRD 声明不符（告警链 vs 告警列表）-> HOST_NAVPATH_MISMATCH 阻断。"""
+        spec = make_spec([base_page()])
+        spec["pageIdentityRefs"] = [{"id": "REF01", "name": "告警列表",
+                                     "evidence": self._evidence(navPath=["安全事件", "事件详情", "告警链"])}]
+        code, report = run_validator(spec, strict=True)
+        self.assertEqual(code, 1)
+        self.assertIn("HOST_NAVPATH_MISMATCH", error_codes(report))
+
+    def test_host_identity_ambiguous_warns(self):
+        """存在多个形近候选但未记录排除 -> HOST_IDENTITY_AMBIGUOUS warning，不阻断。"""
+        spec = make_spec([base_page()])
+        spec["pageIdentityRefs"] = [{"id": "REF01", "name": "告警列表",
+                                     "evidence": self._evidence(rejected=[])}]
+        code, report = run_validator(spec, strict=True)
+        self.assertEqual(code, 0, f"report={report}")
+        self.assertIn("HOST_IDENTITY_AMBIGUOUS", warning_codes(report))
+
+    def test_host_identity_degraded_mode_passes(self):
+        """环境无代码时退化模式：以 title + tabs 对证即可通过。"""
+        spec = make_spec([base_page()])
+        spec["pageIdentityRefs"] = [{"id": "REF01", "name": "告警列表",
+                                     "evidence": {"navPath": ["安全事件", "事件详情", "告警列表"],
+                                                  "title": "告警列表", "tabs": ["告警列表"],
+                                                  "matchedBy": ["title", "tab"],
+                                                  "identitySource": "degraded"}}]
+        code, report = run_validator(spec, strict=True)
+        self.assertEqual(code, 0, f"report={report}")
+
+    def test_entry_point_out_of_scope_missing_evidence_fails(self):
+        """out-of-scope 入口宿主已登记但缺身份证据 -> HOST_IDENTITY_UNVERIFIED 阻断。"""
+        spec = make_spec([base_page()])
+        spec["requirementEntryPoints"] = [self._entry(scope="out-of-scope", host="安全事件页", container="bw-alert-modal")]
+        spec["entryHosts"] = [
+            {"id": "安全事件页", "name": "安全事件页/告警列表", "scope": "out-of-scope",
+             "read": True, "readTier": "tier1", "wireframe": "【告警列表操作列：加入行为白名单入口】",
+             "devItem": "P01-C01"},
+        ]
+        code, report = run_validator(spec, strict=True)
+        self.assertEqual(code, 1)
+        self.assertIn("HOST_IDENTITY_UNVERIFIED", error_codes(report))
+
+    # ---- 组件形态描述闭环（RULE-54，条件式）：多形态组件须写明选用形态 ----
+    def test_component_form_missing_warns(self):
+        """声明 >1 形态候选但未写 iduxComponentForm -> COMPONENT_FORM_MISSING warning，不阻断。"""
+        spec = make_spec([tag_page([
+            {"name": "风险等级", "display": "标签", "iduxComponent": "IxTag", "description": "高/中/低",
+             "formCandidates": ["描边标签", "深色标签", "状态标签"]},
+        ])])
+        code, report = run_validator(spec, strict=True)
+        self.assertEqual(code, 0, f"report={report}")
+        self.assertIn("COMPONENT_FORM_MISSING", warning_codes(report))
+
+    def test_component_form_unknown_warns(self):
+        """选用形态不在候选内 -> COMPONENT_FORM_UNKNOWN warning，不阻断。"""
+        spec = make_spec([tag_page([
+            {"name": "风险等级", "display": "标签", "iduxComponent": "IxTag", "description": "高/中/低",
+             "formCandidates": ["描边标签", "深色标签"], "iduxComponentForm": "彩色卡片"},
+        ])])
+        code, report = run_validator(spec, strict=True)
+        self.assertEqual(code, 0, f"report={report}")
+        self.assertIn("COMPONENT_FORM_UNKNOWN", warning_codes(report))
+
+    def test_component_form_valid_passes(self):
+        """选用形态在候选内 -> 无 COMPONENT_FORM_* 告警。"""
+        spec = make_spec([tag_page([
+            {"name": "风险等级", "display": "标签", "iduxComponent": "IxTag", "description": "高/中/低",
+             "formCandidates": ["描边标签", "深色标签"], "iduxComponentForm": "深色标签"},
+        ])])
+        code, report = run_validator(spec, strict=True)
+        self.assertEqual(code, 0, f"report={report}")
+        self.assertNotIn("COMPONENT_FORM_MISSING", warning_codes(report))
+        self.assertNotIn("COMPONENT_FORM_UNKNOWN", warning_codes(report))
+
+    def test_component_form_single_candidate_passes(self):
+        """仅一个候选（非多形态）-> RULE-54 不启用、不误报。"""
+        spec = make_spec([tag_page([
+            {"name": "风险等级", "display": "标签", "iduxComponent": "IxTag", "description": "高/中/低",
+             "formCandidates": ["深色标签"]},
+        ])])
+        code, report = run_validator(spec, strict=True)
+        all_codes = set(warning_codes(report)) | set(error_codes(report))
+        self.assertEqual(code, 0, f"report={report}")
+        self.assertNotIn("COMPONENT_FORM_MISSING", all_codes)
+        self.assertNotIn("COMPONENT_FORM_UNKNOWN", all_codes)
+
+    # ---- 组件形态溯源（RULE-54 扩展）：命名真值=组件映射，选择依据真值=widget patterns ----
+    COMP_MAP_REF = "common-design/references/05-components/idux-component-map.md#IxTag"
+    PATTERN_REF = "common-design/references/03-patterns/07-widget-patterns/tag-pattern.md#标签样式选择"
+
+    def _form_spec(self, refs, ledger):
+        page = tag_page([
+            {"name": "风险等级", "display": "标签", "iduxComponent": "IxTag", "description": "高/中/低",
+             "formCandidates": ["描边标签", "深色标签"], "iduxComponentForm": "深色标签"},
+        ])
+        page["codingGuide"]["designReferences"] = refs
+        spec = make_spec([page])
+        spec["designContext"] = self._design_context(readLedger=ledger)
+        return spec
+
+    def test_component_form_source_unread_warns(self):
+        """>1 形态候选但缺 Common Design 组件映射依据 -> COMPONENT_FORM_SOURCE_UNREAD warning。"""
+        spec = self._form_spec(
+            [{"source": "common-design", "ref": self.PATTERN_REF}],
+            [{"ref": self.PATTERN_REF, "status": "read"}])
+        code, report = run_validator(spec, strict=True)
+        self.assertEqual(code, 0, f"report={report}")
+        self.assertIn("COMPONENT_FORM_SOURCE_UNREAD", warning_codes(report))
+
+    def test_component_form_rule_unread_warns(self):
+        """>1 形态候选但缺 widget pattern 选择依据 -> COMPONENT_FORM_RULE_UNREAD warning。"""
+        spec = self._form_spec(
+            [{"source": "common-design", "ref": self.COMP_MAP_REF}],
+            [{"ref": self.COMP_MAP_REF, "status": "read"}])
+        code, report = run_validator(spec, strict=True)
+        self.assertEqual(code, 0, f"report={report}")
+        self.assertIn("COMPONENT_FORM_RULE_UNREAD", warning_codes(report))
+
+    def test_component_form_evidence_index_only_warns(self):
+        """依据仅目录级索引（index-only）-> 两层依据均判为未精读命中（并要求补读为 read）。"""
+        refs = [{"source": "common-design", "ref": self.COMP_MAP_REF},
+                {"source": "common-design", "ref": self.PATTERN_REF}]
+        ledger = [{"ref": "common-design/references/03-patterns/07-widget-patterns/#*", "status": "index-only"},
+                  {"ref": self.COMP_MAP_REF, "status": "index-only"},
+                  {"ref": self.PATTERN_REF, "status": "index-only"}]
+        code, report = run_validator(self._form_spec(refs, ledger), strict=True)
+        self.assertNotEqual(code, 0)
+        self.assertIn("DESIGN_REF_UNREAD", error_codes(report))
+        codes = warning_codes(report)
+        self.assertIn("COMPONENT_FORM_SOURCE_UNREAD", codes)
+        self.assertIn("COMPONENT_FORM_RULE_UNREAD", codes)
+
+    def test_component_form_evidence_complete_passes(self):
+        """两层依据均已锚点级精读 -> 无形态溯源类告警。"""
+        refs = [{"source": "common-design", "ref": self.COMP_MAP_REF},
+                {"source": "common-design", "ref": self.PATTERN_REF}]
+        ledger = [{"ref": self.COMP_MAP_REF, "status": "read"},
+                  {"ref": self.PATTERN_REF, "status": "read"}]
+        code, report = run_validator(self._form_spec(refs, ledger), strict=True)
+        self.assertEqual(code, 0, f"report={report}")
+        codes = warning_codes(report)
+        self.assertNotIn("COMPONENT_FORM_SOURCE_UNREAD", codes)
+        self.assertNotIn("COMPONENT_FORM_RULE_UNREAD", codes)
+
+    def test_component_form_single_candidate_skips_evidence(self):
+        """单形态字段不触发形态溯源检查（零负担）。"""
+        page = tag_page([{"name": "风险等级", "display": "标签", "iduxComponent": "IxTag",
+                          "description": "高/中/低", "formCandidates": ["深色标签"]}])
+        spec = make_spec([page])
+        spec["designContext"] = self._design_context(readLedger=[])
+        code, report = run_validator(spec, strict=True)
+        self.assertEqual(code, 0, f"report={report}")
+        codes = warning_codes(report)
+        self.assertNotIn("COMPONENT_FORM_SOURCE_UNREAD", codes)
+        self.assertNotIn("COMPONENT_FORM_RULE_UNREAD", codes)
+
+    # ---- 抽屉 footer 对齐与注册表防漂移（RULE-20 / 注册表）----
+    def test_drawer_footer_alignment_left_passes(self):
+        """抽屉模板 footer 声明左对齐（与注册表一致）-> 无 FOOTER_ALIGNMENT_MISMATCH。"""
+        code, report = run_validator(make_spec([drawer_detail_page()]), strict=True)
+        self.assertNotIn("FOOTER_ALIGNMENT_MISMATCH", error_codes(report))
+
+    def test_registry_drawer_left_modal_right(self):
+        """注册表防漂移：抽屉模板 footer 一律 left，弹窗模板一律 right。"""
+        import json
+        import pathlib
+        root = pathlib.Path(__file__).resolve().parent.parent
+        reg_path = root / "references/02-template-contracts/common-design-template-registry.json"
+        with open(reg_path, encoding="utf-8") as f:
+            reg = json.load(f)
+        for tid, tpl in reg["templates"].items():
+            al = (tpl.get("footer") or {}).get("alignment", "")
+            if "drawer" in tid:
+                self.assertEqual(al, "left", f"{tid} 抽屉模板必须左对齐，实际={al}")
+            if "modal" in tid:
+                self.assertEqual(al, "right", f"{tid} 弹窗模板必须保持右对齐，实际={al}")
+
+    # ---- 能力发现完整性（RULE-55）----
+    def test_capability_sweep_complete_passes(self):
+        """能力全扫：coverage 每项均有判定且命中项有已精读证据 -> 通过。"""
+        page = self._page_with_design_ref([
+            {"source": "product-design", "ref": "product-design/references/<sample-doc>.md#资产信息",
+             "ability": "component"},
+            {"source": "common-design",
+             "ref": "common-design/references/02-template/01-page-types.md#page-table-basic"},
+        ])
+        spec = make_spec([page])
+        spec["designContext"] = self._design_context(
+            productDesign={"matched": True, "skillId": "product-design",
+                           "coverage": [{"capability": "component", "relation": "override",
+                                         "appliesTo": ["page-table-basic"]}],
+                           "capabilitySweep": [{"capability": "component", "decision": "hit",
+                                                "reason": "使用资产信息业务封装组件",
+                                                "evidenceRef": "product-design/references/<sample-doc>.md#资产信息"}]},
+            readLedger=[
+                {"ref": "product-design/references/<sample-doc>.md#资产信息", "status": "read"},
+                {"ref": "common-design/references/02-template/01-page-types.md#page-table-basic",
+                 "status": "read"},
+            ])
+        code, report = run_validator(spec, strict=True)
+        self.assertEqual(code, 0, f"report={report}")
+        all_codes = set(warning_codes(report)) | set(error_codes(report))
+        self.assertNotIn("ABILITY_NOT_SWEPT", all_codes)
+        self.assertNotIn("ABILITY_HIT_NOT_READ", all_codes)
+
+    def test_capability_not_swept_warns(self):
+        """coverage 有 capability 但 capabilitySweep 漏扫 -> ABILITY_NOT_SWEPT warning。"""
+        page = self._page_with_design_ref([
+            {"source": "product-design", "ref": "product-design/references/<sample-doc>.md#筛选",
+             "ability": "filtering"},
+            {"source": "common-design",
+             "ref": "common-design/references/02-template/01-page-types.md#page-table-basic"},
+        ])
+        spec = make_spec([page])
+        spec["designContext"] = self._design_context(
+            productDesign={"matched": True, "skillId": "product-design",
+                           "coverage": [{"capability": "filtering", "relation": "override",
+                                         "appliesTo": ["page-table-basic"]}],
+                           "capabilitySweep": []},
+            readLedger=[{"ref": "product-design/references/<sample-doc>.md#筛选", "status": "read"},
+                        {"ref": "common-design/references/02-template/01-page-types.md#page-table-basic",
+                         "status": "read"}])
+        code, report = run_validator(spec, strict=True)
+        self.assertIn("ABILITY_NOT_SWEPT", warning_codes(report))
+
+    def test_capability_hit_not_read_warns(self):
+        """命中能力但 evidenceRef 未在 readLedger 精读 -> ABILITY_HIT_NOT_READ warning。"""
+        page = self._page_with_design_ref([
+            {"source": "product-design", "ref": "product-design/references/<sample-doc>.md#筛选",
+             "ability": "filtering"},
+            {"source": "common-design",
+             "ref": "common-design/references/02-template/01-page-types.md#page-table-basic"},
+        ])
+        spec = make_spec([page])
+        spec["designContext"] = self._design_context(
+            productDesign={"matched": True, "skillId": "product-design",
+                           "coverage": [{"capability": "filtering", "relation": "override",
+                                         "appliesTo": ["page-table-basic"]}],
+                           "capabilitySweep": [{"capability": "filtering", "decision": "hit",
+                                                "reason": "筛选三态",
+                                                "evidenceRef": "product-design/references/<sample-doc>.md#筛选三态"}]},
+            readLedger=[{"ref": "product-design/references/<sample-doc>.md#筛选", "status": "read"},
+                        {"ref": "common-design/references/02-template/01-page-types.md#page-table-basic",
+                         "status": "read"}])
+        code, report = run_validator(spec, strict=True)
+        self.assertIn("ABILITY_HIT_NOT_READ", warning_codes(report))
+
+    def test_capability_sweep_absent_warns(self):
+        """声明 coverage 但完全没有 capabilitySweep -> 每个能力 ABILITY_NOT_SWEPT warning。"""
+        page = self._page_with_design_ref([
+            {"source": "product-design", "ref": "product-design/references/<sample-doc>.md#筛选",
+             "ability": "filtering"},
+            {"source": "common-design",
+             "ref": "common-design/references/02-template/01-page-types.md#page-table-basic"},
+        ])
+        spec = make_spec([page])
+        spec["designContext"] = self._design_context(
+            productDesign={"matched": True, "skillId": "product-design",
+                           "coverage": [{"capability": "filtering", "relation": "override",
+                                         "appliesTo": ["page-table-basic"]}]},
+            readLedger=[{"ref": "product-design/references/<sample-doc>.md#筛选", "status": "read"},
+                        {"ref": "common-design/references/02-template/01-page-types.md#page-table-basic",
+                         "status": "read"}])
+        code, report = run_validator(spec, strict=True)
+        self.assertIn("ABILITY_NOT_SWEPT", warning_codes(report))
+
+    # ---- 模板 ID 一致性与覆盖兜底（RULE-56）----
+    def test_template_coverage_unapplied_warns(self):
+        """coverage 声明了 appliesTo 但无页面命中 -> TEMPLATE_COVERAGE_UNAPPLIED warning（不阻断）。"""
+        page = self._page_with_design_ref(
+            [{"source": "common-design",
+              "ref": "common-design/references/02-template/01-page-types.md#page-table-basic"}])
+        spec = make_spec([page])
+        spec["designContext"] = self._design_context(
+            productDesign={"matched": True, "skillId": "product-design",
+                           "coverage": [{"capability": "template", "relation": "override",
+                                         "appliesTo": ["detail-drawer"]}]},
+            readLedger=[{"doc": "common-design/references/02-template/01-page-types.md",
+                         "status": "read"}])
+        code, report = run_validator(spec, strict=True)
+        self.assertEqual(code, 0, f"report={report}")
+        self.assertIn("TEMPLATE_COVERAGE_UNAPPLIED", warning_codes(report))
+
+    def test_template_coverage_legacy_id_applied_passes(self):
+        """appliesTo 用旧 ID（page-detail-drawer）时归一为 detail-drawer 后命中：不报未命中，且模板覆盖仍被强制。"""
+        page = drawer_detail_page()
+        spec = make_spec([page])
+        spec["designContext"] = self._design_context(
+            productDesign={"matched": True, "skillId": "product-design",
+                           "coverage": [{"capability": "template", "relation": "override",
+                                         "appliesTo": ["page-detail-drawer"]}]},
+            readLedger=[])
+        code, report = run_validator(spec, strict=True)
+        self.assertNotEqual(code, 0)
+        self.assertIn("TEMPLATE_OVERRIDE_NOT_APPLIED", error_codes(report))
+        self.assertNotIn("TEMPLATE_COVERAGE_UNAPPLIED", warning_codes(report))
+
+    def test_sweep_appliesTo_unapplied_warns(self):
+        """capabilitySweep 声明了 appliesTo 但无页面命中 -> TEMPLATE_COVERAGE_UNAPPLIED warning。"""
+        spec = make_spec([base_page()])
+        spec["designContext"] = self._design_context(
+            productDesign={"matched": True, "skillId": "product-design", "coverage": [],
+                           "capabilitySweep": [{"capability": "component", "decision": "not-hit",
+                                                "appliesTo": ["no-such-template"]}]})
+        code, report = run_validator(spec, strict=True)
+        self.assertEqual(code, 0, f"report={report}")
+        self.assertIn("TEMPLATE_COVERAGE_UNAPPLIED", warning_codes(report))
+
+    def test_legacy_template_id_ref_warns(self):
+        """templateSource / layoutSource 引用已废弃旧模板 ID -> LEGACY_TEMPLATE_ID_REF warning。"""
+        page = base_page()
+        page["templateContract"]["templateSource"] = \
+            "common-design/references/02-template/01-page-types.md#page-list-drawer"
+        page["wireframe"]["layoutSource"] = "Common Design page-list-drawer"
+        code, report = run_validator(make_spec([page]), strict=True)
+        self.assertEqual(code, 0, f"report={report}")
+        hits = [e for e in report.get("warnings", []) if e.get("errorCode") == "LEGACY_TEMPLATE_ID_REF"]
+        self.assertGreaterEqual(len(hits), 2, f"应在 templateSource 与 layoutSource 各告警一次, report={report}")
+
+    def test_template_id_consistency_absent_skips(self):
+        """未声明 designContext、页面也未携带模板引用文本 -> RULE-56 不启用。"""
+        code, report = run_validator(make_spec([base_page()]), strict=True)
+        self.assertEqual(code, 0)
+        codes = set(error_codes(report)) | set(warning_codes(report))
+        self.assertNotIn("TEMPLATE_COVERAGE_UNAPPLIED", codes)
+        self.assertNotIn("LEGACY_TEMPLATE_ID_REF", codes)
+
+    # ---- 表单单列布局闭环（RULE-57）----
+    FORM_LAYOUT_CODES = ("FORM_LAYOUT_MULTI_COLUMN", "FORM_LAYOUT_LABEL_NOT_INLINE",
+                         "FORM_LAYOUT_BASIS_UNREAD")
+    FORM_FIELDS = [
+        {"name": "策略名称", "iduxComponent": "IxInput", "rules": "必填"},
+        {"name": "生效范围", "iduxComponent": "IxSelect", "rules": "单选"},
+        {"name": "优先级", "iduxComponent": "IxInputNumber", "rules": "1-100"},
+    ]
+    FORM_ONE_COLUMN_ASCII = (
+        "表单弹窗（form-modal）\n"
+        "弹窗标题  新建策略\n"
+        "表单配置项（单列）：\n"
+        "策略名称          [________________]\n"
+        "生效范围          [请选择]\n"
+        "优先级            [___]\n"
+        "底部按钮区  [确定] [取消]"
+    )
+    FORM_MULTI_COLUMN_ASCII = FORM_ONE_COLUMN_ASCII.replace(
+        "策略名称          [________________]",
+        "策略名称  [________________]    生效范围  [请选择]")
+    FORM_LABEL_SPLIT_ASCII = FORM_ONE_COLUMN_ASCII.replace(
+        "策略名称          [________________]", "策略名称\n[________________]")
+    FORM_BASIS_REF = "common-design/references/04-forms/01-form-spec.md#表单布局"
+    FORM_BASIS_LEDGER = [{"ref": FORM_BASIS_REF, "status": "read"}]
+
+    def _form_modal_spec(self, ascii_text, refs=None, ledger=None, fields=None):
+        """表单弹窗页面：ascii 可定制；默认登记表单布局依据并精读。"""
+        page = base_page()
+        page["id"] = "F01"
+        page["name"] = "新建策略"
+        page["type"] = "表单弹窗"
+        page["templateContract"] = {
+            "templateId": "form-modal", "baseTemplateId": "",
+            "templateSource": "common-design/references/02-template/01-page-types.md#form-modal",
+            "requiredRegions": ["modal-shell", "modal-header", "form-content", "modal-footer"],
+            "optionalRegions": [], "regionOrder": ["modal-shell", "modal-header", "form-content", "modal-footer"],
+            "footerContract": {"required": True, "alignment": "right", "buttonOrder": ["cancel", "confirm"]},
+            "componentContract": {"shell": ["IxModal"], "form-content": ["IxForm", "IxFormItem"], "footer": ["IxButton"]},
+            "wireframeContract": {},
+            "override": {"enabled": False, "source": "", "reason": "", "affectedRules": []},
+        }
+        page["wireframe"] = {
+            "templateId": "form-modal", "navigationType": "",
+            "layoutSource": "Common Design form-modal",
+            "shell": {"globalNavigation": False,
+                      "titleBar": {"required": True, "type": "modal", "component": "IxModal"},
+                      "contentContainer": {"required": True, "type": "modal-content"},
+                      "footer": {"required": True, "alignment": "right", "height": "56px"}},
+            "regions": [
+                {"id": "modal-shell", "templateRegion": "modal-shell", "position": "top", "required": True, "content": "弹窗外壳"},
+                {"id": "modal-header", "templateRegion": "modal-header", "position": "top", "required": True, "content": "弹窗标题与关闭入口"},
+                {"id": "form-content", "templateRegion": "form-content", "position": "content", "required": True, "content": "表单配置项单列绘制"},
+                {"id": "modal-footer", "templateRegion": "modal-footer", "position": "bottom", "required": True, "content": "底部取消与确定"},
+            ],
+            "variants": [],
+            "ascii": ascii_text,
+        }
+        page["sections"] = [{"title": "表单配置", "type": "form",
+                             "formFields": list(fields if fields is not None else self.FORM_FIELDS)}]
+        page["footerActions"] = [{"label": "确定", "kind": "confirm"}, {"label": "取消", "kind": "cancel"}]
+        page["codingGuide"]["pageItems"] = [{
+            "id": "F01-C01", "scope": "modal-form", "name": "表单弹窗", "mode": "reuse-framework",
+            "mappingRef": "M02", "mappingStatus": "verified",
+            "target": {"path": "src/pages/strategy/modal-form.vue", "export": "StrategyFormModal"},
+            "requirements": ["表单配置项按单列绘制，label 与控件同一行"],
+            "acceptanceCriteria": ["表单单列布局"],
+        }]
+        page["codingGuide"]["designReferences"] = (
+            list(refs) if refs is not None else [{"source": "common-design", "ref": self.FORM_BASIS_REF}])
+        host = base_page()
+        host["operations"] = [{"id": "OP01", "name": "新建策略", "action": "open-container",
+                               "targetPageId": "F01", "targetContainerType": "modal"}]
+        spec = make_spec([host, page])
+        spec["designContext"] = self._design_context(
+            readLedger=list(ledger) if ledger is not None else list(self.FORM_BASIS_LEDGER))
+        return spec
+
+    def test_form_layout_single_column_passes(self):
+        """表单单列 + label 与控件同行 + 表单布局依据已精读 -> 不告警。"""
+        code, report = run_validator(self._form_modal_spec(self.FORM_ONE_COLUMN_ASCII), strict=True)
+        codes = set(error_codes(report)) | set(warning_codes(report))
+        self.assertFalse(codes & set(self.FORM_LAYOUT_CODES), f"report={report}")
+
+    def test_form_layout_multi_column_warns(self):
+        """同一行出现 >=2 个表单配置项 -> FORM_LAYOUT_MULTI_COLUMN（warning，不阻断）。"""
+        code, report = run_validator(self._form_modal_spec(self.FORM_MULTI_COLUMN_ASCII), strict=True)
+        self.assertEqual(code, 0, f"report={report}")
+        self.assertIn("FORM_LAYOUT_MULTI_COLUMN", warning_codes(report))
+
+    def test_form_layout_label_not_inline_warns(self):
+        """label 独占一行、控件在下一行 -> FORM_LAYOUT_LABEL_NOT_INLINE（warning）。"""
+        code, report = run_validator(self._form_modal_spec(self.FORM_LABEL_SPLIT_ASCII), strict=True)
+        self.assertEqual(code, 0, f"report={report}")
+        self.assertIn("FORM_LAYOUT_LABEL_NOT_INLINE", warning_codes(report))
+
+    def test_form_layout_basis_unread_warns(self):
+        """表单布局依据未登记或仅索引（index-only）-> FORM_LAYOUT_BASIS_UNREAD（warning）。"""
+        for refs, ledger in (
+            ([], list(self.FORM_BASIS_LEDGER)),
+            ([{"source": "common-design", "ref": self.FORM_BASIS_REF}],
+             [{"ref": self.FORM_BASIS_REF, "status": "index-only"}]),
+        ):
+            code, report = run_validator(
+                self._form_modal_spec(self.FORM_ONE_COLUMN_ASCII, refs=refs, ledger=ledger), strict=True)
+            self.assertIn("FORM_LAYOUT_BASIS_UNREAD", warning_codes(report), f"report={report}")
+
+    def test_form_layout_basis_read_passes(self):
+        """表单布局依据锚点级登记且精读 -> 无 FORM_LAYOUT_BASIS_UNREAD。"""
+        code, report = run_validator(self._form_modal_spec(self.FORM_ONE_COLUMN_ASCII), strict=True)
+        self.assertNotIn("FORM_LAYOUT_BASIS_UNREAD", set(error_codes(report)) | set(warning_codes(report)))
+
+    def test_form_layout_non_form_page_skips(self):
+        """非表单承载页（表格页）不做表单单列检查。"""
+        page = base_page()
+        page["wireframe"]["ascii"] = "基础表格页\n筛选区 [关键字]  [查询] [重置]\n表格区 事件名称 | 风险等级 | 操作"
+        code, report = run_validator(make_spec([page]), strict=True)
+        codes = set(error_codes(report)) | set(warning_codes(report))
+        self.assertFalse(codes & set(self.FORM_LAYOUT_CODES), f"report={report}")
+
+    # ---- 详情页操作去重（RULE-58）----
+    def _detail_action_page(self, summary_actions, footer_actions, exempt=None):
+        """详情抽屉：顶部概览卡片（summary-card）声明操作 + 底部按钮栏，用于 RULE-58 测试。"""
+        page = drawer_detail_page()
+        summary = {"title": "对象摘要", "type": "summary-card",
+                   "cardFields": [{"name": "策略名称", "iduxComponent": "IxText"}],
+                   "actions": list(summary_actions)}
+        page["sections"] = [summary] + list(page["sections"])
+        page["footerActions"] = list(footer_actions)
+        if exempt is not None:
+            page["detailActionDedupExempt"] = list(exempt)
+        return make_spec([page])
+
+    def test_detail_summary_action_duplicate_warns(self):
+        """概览卡片操作（重启）重复出现在底部按钮栏 -> DETAIL_SUMMARY_ACTION_DUPLICATE（warning）。"""
+        spec = self._detail_action_page(
+            [{"name": "编辑", "kind": "normal"}, {"name": "重启", "kind": "high-impact"}],
+            [{"label": "关闭", "kind": "close"}, {"label": "重启", "kind": "normal"}])
+        code, report = run_validator(spec, strict=True)
+        self.assertIn("DETAIL_SUMMARY_ACTION_DUPLICATE", warning_codes(report), f"report={report}")
+
+    def test_detail_summary_action_alias_duplicate_warns(self):
+        """同义操作名（概览卡片 编辑 vs 底部 修改）也判为重复。"""
+        spec = self._detail_action_page([{"name": "编辑", "kind": "normal"}],
+                                        [{"label": "修改", "kind": "normal"}])
+        code, report = run_validator(spec, strict=True)
+        self.assertIn("DETAIL_SUMMARY_ACTION_DUPLICATE", warning_codes(report), f"report={report}")
+
+    def test_detail_summary_action_no_overlap_passes(self):
+        """概览卡片承载对象级操作、底部只保留页面级动作 -> 不告警。"""
+        spec = self._detail_action_page(
+            [{"name": "编辑", "kind": "normal"}, {"name": "重启", "kind": "high-impact"}],
+            [{"label": "关闭", "kind": "close"}])
+        code, report = run_validator(spec, strict=True)
+        codes = set(error_codes(report)) | set(warning_codes(report))
+        self.assertNotIn("DETAIL_SUMMARY_ACTION_DUPLICATE", codes, f"report={report}")
+
+    def test_detail_action_dedup_exempt_passes(self):
+        """detailActionDedupExempt 显式声明的操作豁免去重。"""
+        spec = self._detail_action_page(
+            [{"name": "重启", "kind": "high-impact"}],
+            [{"label": "关闭", "kind": "close"}, {"label": "重启", "kind": "normal"}],
+            exempt=["重启"])
+        code, report = run_validator(spec, strict=True)
+        codes = set(error_codes(report)) | set(warning_codes(report))
+        self.assertNotIn("DETAIL_SUMMARY_ACTION_DUPLICATE", codes, f"report={report}")
+
+    def test_detail_action_dedup_skips_without_summary_actions(self):
+        """概览卡片未声明操作时跳过（条件式启用）。"""
+        spec = self._detail_action_page([], [{"label": "关闭", "kind": "close"},
+                                             {"label": "重启", "kind": "normal"}])
+        code, report = run_validator(spec, strict=True)
+        codes = set(error_codes(report)) | set(warning_codes(report))
+        self.assertNotIn("DETAIL_SUMMARY_ACTION_DUPLICATE", codes, f"report={report}")
+
+    def test_detail_action_dedup_skips_without_footer(self):
+        """无底部按钮栏（footerActions 为空）时跳过。"""
+        spec = self._detail_action_page([{"name": "编辑", "kind": "normal"}], [])
+        code, report = run_validator(spec, strict=True)
+        codes = set(error_codes(report)) | set(warning_codes(report))
+        self.assertNotIn("DETAIL_SUMMARY_ACTION_DUPLICATE", codes, f"report={report}")
+
+    # ---- 复用业务组件容器闭环（RULE-59，条件式：声明 reuseBusinessComponent 时启用）----
+    REUSE_REF = "product-design/references/<sample-doc>.md#资产适用规则检测组件"
+
+    def _reuse_host_page(self, note=True):
+        """宿主页面：基础表格页 + 打开复用容器的操作；note=False 时不在页面上交代复用。"""
+        page = base_page()
+        extra = ("点击[资产适用规则检测]打开弹窗，复用 Product Design 组件，不单独绘制"
+                 if note else "点击[资产适用规则检测]打开弹窗查看规则命中结果")
+        page["wireframe"]["ascii"] = "标题栏/筛选/工具栏/表格/分页\n" + extra
+        page["operations"] = [{"id": "P01-OP01", "name": "资产适用规则检测",
+                               "action": "open-container", "targetPageId": "B04",
+                               "targetContainerType": "modal"}]
+        return page
+
+    def _reuse_container_page(self, decl=True, over=False, refs=True, with_entry=True,
+                              trigger="按钮点击", basis="product-design", code_evidence="",
+                              **decl_overrides):
+        """复用业务组件容器（form-modal）：默认不画线框、不写区块与底部按钮，只保留复用开发项。"""
+        page = modal_page()
+        page.update({"id": "B04", "name": "资产适用规则检测"})
+        if not with_entry:
+            page.pop("__unused", None)
+        page["wireframe"]["regions"] = []
+        page["wireframe"]["ascii"] = "弹窗标题/确定" if over else ""
+        if over:
+            page["sections"] = [{"title": "规则表单", "type": "form",
+                                 "formFields": [{"name": "规则名称", "iduxComponent": "IxInput"}]}]
+            page["footerActions"] = [{"label": "确定", "kind": "confirm"}]
+        else:
+            page["sections"] = []
+            page["footerActions"] = []
+        page["codingGuide"]["pageItems"] = [{
+            "id": "B04-C01", "scope": "reuse-business-component", "name": "资产适用规则检测",
+            "mode": "reuse", "mappingRef": "M09", "mappingStatus": "verified",
+            "target": {"path": "product-design", "export": "AssetRuleCheckModal"},
+            "requirements": ["复用业务封装组件，不单独实现"],
+            "acceptanceCriteria": ["样式以业务实现为准"],
+        }]
+        page["codingGuide"]["designReferences"] = [{"source": "product-design", "ref": self.REUSE_REF}] if refs else []
+        if decl:
+            decl_obj = {"decision": "reuse", "componentRef": self.REUSE_REF,
+                        "hostPageId": "P01", "trigger": trigger, "basis": basis}
+            if code_evidence:
+                decl_obj["codeEvidence"] = code_evidence
+            decl_obj.update(decl_overrides)
+            page["reuseBusinessComponent"] = decl_obj
+        return page
+
+    def _reuse_spec(self, container_kw=None, host_note=True, ledger=None, with_entry=True):
+        host = self._reuse_host_page(host_note)
+        if not with_entry:
+            host.pop("operations", None)
+            host["wireframe"]["ascii"] = "标题栏/筛选/工具栏/表格/分页"
+        container = self._reuse_container_page(with_entry=with_entry, **(container_kw or {}))
+        kw = container_kw or {}
+        if ledger is None:
+            ledger = [{"ref": self.REUSE_REF, "status": "read"}] if kw.get("refs", True) else []
+        spec = make_spec([host, container])
+        spec["designContext"] = self._design_context(readLedger=ledger)
+        return spec
+
+    def test_reuse_container_minimal_passes(self):
+        """复用容器最小合法：声明 reuse + PD 依据实读 + 宿主交代 -> 无 RULE-59 码。"""
+        code, report = run_validator(self._reuse_spec(), strict=True)
+        codes = set(error_codes(report)) | set(warning_codes(report))
+        self.assertEqual(code, 0, f"report={report}")
+        self.assertFalse([c for c in codes if c.startswith("REUSE_")], f"report={report}")
+
+    def test_reuse_container_over_described_fails(self):
+        """声明复用却仍自绘线框/区块/底部按钮 -> REUSE_CONTAINER_OVER_DESCRIBED error。"""
+        code, report = run_validator(self._reuse_spec({"over": True}), strict=True)
+        self.assertNotEqual(code, 0)
+        self.assertIn("REUSE_CONTAINER_OVER_DESCRIBED", error_codes(report), f"report={report}")
+
+    def test_reuse_basis_unread_warns(self):
+        """basis=product-design 但依据未精读（readLedger 未 read）-> REUSE_BASIS_UNREAD warning。"""
+        code, report = run_validator(self._reuse_spec(ledger=[]), strict=True)
+        self.assertIn("REUSE_BASIS_UNREAD", warning_codes(report), f"report={report}")
+
+    def test_reuse_basis_code_without_evidence_warns(self):
+        """basis=code 但未填 codeEvidence -> REUSE_BASIS_UNREAD warning。"""
+        code, report = run_validator(
+            self._reuse_spec({"basis": "code", "refs": False}), strict=True)
+        self.assertIn("REUSE_BASIS_UNREAD", warning_codes(report), f"report={report}")
+
+    def test_reuse_host_note_missing_warns(self):
+        """宿主页面未交代复用（无线框说明/无复用标记）-> REUSE_HOST_NOTE_MISSING warning。"""
+        code, report = run_validator(self._reuse_spec(host_note=False), strict=True)
+        self.assertIn("REUSE_HOST_NOTE_MISSING", warning_codes(report), f"report={report}")
+
+    def test_reuse_scope_invalid_warns(self):
+        """trigger 非法；且容器无宿主入口（独立页面）-> REUSE_SCOPE_INVALID warning。"""
+        code, report = run_validator(self._reuse_spec({"trigger": "随便看看"}), strict=True)
+        self.assertIn("REUSE_SCOPE_INVALID", warning_codes(report), f"report={report}")
+        code2, report2 = run_validator(
+            self._reuse_spec(with_entry=False, container_kw={"refs": False}), strict=True)
+        self.assertIn("REUSE_SCOPE_INVALID", warning_codes(report2), f"report={report2}")
+
+    def test_reuse_candidate_unmarked_warns(self):
+        """容器已引用 PD 业务组件依据且有宿主入口，但未声明复用 -> REUSE_CANDIDATE_UNMARKED warning。"""
+        code, report = run_validator(self._reuse_spec({"decl": False}), strict=True)
+        self.assertIn("REUSE_CANDIDATE_UNMARKED", warning_codes(report), f"report={report}")
+
+    def test_reuse_absent_skips(self):
+        """无复用声明且无 PD 业务组件依据 -> RULE-59 不启用（历史格式不误伤）。"""
+        code, report = run_validator(
+            self._reuse_spec({"decl": False, "refs": False}, ledger=[]), strict=True)
+        codes = set(error_codes(report)) | set(warning_codes(report))
+        self.assertFalse([c for c in codes if c.startswith("REUSE_")], f"report={report}")
+
+
+def load_registry():
+    """读取模板注册表（页面类型更名回归测试用）。"""
+    with open(REGISTRY, encoding="utf-8") as f:
+        return json.load(f)
+
+
+def log_detail_drawer_page(**overrides):
+    """合法日志详情抽屉（log-detail-drawer），用于页面类型更名（2026）回归测试。"""
+    page = base_page()
+    page.update({
+        "id": "L01",
+        "name": "操作日志详情",
+        "type": "日志详情抽屉",
+        "templateContract": {
+            "templateId": "log-detail-drawer",
+            "baseTemplateId": "",
+            "navigationType": "",
+            "templateSource": "common-design/references/02-template/01-page-types.md#log-detail-drawer",
+            "requiredRegions": ["drawer-shell", "drawer-header", "detail-content", "drawer-footer"],
+            "optionalRegions": [],
+            "regionOrder": ["drawer-shell", "drawer-header", "detail-content", "drawer-footer"],
+            "footerContract": {"required": True, "alignment": "left",
+                               "buttonOrder": ["previous", "next-or-complete", "close"]},
+            "componentContract": {"shell": ["IxDrawer"], "detail-content": ["IxProDesc"], "footer": ["IxButton"]},
+            "wireframeContract": {},
+            "override": {"enabled": False, "source": "", "reason": "", "affectedRules": []},
+        },
+        "wireframe": {
+            "templateId": "log-detail-drawer",
+            "navigationType": "",
+            "layoutSource": "Common Design log-detail-drawer",
+            "shell": {
+                "globalNavigation": False,
+                "titleBar": {"required": True, "type": "drawer", "component": ""},
+                "contentContainer": {"required": True, "type": "drawer-content"},
+                "footer": {"required": True, "alignment": "left", "height": "56px"},
+            },
+            "regions": [
+                {"id": "drawer-shell", "templateRegion": "drawer-shell", "position": "top", "required": True, "content": "抽屉外壳"},
+                {"id": "drawer-header", "templateRegion": "drawer-header", "position": "top", "required": True, "content": "抽屉标题与关闭入口"},
+                {"id": "detail-content", "templateRegion": "detail-content", "position": "content", "required": True, "content": "分组标题与描述列表"},
+                {"id": "drawer-footer", "templateRegion": "drawer-footer", "position": "bottom", "required": True, "content": "底部操作区：上一个/下一个/关闭"},
+            ],
+            "variants": [],
+            "ascii": "抽屉标题/分组标题/详情描述列表/底部上一个下一个关闭",
+        },
+        "sections": [
+            {"title": "基础信息", "type": "detail",
+             "detailFields": [{"name": "时间", "iduxComponent": "IxText"},
+                              {"name": "操作人", "iduxComponent": "IxText"}]},
+        ],
+        "footerActions": [
+            {"label": "上一个", "kind": "previous"},
+            {"label": "下一个", "kind": "next-or-complete"},
+            {"label": "关闭", "kind": "close"},
+        ],
+        "codingGuide": {
+            "pageItems": [
+                {
+                    "id": "L01-C01", "scope": "drawer-detail", "name": "日志详情抽屉", "mode": "reuse-framework",
+                    "mappingRef": "M07", "mappingStatus": "verified",
+                    "target": {"path": "src/pages/log/detail-drawer.vue", "export": "LogDetailDrawer"},
+                    "requirements": ["保留抽屉外壳、标题栏、描述列表与底部按钮结构"],
+                    "acceptanceCriteria": ["抽屉结构一致"],
+                }
+            ]
+        },
+    })
+    page.update(overrides)
+    return page
+
+
+def log_entry_host_page(**overrides):
+    """日志列表（宿主页面），通过 open-container 操作指向日志详情抽屉。"""
+    page = base_page()
+    page["sections"] = [
+        {"title": "筛选区", "type": "filter", "filterFields": [{"name": "操作人", "iduxComponent": "IxInput"}]},
+        {"title": "工具栏", "type": "toolbar"},
+        {"title": "表格主体", "type": "table",
+         "tableFields": [{"name": "时间", "iduxComponent": "IxText"},
+                         {"name": "操作人", "iduxComponent": "IxText"}]},
+    ]
+    page["operations"] = [
+        {"id": "OP01", "name": "查看日志详情", "action": "open-container",
+         "targetPageId": "L01", "targetContainerType": "drawer", "confirm": False},
+    ]
+    page.update(overrides)
+    return page
+
+
+class TestPageTypeRename(unittest.TestCase):
+    """页面类型更名（2026）：弹窗/抽屉不再称“页”，中文名与 templateId 唯一来源为模板注册表。"""
+
+    NEW_TYPES = {
+        "列表弹窗": "list-modal",
+        "列表抽屉": "list-drawer",
+        "详情抽屉": "detail-drawer",
+        "日志详情抽屉": "log-detail-drawer",
+        "表单弹窗": "form-modal",
+        "表单抽屉": "form-drawer",
+    }
+
+    def test_registry_keys_renamed(self):
+        """注册表仅含 14 个新 templateId，旧 page-list-* / page-detail-* / page-form-* 全部清除。"""
+        keys = set(load_registry()["templates"])
+        self.assertEqual(keys, {
+            "page-table-basic", "page-table-tree", "page-table-overview", "page-table-overview-tree",
+            "list-modal", "list-drawer", "page-detail-drilldown", "detail-drawer", "log-detail-drawer",
+            "page-form-config", "page-form-stepper", "form-modal", "form-drawer", "page-dashboard",
+        })
+        for old in ("page-list-modal", "page-list-drawer", "page-detail-drawer",
+                    "page-detail-log", "page-form-modal", "page-form-drawer"):
+            self.assertNotIn(old, keys, f"旧 templateId 未清理: {old}")
+
+    def test_registry_names_present_and_updated(self):
+        """每个模板都有中文 name；6 个更名模板用新名，旧中文名不得残留。"""
+        templates = load_registry()["templates"]
+        for tid, tpl in templates.items():
+            self.assertTrue(str(tpl.get("name", "")).strip(), f"{tid} 缺少 name 字段")
+        for tid, name in {v: k for k, v in self.NEW_TYPES.items()}.items():
+            self.assertEqual(templates[tid]["name"], name, f"{tid} 中文名应为 {name}")
+        old_names = {"弹窗列表页", "抽屉列表页", "抽屉详情页", "日志详情页", "弹窗表单页", "抽屉表单页"}
+        all_names = {t.get("name", "") for t in templates.values()}
+        self.assertFalse(old_names & all_names, f"注册表残留旧中文名: {sorted(old_names & all_names)}")
+
+    def test_registry_footer_button_order_canonical(self):
+        """注册表 buttonOrder 只能使用规范槽位，避免与校验器槽位词表失配。"""
+        allowed = {"previous", "next-or-complete", "cancel", "confirm", "close"}
+        for tid, tpl in load_registry()["templates"].items():
+            order = set((tpl.get("footer") or {}).get("buttonOrder") or [])
+            self.assertTrue(order <= allowed, f"{tid} buttonOrder 使用了非规范槽位 {sorted(order - allowed)}")
+
+    def test_new_type_name_derives_template_id(self):
+        """中文页面类型名 -> templateId 由注册表 name 派生（TYPE_TEMPLATE_MAP 不再硬编码）。"""
+        for cn, tid in self.NEW_TYPES.items():
+            page = base_page(type=cn)
+            code, report = run_validator(make_spec([page]), strict=True)
+            self.assertNotIn("UNREGISTERED_TYPE", error_codes(report), f"{cn} 应为已注册类型")
+            mismatches = [e for e in report.get("errors", []) if e.get("errorCode") == "TYPE_TEMPLATE_MISMATCH"]
+            self.assertEqual(len(mismatches), 1, f"{cn} 应触发一次 TYPE_TEMPLATE_MISMATCH, report={report}")
+            self.assertEqual(mismatches[0].get("expected"), tid, f"{cn} 应映射到 {tid}")
+
+    def test_old_type_name_unregistered(self):
+        """旧中文页面类型名（抽屉列表页）已废弃 -> UNREGISTERED_TYPE。"""
+        code, report = run_validator(make_spec([base_page(type="抽屉列表页")]), strict=True)
+        self.assertNotEqual(code, 0)
+        self.assertIn("UNREGISTERED_TYPE", error_codes(report))
+
+    def test_old_template_id_not_registered(self):
+        """旧 templateId（page-list-drawer）已废弃 -> TEMPLATE_NOT_REGISTERED。"""
+        page = base_page()
+        page["templateContract"]["templateId"] = "page-list-drawer"
+        page["templateContract"]["templateSource"] = "common-design/references/02-template/01-page-types.md#page-list-drawer"
+        page["wireframe"]["templateId"] = "page-list-drawer"
+        page["wireframe"]["layoutSource"] = "Common Design page-list-drawer"
+        code, report = run_validator(make_spec([page]), strict=True)
+        self.assertNotEqual(code, 0)
+        self.assertIn("TEMPLATE_NOT_REGISTERED", error_codes(report))
+
+    def test_legacy_type_names_unregistered(self):
+        """旧中文类型名（步骤条配置页/仪表盘页）已废弃 -> UNREGISTERED_TYPE；最新名（下钻步骤条配置页/Dashboard）通过。"""
+        for cn in ("步骤条配置页", "仪表盘页"):
+            _code, report = run_validator(make_spec([base_page(type=cn)]), strict=True)
+            self.assertIn("UNREGISTERED_TYPE", error_codes(report), f"{cn} 应判为未注册页面类型名")
+        for cn in ("下钻步骤条配置页", "Dashboard"):
+            _code, report = run_validator(make_spec([base_page(type=cn)]), strict=True)
+            self.assertNotIn("UNREGISTERED_TYPE", error_codes(report), f"{cn} 应为已注册页面类型名")
+
+    def test_detail_page_detected_via_template_contract(self):
+        """详情类页面判定读取 templateContract.templateId：类型名为 PD 自定义（不含“详情”）时仍按详情处理。"""
+        page = drawer_detail_page()
+        page["type"] = "策略信息抽屉"
+        page["sections"] = [
+            {"title": "对象摘要", "type": "object-summary", "fields": ["策略名称", "启用状态"]},
+            {"title": "基本信息", "type": "detail", "detailFields": [{"name": "策略名称"}, {"name": "描述"}]},
+        ]
+        _code, report = run_validator(make_spec([page]), strict=True)
+        self.assertIn("DETAIL_FIELD_DUPLICATE", warning_codes(report))
+
+    def test_log_detail_drawer_page_passes(self):
+        """日志详情抽屉使用新 ID 与左对齐 footer -> 通过，且不被当作整页。"""
+        code, report = run_validator(make_spec([log_entry_host_page(), log_detail_drawer_page()]), strict=True)
+        self.assertEqual(code, 0, f"report={report}")
+        codes = set(error_codes(report)) | set(warning_codes(report))
+        for c in ("UNREGISTERED_TYPE", "TEMPLATE_NOT_REGISTERED", "TYPE_TEMPLATE_MISMATCH",
+                  "FOOTER_ALIGNMENT_MISMATCH", "FOOTER_BUTTON_ORDER_MISMATCH"):
+            self.assertNotIn(c, codes, f"不应出现 {c}")
+
+    def test_log_detail_drawer_right_footer_fails(self):
+        """日志详情抽屉属抽屉类，footer 声明右对齐 -> FOOTER_ALIGNMENT_MISMATCH。"""
+        page = log_detail_drawer_page()
+        page["templateContract"]["footerContract"]["alignment"] = "right"
+        page["wireframe"]["shell"]["footer"]["alignment"] = "right"
+        code, report = run_validator(make_spec([page]), strict=True)
+        self.assertNotEqual(code, 0)
+        self.assertIn("FOOTER_ALIGNMENT_MISMATCH", error_codes(report))
 
 
 if __name__ == "__main__":
