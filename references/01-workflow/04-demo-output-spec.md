@@ -18,7 +18,7 @@
 
 ## 页面类型
 
-<填写页面类型，如基础表格页、表单抽屉、自定义页面类型等>
+<填写页面类型中文名与页面模板 ID，格式为"中文名（模板 ID：xxx）"，如"基础表格页（模板 ID：page-table-basic）"、"表单抽屉（模板 ID：form-drawer）"；匹配 Product Design 覆盖时补注"templateBase=product"与模板出处锚点；自定义页面类型写"自定义页面类型（templateId=custom，基础模板 ID：<注册表标准模板 ID>）"。模板 ID 取自当前模板注册表 references/02-template-contracts/common-design-template-registry.json，必须与 templateContract.templateId 完全一致，禁止写历史旧模板 ID（RULE-56 以 LEGACY_TEMPLATE_ID_REF 告警）>
 
 ## 页面内容区块
 
@@ -123,7 +123,7 @@ HTML说明书中的线框图部分只展示对确认页面结构有用的内容�
   - 如果Product Design中已经明确该业务、该页面或相似模块使用的筛选方式，必须以Product Design为准，不得自行改成其他筛选方式。
   - 如果Product Design没有说明，再根据页面复杂度判断使用平铺筛选或高级搜索框。
   - 平铺筛选：适合筛选项较少或需要高频操作的列表页；在筛选区组件说明中统一列出各独立组件名称（组件名来源见本节末“组件名来源规则”），筛选字段表格不再单独标注iDux组件名称，但需说明选项范围、默认值和匹配方式。
-  - 高级搜索框：适合筛选项较多、不适合全部平铺展示的列表页；必须说明使用一个高级搜索组件（组件名来源见本节末“组件名来源规则”）承载整体筛选；内部字段不展开控件外观，筛选字段表格不再单独标注iDux组件名称，只需说明每个字段的筛选方式，例如单选、多选、模糊搜索、精确搜索、时间范围筛选。
+  - 高级搜索框：适合筛选项较多、不适合全部平铺展示的列表页；必须说明使用一个高级搜索组件（组件名来源见本节末“组件名来源规则”）承载整体筛选；内部字段不展开控件外观，筛选字段表格不再单独标注iDux组件名称，只需说明每个字段的筛选方式，例如单选、多选、模糊搜索、精确搜索、时间范围筛选。**线框图只绘制高级搜索组件本身及其在页面中的位置，筛选与搜索全部收敛在该组件内，禁止再单独绘制筛选区/查询区/过滤区行（平铺筛选项）**——IxProSearch 的筛选和搜索都集成在高级搜索组件里，重复绘制会让 Coding 阶段把平铺筛选与高级搜索各实现一遍；违反时 RULE-46 给出 `WIREFRAME_PROSEARCH_FILTER_DUPLICATE` 告警。表格工具栏相应只保留按钮类操作，不承载筛选字段。
   - 当需求没有明确筛选条件时，优先根据表格字段语义自动补充查询区；不要因为需求未提到筛选条件就默认不设置筛选。自动补齐的筛选项控件类型按本节末“组件名来源规则”确定，本 Skill 不枚举组件映射规则；若字段不足以明确判断，至少补齐名称搜索、状态筛选和时间筛选。对于这类自动补齐的筛选项，需要在页面说明和页面级Coding指导里写明补齐的字段、控件类型和补齐依据，避免被误认为遗漏。若筛选项较多或需要组合管理，应在页面说明中直接使用“高级搜索框”整体描述，不要逐项展开内部筛选字段。
   - 组件名来源规则：匹配 Product Design 且其 Component 层（或 coverage 中 capability 为 `component` / `pattern` 的能力）已登记该业务封装组件时，组件名与用法以 Product Design 业务组件为准，并须在页面 `codingGuide.designReferences` 登记 `source=product-design` 与对应 `ability`（未登记以 RULE-43 `ABILITY_SOURCE_NOT_REGISTERED` 阻断）；Product Design 未登记该能力时，以已读取 Common Design 组件映射表（`common-design/references/05-components/idux-component-map.md`）为准；两者均未覆盖时，标注为 AI 补齐的语义级能力描述。Product Design 已登记的 Component Reference 优先于 Common Design 通用组件，严禁一律写死为 Common Design 通用组件。组件**形态（variant）**的来源分两层、各管一段：**命名/枚举真值**以已读取的 Common Design 组件映射（`common-design/references/05-components/idux-component-map.md`，按组件锚点精读）为准——当某组件登记了多种形态（如 IxTag 的多种标签样式、IxSelect 下拉面板的搜索/新增/树/分组、单选/多选的 radio/卡片）时，须在字段 `iduxComponentForm` 写明本页选用的形态，并以 `formCandidates` 登记该组件在 Common Design 中的形态候选；**选择依据真值**以 Common Design widget patterns（`common-design/references/03-patterns/07-widget-patterns/`，按“目录级索引 + 命中控件对应文件精读”读取，Product Design 侧 pattern 文档同等可用）为准，判定依据须锚点级登记到页面 `codingGuide.designReferences` 且在 `readLedger` 命中 `status=read`（RULE-54，warning 级）。缺组件映射依据或依据未精读命中、缺 widget pattern 选择依据或依据未精读命中，分别告警 `COMPONENT_FORM_SOURCE_UNREAD`、`COMPONENT_FORM_RULE_UNREAD`；单形态组件留空 `formCandidates` 即可、零负担。禁止凭直觉自造形态，禁止未读 widget patterns 判定依据就选定形态。
 - 表格字段：
@@ -202,7 +202,7 @@ HTML说明书标题必须是“XX需求设计说明书”。HTML采用“Markdow
 右侧内容规则：
 
 - 点击“总览”：展示需求概括、导航结构、页面总览表和总览AI Coding指导。
-- 点击具体页面：以一列结构展示页面目标、页面基础信息、页面内容区块、底部操作和页面级AI Coding指导；页面类型不要作为标题旁标签展示，必须与页面布局放在同一个“页面基础信息”区域，导航位置必须在页面基础信息中用“一级导航、二级导航、三级导航、Tab页面”表格展示。
+- 点击具体页面：以一列结构展示页面目标、页面基础信息、页面内容区块、底部操作和页面级AI Coding指导；页面类型不要作为标题旁标签展示，必须与页面布局放在同一个“页面基础信息”区域，且须同时展示页面类型中文名与页面模板 ID（格式：中文名（模板 ID：xxx）），导航位置必须在页面基础信息中用“一级导航、二级导航、三级导航、Tab页面”表格展示。
 - 交互与逻辑规则必须整合到对应页面的内容区块说明中：属于P001的搜索筛选、排序分页、状态值、空状态和列表操作写在P001的表格区或概览区说明中；属于新增弹窗的表单校验、下拉选项、提交反馈和二次确认写在新增弹窗的表单区或底部操作说明中。禁止在页面内再单独生成“页面内关键交互”或“页面交互与逻辑规则”章节。
 - Coding指导按层级放置：总览AI Coding指导写全局复用策略、全局Mock数据、全局编码约束和页面开发顺序；页面级AI Coding指导开头输出模板契约（templateId/templateSource/模板必需区域/区域顺序/底部操作契约），随后写单个页面的开发项编码指导表、页面级Mock数据要求和页面级补充说明。
 
@@ -537,7 +537,7 @@ Product Design 已登记降级：当某组件令牌已被页面的 Product Desig
 
 结构校验除正向断言（RULE-09/10/11/12 要求必需区域存在、顺序正确、组件齐备）外，还需反向核对结构化 `regions`、底部按钮与 `wireframe.ascii` 实际绘制是否互相印证。
 
-底部操作区按钮（RULE-37）：`wireframe.ascii` 底部操作区必须按模板 `footer.buttonOrder` 绘制按钮，且按钮文案落在模板允许的标签集合内。按钮文案与语义槽位的对应关系由校验器的槽位标签集合统一登记：`previous`（上一步/上一个）、`next-or-complete`（下一步/下一个/完成/提交）、`cancel`（取消）、`confirm`（确定/确认/保存）、`close`（关闭）；日志详情抽屉按 Common Design §1.9 使用"上一个/下一个/关闭"，抽屉类页面底部按钮统一左对齐（left），弹窗类页面保持右对齐（right）。
+底部操作区按钮（RULE-37）：`wireframe.ascii` 底部操作区必须按模板 `footer.buttonOrder` 绘制按钮，且按钮文案落在模板允许的标签集合内。按钮文案与语义槽位的对应关系由校验器的槽位标签集合统一登记：`previous`（上一步/上一个）、`next-or-complete`（下一步/下一个/完成/提交）、`cancel`（取消）、`confirm`（确定/确认/保存）、`close`（关闭）；详情抽屉（detail-drawer）与日志详情抽屉（log-detail-drawer）按 Common Design 已取消底部关闭按钮——关闭入口统一使用抽屉右上角 X，线框图与 footerActions 不得再画"关闭"，抽屉类页面底部按钮统一左对齐（left），弹窗类页面保持右对齐（right）。
 
 | 场景 | 级别 | errorCode |
 |---|---|---|
@@ -548,6 +548,7 @@ Product Design 已登记降级：当某组件令牌已被页面的 Product Desig
 | `regions[].position` 的相对顺序与 `wireframe.ascii` 中区域标签首次出现的行序不一致 | warning | WIREFRAME_REGION_ORDER_MISMATCH |
 | 页面级单例控件（导出/导入/刷新/查询/重置/确定/取消等，见校验器 `SINGULAR_CONTROLS`）在 `wireframe.ascii` 中同页重复绘制 | warning | WIREFRAME_DUPLICATE_CONTROL |
 | 同一内容区域（步骤条/Tab/工具栏/筛选区/分页，见校验器 `REGION_SINGLETON_KEYS`）在 `wireframe.ascii` 中被重复绘制 | warning | WIREFRAME_DUPLICATE_REGION |
+| 页面筛选声明为高级搜索（IxProSearch/高级搜索，见校验器 `PROSEARCH_MARKERS`）时，`wireframe.ascii` 仍单独绘制筛选区/查询区/过滤区行（平铺筛选项） | warning | WIREFRAME_PROSEARCH_FILTER_DUPLICATE |
 | `wireframe.ascii` 内容行右边界（右竖线）错位，疑似两列结构断裂 | warning | WIREFRAME_COLUMN_ALIGNMENT |
 
 **业务自定义底部按钮**：底部操作区允许出现模板 buttonOrder 之外的业务按钮（以业务为准），但必须通过 `templateContract.override` 声明覆盖来源；未声明即被 RULE-37 判为 `FOOTER_ASCII_CUSTOM_BUTTON` 阻断。

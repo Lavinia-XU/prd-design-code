@@ -137,7 +137,7 @@
 | -------- | ------ | -------- | -------- | -------- | -------- | -------- | ------------ |
 
 ### HTML设计说明书
-- HTML文件：`./<需求名称>-demo-design-spec.html`，输出目录按输出目录判定规则确定：用户明确指定位置时用指定位置；项目根目录存在可确定的 `.demo/design/{hash}/`（`{hash}` 为真实子目录名）时输出到该目录；找不到或无法确定时默认输出到项目根目录。demo-spec.json 与 HTML 同目录输出。目录探测为只读静默检查，未找到目标目录不得报错或中断，直接按项目根目录输出。
+- HTML文件：`./.demo/<需求名称>-demo-design-spec.html`，输出目录按输出目录判定规则确定：用户明确指定位置时用指定位置；项目根目录存在可确定的 `.demo/design/{hash}/`（`{hash}` 为真实子目录名）时输出到该目录；其余情况一律输出到项目根目录下的 `.demo/` 文件夹（已存在则直接放入，不存在则主动创建后再放入）。demo-spec.json 与 HTML 同目录输出。
 - 说明：逐页设计说明、页面级Demo交互与逻辑规则、页面级Coding指导、Mock数据和总结性AI Coding完整提示词已写入HTML。左侧目录按页面层级展示，点击切换后右侧展示对应页面内容。
 
 ### Coding计划
@@ -163,7 +163,7 @@ HTML设计说明书已生成。请先查看HTML页面内容；如果HTML中有�
 ```shell
 python scripts/generate_demo_spec_html.py --input ./demo-spec.json --output ./demo-design-spec.html
 
-注意：`--output` 按输出目录判定规则确定：存在可确定的 `.demo/design/{hash}/` 时写成该目录下的文件路径；否则写成项目根目录下的文件路径；用户明确指定其他位置时按用户指定路径输出。
+注意：`--output` 按输出目录判定规则确定：存在可确定的 `.demo/design/{hash}/` 时写成该目录下的文件路径；其余情况写成项目根目录下 `.demo/` 文件夹内的文件路径（`.demo/` 不存在时先创建）；用户明确指定其他位置时按用户指定路径输出。
 ```
 
 ### 4.2 JSON结构
@@ -244,7 +244,7 @@ python scripts/generate_demo_spec_html.py --input ./demo-spec.json --output ./de
         "wireframeContract": {"variantsRequired": false},
         "override": {"enabled": false, "source": "", "reason": "", "affectedRules": []}
       },
-      "restoreRequirement": {"description": "按Common Design概览表格页模板还原页面骨架，组件信息来自页面模板推荐组件。", "components": [{"area": "标题栏", "iduxComponent": "页面模板指定标题栏组件", "source": "Common Design页面模板", "usage": "承载页面标题和导出、刷新等页面级操作"}, {"area": "筛选区", "iduxComponent": "IxProSearch", "source": "Common Design页面模板", "usage": "承载事件查询条件"}, {"area": "表格", "iduxComponent": "IxTable", "source": "Common Design页面模板", "usage": "承载事件列表字段和行内操作"}, {"area": "分页", "iduxComponent": "IxPagination", "source": "Common Design页面模板", "usage": "承载列表分页"}]},
+      "restoreRequirement": {"description": "按Common Design概览表格页（模板 ID：page-table-overview）还原页面骨架，组件信息来自页面模板推荐组件。", "components": [{"area": "标题栏", "iduxComponent": "页面模板指定标题栏组件", "source": "Common Design页面模板", "usage": "承载页面标题和导出、刷新等页面级操作"}, {"area": "筛选区", "iduxComponent": "IxProSearch", "source": "Common Design页面模板", "usage": "承载事件查询条件"}, {"area": "表格", "iduxComponent": "IxTable", "source": "Common Design页面模板", "usage": "承载事件列表字段和行内操作"}, {"area": "分页", "iduxComponent": "IxPagination", "source": "Common Design页面模板", "usage": "承载列表分页"}]},
       "wireframeNote": "线框图先继承概览表格页模板，再填入事件分析的业务内容；布局来源为已读取的Common Design页面模板。",
       "wireframe": {
         "templateId": "page-table-overview",

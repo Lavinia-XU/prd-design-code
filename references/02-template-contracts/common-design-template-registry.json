@@ -273,8 +273,7 @@
         "drawer-shell",
         "drawer-header",
         "object-summary",
-        "detail-content",
-        "drawer-footer"
+        "detail-content"
       ],
       "requiredComponents": {
         "shell": [
@@ -285,11 +284,9 @@
         ]
       },
       "footer": {
-        "required": true,
+        "required": false,
         "alignment": "left",
-        "buttonOrder": [
-          "close"
-        ]
+        "buttonOrder": []
       },
       "variants": {
         "required": false,
@@ -322,8 +319,7 @@
         "alignment": "left",
         "buttonOrder": [
           "previous",
-          "next-or-complete",
-          "close"
+          "next-or-complete"
         ]
       },
       "variants": {

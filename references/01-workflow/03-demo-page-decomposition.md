@@ -146,7 +146,7 @@ Playbook判定：需求文档中的用户Playbook需按内容实质判断归属�
 
 每个页面类型对应的必需结构、区块顺序与组件组合一律以已读取的 Common Design 页面模板文档为准（若 Product Design 声明了页面模板覆盖，以 Product Design 为准），本 Skill 不保存各页面类型的结构清单，避免与 Common Design 不同步；读取页面模板文档时按 00-design-skill-resolver 的能力识别参考框架确认命中并读取对应模板条目。
 
-HTML逐页说明中必须在页面基础信息里写明“页面类型还原要求”，并描述页面骨架组件。页面骨架组件信息从Common Design页面模板获取，只列标题栏、Tab、筛选区、工具栏、表格、分页、弹窗、抽屉、底部操作等骨架组件，不负责列出全部字段组件。
+HTML逐页说明中必须在页面基础信息里写明“页面类型还原要求”，并描述页面骨架组件。页面类型还原要求必须同时写明页面模板中文名与页面模板 ID，格式如“概览表格页（模板 ID：page-table-overview）”；模板 ID 取自模板注册表（references/02-template-contracts/common-design-template-registry.json）并与 templateContract.templateId 完全一致，匹配 Product Design 覆盖时补注 templateBase=product 与模板出处锚点，自定义页面类型标注 templateId=custom 与基础模板 ID，禁止写历史旧模板 ID。页面骨架组件信息从Common Design页面模板获取，只列标题栏、Tab、筛选区、工具栏、表格、分页、弹窗、抽屉、底部操作等骨架组件，不负责列出全部字段组件。
 
 #### 4.2.5 HTML线框图绘制规则
 

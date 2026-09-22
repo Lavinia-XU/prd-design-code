@@ -50,7 +50,7 @@
 | 2 | 事件处置是否需要审批流，还是安全运维人员可直接处置？ | 用户旅程、状态流转、按钮逻辑 | 默认直接处置，无审批 |
 
 ### 3.4 HTML设计说明书
-- HTML文件：`./data-leak-event-demo-design-spec.html`，输出目录按输出目录判定规则确定（存在可确定的 `.demo/design/{hash}/` 时输出其中，否则默认项目根目录；本示例按默认根目录展示）。
+- HTML文件：`./.demo/data-leak-event-demo-design-spec.html`，输出目录按输出目录判定规则确定（存在可确定的 `.demo/design/{hash}/` 时输出其中，否则输出到项目根目录下的 `.demo/` 文件夹；本示例按 `.demo/` 展示）。
 - 说明：逐页设计说明、页面级Demo交互与逻辑规则、页面级Coding指导、Mock数据和总结性AI Coding完整提示词已写入HTML。左侧目录按页面层级展示，点击切换后右侧展示对应页面内容。
 
 ### 3.5 Coding计划与编码开始
@@ -123,7 +123,7 @@ HTML设计说明书已生成。请先查看HTML页面内容；如果HTML中有�
         "wireframeContract": {"variantsRequired": false},
         "override": {"enabled": false, "source": "", "reason": "", "affectedRules": []}
       },
-      "restoreRequirement": {"description": "还原页面骨架，骨架组件优先取匹配 Product Design 页面模板/Component 层已登记的业务封装，未登记时取 Common Design 页面模板推荐组件。", "components": [{"area": "标题栏", "iduxComponent": "页面模板指定标题栏组件", "source": "Common Design页面模板", "usage": "承载页面标题和导出、刷新等页面级操作"}, {"area": "筛选区", "iduxComponent": "IxProSearch", "source": "Common Design页面模板", "usage": "承载事件查询条件"}, {"area": "表格", "iduxComponent": "IxTable", "source": "Common Design页面模板", "usage": "承载事件列表字段和行内操作"}, {"area": "分页", "iduxComponent": "IxPagination", "source": "Common Design页面模板", "usage": "承载列表分页"}]},
+      "restoreRequirement": {"description": "按 Common Design 概览表格页（模板 ID：page-table-overview）还原页面骨架，骨架组件优先取匹配 Product Design 页面模板/Component 层已登记的业务封装，未登记时取 Common Design 页面模板推荐组件。", "components": [{"area": "标题栏", "iduxComponent": "页面模板指定标题栏组件", "source": "Common Design页面模板", "usage": "承载页面标题和导出、刷新等页面级操作"}, {"area": "筛选区", "iduxComponent": "IxProSearch", "source": "Common Design页面模板", "usage": "承载事件查询条件"}, {"area": "表格", "iduxComponent": "IxTable", "source": "Common Design页面模板", "usage": "承载事件列表字段和行内操作"}, {"area": "分页", "iduxComponent": "IxPagination", "source": "Common Design页面模板", "usage": "承载列表分页"}]},
       "sections": [
         {
           "title": "概览统计区",

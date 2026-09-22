@@ -77,7 +77,7 @@ RULES = [
     {"ruleId": "RULE-43", "errorCode": "DESIGN_REF_UNREAD / DESIGN_REF_UNANCHORED / TEMPLATE_OVERRIDE_NOT_APPLIED / TEMPLATE_SOURCE_UNREGISTERED / ABILITY_SOURCE_NOT_REGISTERED / DESIGN_CONTEXT_INCOMPLETE", "name": "设计依据一致性（条件式，顶层声明 designContext 时启用）：common/product-design 依据必须锚点级命中 readLedger 且 status=read（引用未读章节阻断，整篇已读用 #* 声明）；Product Design 声明模板覆盖时被覆盖页面必须真正采用 product 模板（禁止落到 Common Design）；coverage 声明 extend/override 的任意能力，适用页面必须登记同 ability 的 product-design 依据；采用 product 模板必须反向登记 product-design 依据并声明 productDesign.matched", "check": "check_design_basis_consistency", "source": "references/01-workflow/00-design-skill-resolver.md 设计依据登记与读取 / references/01-workflow/04-demo-output-spec.md designContext（RULE-43）", "tests": "test_design_context_unread_ref_fails, test_design_context_anchor_unread_fails, test_design_context_whole_doc_read_passes, test_design_context_template_override_not_applied_fails, test_design_context_template_source_unregistered_fails, test_ability_source_not_registered_fails, test_ability_source_registered_passes, test_design_context_consistent_passes, test_design_context_absent_skips"},
     {"ruleId": "RULE-44", "errorCode": "EXPORT_WITHOUT_VERIFY / COMPONENT_WITHOUT_VERIFY / VISUAL_BASELINE_WITHOUT_VERIFY / MAPPINGREF_WITHOUT_VERIFY / COMPONENT_PATH_WITHOUT_VERIFY", "name": "未核验实现细节隔离：partial/unavailable 时禁止把未核验的真实代码对象（target.export、产品专有组件名、真实组件路径、可视化基线页面、路径式 mappingRef）当作设计结论写进字段/编码指导，只能做语义级描述，真实导出名/Props/Events 留待 Coding Gate 核验", "check": "check_unverified_implementation", "source": "references/01-workflow/05-interaction-coding-guidelines.md 代码可用状态与设计依据分离 / references/01-workflow/04-demo-output-spec.md 未核验对象约束（RULE-44）", "tests": "test_unverified_export_fails, test_unverified_component_name_fails, test_unverified_ix_component_passes, test_unverified_visual_baseline_fails"},
     {"ruleId": "RULE-45", "errorCode": "WIREFRAME_REGION_ORDER_MISMATCH", "name": "线框图区域顺序一致性（warning）：regions 声明顺序应与 ascii 自上而下的绘制顺序一致，出现逆序（后面的区域绘制在更靠上的位置）时提示", "check": "check_wireframe_region_ascii_order", "source": "references/01-workflow/04-demo-output-spec.md 线框图绘制规范 / references/01-workflow/03-demo-page-decomposition.md 区域结构", "tests": "test_wireframe_region_order_mismatch_warns"},
-    {"ruleId": "RULE-46", "errorCode": "WIREFRAME_DUPLICATE_CONTROL / WIREFRAME_DUPLICATE_REGION", "name": "线框图重复绘制检测（warning）：带标记的控件标签（【】/[]）重复出现时提示；同一内容区域（步骤条/Tab/工具栏/筛选区/分页）在 ascii 中被绘制多次时提示", "check": "check_wireframe_duplicate_control", "source": "references/01-workflow/04-demo-output-spec.md 线框图绘制规范", "tests": "test_wireframe_duplicate_singular_control_warns, test_wireframe_duplicate_region_warns"},
+    {"ruleId": "RULE-46", "errorCode": "WIREFRAME_DUPLICATE_CONTROL / WIREFRAME_DUPLICATE_REGION / WIREFRAME_PROSEARCH_FILTER_DUPLICATE", "name": "线框图重复绘制检测（warning）：带标记的控件标签（【】/[]）重复出现时提示；同一内容区域（步骤条/Tab/工具栏/筛选区/分页）在 ascii 中被绘制多次时提示；页面筛选声明为高级搜索（IxProSearch/高级搜索）时线框图不得再单独绘制筛选区/查询区/过滤区行（筛选与搜索已收敛进高级搜索组件，重复绘制会导致 Coding 阶段重复实现）", "check": "check_wireframe_duplicate_control", "source": "references/01-workflow/04-demo-output-spec.md 线框图绘制规范 / 11.12 线框与区域结构双向一致性", "tests": "test_wireframe_duplicate_singular_control_warns, test_wireframe_duplicate_region_warns, test_prosearch_filter_duplicate_warns, test_prosearch_filter_converged_passes, test_prosearch_absent_skips"},
     {"ruleId": "RULE-47", "errorCode": "WIREFRAME_COLUMN_ALIGNMENT", "name": "线框图列对齐一致性（warning）：内容行右边界（右竖线）应在同一列，出现明显错位（两列结构断裂）时提示", "check": "check_wireframe_column_alignment", "source": "references/01-workflow/04-demo-output-spec.md 线框图绘制规范", "tests": "test_wireframe_column_alignment_warns, test_wireframe_full_layout_passes"},
     {"ruleId": "RULE-48", "errorCode": "REQUIRED_OPTION_MISSING / OPTION_FIELD_NOT_FOUND / OPTION_TRUNCATION_MARKER / OPTION_SET_INVALID / OPTION_SET_INCOMPLETE / OPTION_DIMENSION_LOST", "name": "下拉选项完整性与维度保留（条件式，页面声明 requirementOptionSets 时启用）：固定选项型下拉的完整选项必须逐项落入表单选项/规则(rules)或筛选选项范围(options)单元格，声明选项缺失阻断，声明字段不存在阻断；未声明选项集的选择类字段出现 等/例如/如：/… 截断指纹时告警；需求源枚举表含分组/层级列时（声明 dimension=group/hierarchy，或 sourceColumns 声明 >=2 列自动视为 group），选项单元格被压成单层列表、未保留该维度时告警（OPTION_DIMENSION_LOST），维度是否保留属本规则职责、承载该维度的控件形态由 RULE-54 依 widget patterns 判定", "check": "check_option_completeness", "source": "references/01-workflow/04-demo-output-spec.md 11.13 下拉选项完整性与维度保留（RULE-48）", "tests": "test_requirement_option_missing_fails, test_requirement_option_all_present_passes, test_option_set_field_not_found_fails, test_option_truncation_marker_warns, test_option_completeness_skips_without_declaration, test_option_dimension_lost_warns, test_option_dimension_kept_passes, test_option_dimension_inferred_from_columns_warns, test_option_dimension_flat_skips"},
     {"ruleId": "RULE-49", "errorCode": "DETAIL_FIELD_DUPLICATE / DETAIL_FIELD_DUPLICATED_IN_LIST", "name": "详情页字段去重（条件式，仅详情类页面）：概览卡片/对象摘要已展示字段在详情描述列表重复时告警（声明 detailSummaryFields 优先，未声明走 cardFields/摘要区块启发式；excludedFields/detailDedupExempt 豁免，历史/日志/记录类区块与表格字段不参与）；同一详情描述列表内字段重复阻断", "check": "check_detail_field_dedup", "source": "Common Design 详情概览卡片与描述列表字段去重规则 / references/01-workflow/04-demo-output-spec.md 11.14 详情页字段去重（RULE-49）", "tests": "test_detail_field_duplicate_warns, test_detail_summary_fields_declared_warns, test_detail_field_dedup_exempt_passes, test_detail_field_duplicated_in_list_fails, test_detail_field_dedup_skips_non_detail_page, test_detail_summary_card_section_duplicate_warns"},
@@ -573,6 +573,10 @@ REGION_SINGLETON_KEYS = {
     "tab-bar": ["标签页", "页签"],
     "pagination": ["分页"],
 }
+# 高级搜索组件识别标记（RULE-46 扩展）：页面筛选声明命中其一即视为「高级搜索承载整体筛选」
+PROSEARCH_MARKERS = ("ixprosearch", "ix-pro-search", "高级搜索")
+# 平铺筛选行识别关键词：ascii 中出现且该行不含高级搜索标记时，视为单独绘制的筛选区/查询区
+FLAT_FILTER_LINE_KEYS = ("筛选", "查询", "过滤")
 # Tab 变体闭环：公共页面外壳区域关键词（preserveRegions 必须至少保留其一）
 SHELL_REGION_KEYS = (
     "global-navigation", "global-nav", "title-bar", "page-shell",
@@ -951,6 +955,46 @@ class Validator:
                                    f"{region} 区域仅绘制一次",
                                    f"命中 {len(hit_lines)} 行：{' / '.join(k for k in keys if any(k in l for l in hit_lines))}",
                                    fix="合并重复绘制的区域，避免同一区域（步骤条/Tab/工具栏/筛选区/分页）在页面中出现两次")
+            # 高级搜索与独立筛选区互斥（RULE-46 扩展）：筛选已收敛进 IxProSearch/高级搜索组件时，
+            # 线框图不得再单独绘制筛选区/查询区/过滤区行（平铺筛选项），避免说明书重复表达导致 Coding 重复实现
+            if self._page_prosearch_filter(page):
+                flat_rows = []
+                for line in lines:
+                    text = line.strip()
+                    if not text or any(m in text.lower() for m in PROSEARCH_MARKERS):
+                        continue
+                    if any(k in text for k in FLAT_FILTER_LINE_KEYS):
+                        flat_rows.append(text)
+                if flat_rows:
+                    self.add_error(pid, "WIREFRAME_PROSEARCH_FILTER_DUPLICATE", "warning",
+                                   f"{ppath}.wireframe.ascii",
+                                   "筛选方式为高级搜索（IxProSearch）时，线框图又单独绘制了筛选区/查询区行",
+                                   "线框图只绘制高级搜索组件及其位置，筛选/搜索全部收敛在该组件内",
+                                   f"出现独立筛选行 {len(flat_rows)} 处：{' / '.join(t[:30] for t in flat_rows[:3])}",
+                                   fix="删除线框图中单独绘制的筛选区/查询区行，筛选项与搜索框一并收敛进高级搜索组件（组件内部字段不展开绘制）")
+
+    @staticmethod
+    def _page_prosearch_filter(page):
+        """判断页面筛选组件是否声明为高级搜索（IxProSearch/高级搜索）。"""
+        texts = []
+        cc = (page.get("templateContract") or {}).get("componentContract") or {}
+        texts.extend(walk_text(cc.get("patternComponents") or []))
+        for item in (page.get("codingGuide") or {}).get("pageItems") or []:
+            if isinstance(item, dict) and str(item.get("scope", "")) == "filter":
+                texts.append(str(item.get("name", "")))
+                texts.append(str(item.get("description", "")))
+        for section in page.get("sections") or []:
+            if not isinstance(section, dict):
+                continue
+            title = str(section.get("title", ""))
+            if "筛选" in title or "搜索" in title or "查询" in title:
+                texts.append(title)
+                texts.append(str(section.get("componentName", "")))
+                texts.append(str(section.get("component", "")))
+                texts.append(str(section.get("informationPurpose", "")))
+                texts.append(str(section.get("description", "")))
+        blob = " ".join(texts).lower()
+        return any(m in blob for m in PROSEARCH_MARKERS)
 
     def check_section_wireframe_consistency(self):
         for page in self.data.get("pages", []):

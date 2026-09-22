@@ -1053,6 +1053,49 @@ class TestValidateDemoSpec(unittest.TestCase):
         self.assertEqual(code, 0)
         self.assertIn("WIREFRAME_DUPLICATE_REGION", warning_codes(report))
 
+    def _prosearch_page(self, flat_row=None):
+        """构造声明高级搜索（IxProSearch）的表格页。flat_row 为额外的平铺筛选行文本。"""
+        page = base_page()
+        page["wireframe"]["ascii"] = "\n".join([
+            "标题栏：主机资产",
+            "高级搜索框：关键词/状态/时间范围（IxProSearch）",
+            "表格列表：主机名 | IP | 状态 | 操作",
+            "分页区：上一页 1 2 3 下一页",
+        ] + ([flat_row] if flat_row else []))
+        item = {"id": "P01-C03", "scope": "filter", "name": "高级搜索组件（IxProSearch）",
+                "mode": "component-reuse", "mappingRef": "M03", "mappingStatus": "verified",
+                "target": {"path": "common-design", "component": "IxProSearch"},
+                "requirements": ["关键词/状态/时间范围搜索"], "acceptanceCriteria": ["筛选搜索收敛在高级搜索组件内"]}
+        page.setdefault("codingGuide", {})["pageItems"] = [item]
+        return page
+
+    def test_prosearch_filter_duplicate_warns(self):
+        """声明高级搜索（IxProSearch）却单独绘制筛选区行 -> RULE-46 WIREFRAME_PROSEARCH_FILTER_DUPLICATE（warning）。"""
+        page = self._prosearch_page(flat_row="筛选区：状态 [全部] 级别 [全部]")
+        code, report = run_validator(make_spec([page]), strict=True)
+        self.assertEqual(code, 0)
+        self.assertIn("WIREFRAME_PROSEARCH_FILTER_DUPLICATE", warning_codes(report))
+
+    def test_prosearch_filter_converged_passes(self):
+        """声明高级搜索且线框图只画高级搜索组件 -> 不告警。"""
+        page = self._prosearch_page()
+        code, report = run_validator(make_spec([page]), strict=True)
+        self.assertNotIn("WIREFRAME_PROSEARCH_FILTER_DUPLICATE",
+                         [e.get("errorCode") for e in report.get("warnings", []) + report.get("errors", [])])
+
+    def test_prosearch_absent_skips(self):
+        """未声明高级搜索、使用平铺筛选 -> 平铺筛选行合法，不出该码。"""
+        page = base_page()
+        page["wireframe"]["ascii"] = "\n".join([
+            "标题栏：主机资产",
+            "筛选区：状态 [全部] 级别 [全部] [查询] [重置]",
+            "表格列表：主机名 | IP | 状态 | 操作",
+            "分页区：上一页 1 2 3 下一页",
+        ])
+        code, report = run_validator(make_spec([page]), strict=True)
+        self.assertNotIn("WIREFRAME_PROSEARCH_FILTER_DUPLICATE",
+                         [e.get("errorCode") for e in report.get("warnings", []) + report.get("errors", [])])
+
     def test_wireframe_column_alignment_warns(self):
         """内容行右边界错位（两列结构断裂）-> RULE-47 WIREFRAME_COLUMN_ALIGNMENT（warning）。"""
         page = base_page()
@@ -2762,7 +2805,7 @@ def log_detail_drawer_page(**overrides):
             "optionalRegions": [],
             "regionOrder": ["drawer-shell", "drawer-header", "detail-content", "drawer-footer"],
             "footerContract": {"required": True, "alignment": "left",
-                               "buttonOrder": ["previous", "next-or-complete", "close"]},
+                               "buttonOrder": ["previous", "next-or-complete"]},
             "componentContract": {"shell": ["IxDrawer"], "detail-content": ["IxProDesc"], "footer": ["IxButton"]},
             "wireframeContract": {},
             "override": {"enabled": False, "source": "", "reason": "", "affectedRules": []},
@@ -2781,10 +2824,10 @@ def log_detail_drawer_page(**overrides):
                 {"id": "drawer-shell", "templateRegion": "drawer-shell", "position": "top", "required": True, "content": "抽屉外壳"},
                 {"id": "drawer-header", "templateRegion": "drawer-header", "position": "top", "required": True, "content": "抽屉标题与关闭入口"},
                 {"id": "detail-content", "templateRegion": "detail-content", "position": "content", "required": True, "content": "分组标题与描述列表"},
-                {"id": "drawer-footer", "templateRegion": "drawer-footer", "position": "bottom", "required": True, "content": "底部操作区：上一个/下一个/关闭"},
+                {"id": "drawer-footer", "templateRegion": "drawer-footer", "position": "bottom", "required": True, "content": "底部操作区：上一个/下一个/完成"},
             ],
             "variants": [],
-            "ascii": "抽屉标题/分组标题/详情描述列表/底部上一个下一个关闭",
+            "ascii": "抽屉标题/分组标题/详情描述列表/底部上一个下一个完成",
         },
         "sections": [
             {"title": "基础信息", "type": "detail",
@@ -2794,7 +2837,6 @@ def log_detail_drawer_page(**overrides):
         "footerActions": [
             {"label": "上一个", "kind": "previous"},
             {"label": "下一个", "kind": "next-or-complete"},
-            {"label": "关闭", "kind": "close"},
         ],
         "codingGuide": {
             "pageItems": [
