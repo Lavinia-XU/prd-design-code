@@ -123,7 +123,7 @@ HTML设计说明书已生成。请先查看HTML页面内容；如果HTML中有�
         "wireframeContract": {"variantsRequired": false},
         "override": {"enabled": false, "source": "", "reason": "", "affectedRules": []}
       },
-      "restoreRequirement": {"description": "按 Common Design 概览表格页（模板 ID：page-table-overview）还原页面骨架，骨架组件优先取匹配 Product Design 页面模板/Component 层已登记的业务封装，未登记时取 Common Design 页面模板推荐组件。", "components": [{"area": "标题栏", "iduxComponent": "页面模板指定标题栏组件", "source": "Common Design页面模板", "usage": "承载页面标题和导出、刷新等页面级操作"}, {"area": "筛选区", "iduxComponent": "IxProSearch", "source": "Common Design页面模板", "usage": "承载事件查询条件"}, {"area": "表格", "iduxComponent": "IxTable", "source": "Common Design页面模板", "usage": "承载事件列表字段和行内操作"}, {"area": "分页", "iduxComponent": "IxPagination", "source": "Common Design页面模板", "usage": "承载列表分页"}]},
+      "restoreRequirement": {"description": "按 Common Design 概览表格页（模板 ID：page-table-overview）还原页面骨架，骨架组件优先取匹配 Product Design 页面模板/Component 层已登记的业务封装，未登记时取 Common Design 页面模板推荐组件；页面模板被 Product Design 声明 override 时直接按 PD 页面模板还原，如“按 Product Design 策略详情页（模板 ID：pd-policy-detail）还原页面骨架（templateBase=product）”。", "components": [{"area": "标题栏", "iduxComponent": "页面模板指定标题栏组件", "source": "Common Design页面模板", "usage": "承载页面标题和导出、刷新等页面级操作"}, {"area": "筛选区", "iduxComponent": "IxProSearch", "source": "Common Design页面模板", "usage": "承载事件查询条件"}, {"area": "表格", "iduxComponent": "IxTable", "source": "Common Design页面模板", "usage": "承载事件列表字段和行内操作"}, {"area": "分页", "iduxComponent": "IxPagination", "source": "Common Design页面模板", "usage": "承载列表分页"}]},
       "sections": [
         {
           "title": "概览统计区",

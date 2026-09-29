@@ -472,6 +472,39 @@
         "rule": ""
       }
     },
+    "page-card-list": {
+      "name": "卡片列表页",
+      "carrierTraceRequired": true,
+      "source": "common-design/references/02-template/01-page-types.md#page-card-list",
+      "navigationTypes": [
+        "left-shaped",
+        "l-shaped"
+      ],
+      "requiredRegions": [
+        "global-navigation",
+        "title-bar",
+        "toolbar",
+        "card-list"
+      ],
+      "requiredComponents": {
+        "toolbar": [
+          "IxButton",
+          "IxSearch"
+        ],
+        "card-list": [
+          "IxCard"
+        ]
+      },
+      "footer": {
+        "required": false,
+        "alignment": "",
+        "buttonOrder": []
+      },
+      "variants": {
+        "required": false,
+        "rule": ""
+      }
+    },
     "page-dashboard": {
       "name": "Dashboard",
       "source": "common-design/references/02-template/01-page-types.md#page-dashboard",
@@ -503,5 +536,5 @@
       }
     }
   },
-  "syncNote": "同步规则：本文件为机器可读快照，仅用于校验器确定性校验。当已读取的 Common Design 页面模板定义与本文件不一致时，以 Common Design 为准，并将差异记录到 Design Context 待同步；Product Design 若声明了页面模板覆盖（override），以 Product Design 为准。 按钮对齐：抽屉（list-drawer/form-drawer/detail-drawer）底部按钮统一左对齐（left），弹窗（list-modal/form-modal）保持右对齐（right），与 Common Design 01-page-types.md 的对应模板条目一致；本文件为快照，若与 Common Design 不一致以 Common Design 为准并记录差异。 页面类型更名（2026）：弹窗/抽屉不再称“页”——列表弹窗(list-modal)、列表抽屉(list-drawer)、详情抽屉(detail-drawer)、日志详情抽屉(log-detail-drawer)、表单弹窗(form-modal)、表单抽屉(form-drawer)；日志详情原为整页，已按 Common Design §1.9 更正为抽屉。中文页面类型名以本注册表 name 字段为准，TYPE_TEMPLATE_MAP 由本注册表派生。"
+  "syncNote": "同步规则：本文件为机器可读快照，仅用于校验器确定性校验。当已读取的 Common Design 页面模板定义与本文件不一致时，以 Common Design 为准，并将差异逐条登记到 Design Context 的 templateSync（{templateId, field, registryValue, commonDesignValue, ref}，field 限 footer.buttonOrder/footer.alignment），由 RULE-64 校验登记完整性与依据精读，已登记字段的校验真值以 commonDesignValue 为准；Product Design 若声明了页面模板覆盖（override），以 Product Design 为准。 按钮对齐：抽屉（list-drawer/form-drawer/detail-drawer）底部按钮统一左对齐（left），弹窗（list-modal/form-modal）保持右对齐（right），与 Common Design 01-page-types.md 的对应模板条目一致；本文件为快照，若与 Common Design 不一致以 Common Design 为准并记录差异。 页面类型更名（2026）：弹窗/抽屉不再称“页”——列表弹窗(list-modal)、列表抽屉(list-drawer)、详情抽屉(detail-drawer)、日志详情抽屉(log-detail-drawer)、表单弹窗(form-modal)、表单抽屉(form-drawer)；日志详情原为整页，已按 Common Design §1.9 更正为抽屉。中文页面类型名以本注册表 name 字段为准，TYPE_TEMPLATE_MAP 由本注册表派生。 2026 新增同步：卡片列表页 page-card-list（对接实例类配置集合：第三方平台对接/数据源/外部存储/连接器等；结构=标题栏+Toolbar(按钮区左/筛选搜索区右)+单列长条卡片列表，卡片=图标+条目标题+编辑/删除+辅助信息状态，一行一条、纵向滚动、不使用分页器；字段多、需排序定位或批量管理的集合应改用基础表格页）。 更正：卡片列表页含筛选——筛选区为 Toolbar 组成部分（Toolbar 左按钮区 [新增…] / 右筛选区 [搜索…]），不设独立 filter 区域；PRD 声明的筛选字段多时仍按筛选方式判定（PD 优先 -> 页面复杂度）选择平铺筛选或高级搜索，平铺筛选顺序规则 RULE-61 对卡片列表筛选行同样适用。"
 }

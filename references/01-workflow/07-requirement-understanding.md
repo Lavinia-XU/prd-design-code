@@ -54,17 +54,17 @@
 
 ## 4. 内容分类规则
 
-建模时把每条内容划分为四类，分类决定后续处理方式，也决定其在页面结构中的约束强度：
+建模时把每条内容划分为五类，分类决定后续处理方式，也决定其在页面结构中的约束强度：
 
 | 分类 | 含义 | 处理方式 | 示例 |
 | --- | --- | --- | --- |
 | 需求事实 | 需求中明确陈述的业务内容，是业务模型的真值 | 直接进入业务模型，作为页面字段、操作与状态的依据 | “用户需要处置事件” |
 | 设计推导 | 从需求事实推导出的展示与组织方式 | 进入 designInferences，作为页面设计的推导依据，可优化 | “事件列表应展示风险等级和发生时间” |
 | AI补齐 | 需求未提及、按展示层与常规交互补全的内容 | 进入 aiFillItems，明确标注，不得伪装为需求事实 | “处置失败时展示失败原因” |
-| 产品规范补齐 | 需求未提及、但匹配 Product Design 声明为需求已建设对象/页面类型固有、必备或默认存在的能力 | 进入 productDesignCompleteness（source `product-design`），默认纳入范围；须登记可定位锚点，仅当用户明确不做或与需求业务事实冲突时剔除并记录原因 | “策略”类对象下默认包含的“资产适用规则检测” |
+| 设计规范补齐 | 需求未提及、但匹配 Product Design 或已读取 Common Design 声明为需求已建设对象/页面类型固有、必备、默认存在或成对约束的能力（如“支持手动新增则须支持手动删除”） | 进入 designCompleteness（source `product-design` / `common-design`），默认纳入范围；须登记可定位锚点与落点 landingRef，仅当用户明确不做或与需求业务事实冲突时剔除并记录原因 | “策略”类对象下默认包含的“资产适用规则检测”；列表页新增能力配对的“手动删除” |
 | 待确认问题 | 影响业务模型或页面结构且无法确定的缺失信息 | 进入 gaps，按第 7 节阻塞规则处理 | “处置是否支持批量操作” |
 
-判定要点：描述“用户要做什么、对象是什么、状态怎么变”的是需求事实；描述“页面应如何展示、信息如何组织”的是设计推导；描述通用交互与反馈惯例的规范补齐属于 AI 补齐；只有用户能拍板且影响模型或结构的内容才进入待确认问题。
+判定要点：描述“用户要做什么、对象是什么、状态怎么变”的是需求事实；描述“页面应如何展示、信息如何组织”的是设计推导；无设计规范原文依据、仅凭通用惯例的补齐属于 AI 补齐，有 Common Design / Product Design 原文依据的属于设计规范补齐；只有用户能拍板且影响模型或结构的内容才进入待确认问题。
 
 ## 5. 来源标记与真值边界
 
@@ -78,7 +78,7 @@ requirementUnderstanding 中每项内容必须标记来源，禁止无来源内�
 
 真值边界：业务对象、核心动作、权限、状态流转、数量限制、业务规则、关键结果与异常属于业务事实，只能来自 `requirement` 或用户确认，AI 不得补造；展示层组织、通用交互、展示字段与常规反馈可由 AI 补齐（`ai-fill`）或按 Design Skill 推导（`product-design` / `common-design`）。来源优先级见 SKILL.md“设计知识调用与优先级 - 冲突原则”。
 
-需求沉默边界：需求未提及不等于明确排除。匹配 Product Design 时，PD 声明为需求已建设对象/页面类型固有、必备或默认存在的能力（产品规范补齐项）默认纳入范围，标记 `product-design` 并登记可定位锚点；仅当用户明确表示不做或与需求业务事实冲突时剔除并记录原因。不得把需求未写当作排除 PD 固有能力（尤其业务规则类能力）的理由。
+需求沉默边界：需求未提及不等于明确排除。匹配 Product Design 或已读取 Common Design 时，设计规范声明为需求已建设对象/页面类型固有、必备、默认存在或成对约束的能力（设计规范补齐项，如“支持手动新增则须支持手动删除”中的删除）默认纳入范围，标记 `product-design` / `common-design` 并登记可定位锚点与落点 landingRef；仅当用户明确表示不做或与需求业务事实冲突时剔除并记录原因。不得把需求未写当作排除设计规范固有能力（尤其业务规则类能力与成对约束能力）的理由；PRD 对业务功能定义的最高优先级不受影响——需求明确约束“不做”的能力仍以需求为准。
 
 ## 6. requirementUnderstanding 结构与字段说明
 
@@ -106,12 +106,14 @@ requirementUnderstanding:
   confirmedFacts: []          # 需求事实（来源 requirement / 用户确认）
   designInferences: []        # 设计推导（来源 product-design / common-design / code）
   aiFillItems: []             # AI 补齐项（来源 ai-fill），必须可被用户识别
-  productDesignCompleteness:  # 产品规范补齐项（来源 product-design），匹配 Product Design 时必填
-    - capability: ""          # PD 声明为固有/必备/默认存在的能力（需求未提及但默认纳入）
+  designCompleteness:         # 设计规范补齐项（source product-design / common-design），存在补齐时必填
+    - capability: ""          # 设计规范声明为固有/必备/默认存在/成对约束的能力（需求未提及但默认纳入）
       appliesTo: ""           # 作用对象或页面类型（须为需求已建设的对象/页面类型）
-      ref: ""                 # Product Design 文档原文锚点 <文档路径>#<章节/条目>
+      ref: ""                 # 设计规范文档原文锚点 <文档路径>#<章节/条目>
+      source: product-design  # 补齐依据来源：product-design / common-design
       decision: included      # included 默认纳入 / excluded（仅当用户明确不做或与需求业务事实冲突）
       reason: ""              # excluded 时必填排除原因
+      landingRef: ""          # 本次设计落点：开发项 ID 或 <页面ID>#<操作/区块名>（RULE-63 校验）
   gaps:                       # 缺失信息清单
     - question: ""            # 待确认问题（用户语言表述）
       impact: ""              # 影响范围（业务模型/权限/状态/数量限制/核心流程/页面结构）
@@ -119,7 +121,7 @@ requirementUnderstanding:
       blocking: true          # true=页面拆解前必须确认；false=带假设推进，随 Step 5 提出
 ```
 
-状态判定：所有 gaps 已解决为 `resolved`；只存在 `blocking: false` 的建议确认项为 `needs_confirmation`；存在 `blocking: true` 的缺失为 `blocked`。该结构是内部推导产物，不写入 demo-spec JSON，也不进入 HTML 说明书；但影响页面拆解的结论（对象、任务、状态、判断信息）必须落实为页面字段、区块与状态规则。
+状态判定：所有 gaps 已解决为 `resolved`；只存在 `blocking: false` 的建议确认项为 `needs_confirmation`；存在 `blocking: true` 的缺失为 `blocked`。该结构是内部推导产物，不写入 demo-spec JSON，也不进入 HTML 说明书；但影响页面拆解的结论（对象、任务、状态、判断信息）必须落实为页面字段、区块与状态规则；`designCompleteness` 的最终结论须随 Design Context 写入 demo-spec.json 的 `designContext.designCompleteness`（含 landingRef 落点），由 RULE-63 校验补齐项落位，页面关键交互保留“（设计规范补齐）”来源标注。
 
 ## 7. 阻塞门禁与回流
 

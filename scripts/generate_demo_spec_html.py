@@ -390,7 +390,12 @@ def markdown_page(page, inherited_nav=None):
     wireframe = page.get("wireframe") or page.get("asciiWireframe")
     if isinstance(wireframe, dict):
         wireframe = wireframe.get("ascii") or wireframe.get("text") or ""
-    if wireframe:
+    if page.get("wireframeSharedWith"):
+        shared_diff = str(page.get("wireframeDiff") or "").strip()
+        lines.extend(["", "### Wireframe / ASCII 线框图（共用）",
+                      f"本页面与 {page.get('wireframeSharedWith')} 共用同一线框图（UI 完全一致），布局以主页面线框图为准。",
+                      f"与本页差异：{shared_diff}" if shared_diff else "与本页差异：未描述（请补充 wireframeDiff）。"])
+    elif wireframe:
         lines.extend(["", "### Wireframe / ASCII 线框图", "```text", str(wireframe), "```"])
     lines.extend(["", "### 页面内容区块"])
     for block in page.get("sections", []):
@@ -442,6 +447,43 @@ def build_view(content):
     return f'<div class="view">{content}</div>'
 
 
+def render_entry_points(data):
+    """需求入口清单（RULE-52）：PRD 点名入口的宿主落位信息写入 HTML 设计说明书，
+    防止编码阶段遗漏"宿主页面哪里加什么入口、点击打开什么容器"。"""
+    entries = data.get("requirementEntryPoints") or []
+    if not isinstance(entries, list) or not entries:
+        return ""
+    hosts = {str((h or {}).get("id") or "").strip(): (h or {})
+             for h in (data.get("entryHosts") or []) if isinstance(h, dict)}
+    host_cols = [("host", "宿主页面"), ("hostScope", "宿主范围"), ("location", "宿主位置"),
+                 ("trigger", "触发元素"), ("container", "打开容器"), ("source", "来源"),
+                 ("landingNote", "宿主落位说明 / 编码要求")]
+    rows = []
+    for entry in entries:
+        if not isinstance(entry, dict):
+            continue
+        scope = str(entry.get("hostScope") or "").strip()
+        host_key = str(entry.get("host") or "").strip()
+        landing = ""
+        if scope == "out-of-scope" and host_key in hosts:
+            landing = str(hosts[host_key].get("wireframe") or "").strip()
+        rows.append({
+            "host": str(entry.get("host") or ""),
+            "hostScope": scope or "-",
+            "location": str(entry.get("location") or ""),
+            "trigger": str(entry.get("trigger") or ""),
+            "container": str(entry.get("container") or ""),
+            "source": str(entry.get("source") or ""),
+            "landingNote": landing or "见宿主页面线框图与区块说明",
+        })
+    return f"""
+      <div class="card"><h2>需求入口清单（宿主落位）</h2>
+      <p class="muted">PRD 点名的入口挂载点及其宿主落位：编码阶段按此在宿主页面指定位置添加入口，不得遗漏范围外宿主。</p>
+      {table_html(rows, host_cols)}
+      </div>
+    """
+
+
 def render_overview(data):
     overview = data.get("overview", {})
     page_cols = [("module", "业务模块"), ("id", "页面ID"), ("name", "页面名称"), ("type", "页面类型"), ("purpose", "页面用途"), ("entry", "入口方式"), ("interaction", "关键交互"), ("designSource", "设计来源"), ("codingMode", "编码方式")]
@@ -451,6 +493,7 @@ def render_overview(data):
       <div class="card"><h2>需求概括</h2><p>{esc(overview.get('summary', ''))}</p></div>
       <div class="card"><h2>导航结构</h2>{render_tree(data.get('navigation', []))}</div>
       <div class="card"><h2>页面总览表</h2>{table_html(overview.get('pageOverview', []), page_cols)}</div>
+      {render_entry_points(data)}
       <div class="card"><h2>总结性AI Coding指导</h2>{render_coding_summary(data.get('codingGuide', {}))}</div>
     </section>
     """
@@ -695,6 +738,19 @@ def render_restore_requirement(page):
 
 
 def render_wireframe(page):
+    shared_with = str(page.get("wireframeSharedWith") or "").strip()
+    shared_diff = str(page.get("wireframeDiff") or "").strip()
+    if shared_with:
+        """RULE-62 共用线框页面：不重复绘制，渲染与主页面的共用关系与差异说明。"""
+        parts = ["<div class=\"wireframe-block\"><h3>Wireframe / ASCII 线框图（共用）</h3>"]
+        parts.append(f"<p>本页面与 <strong>{esc(shared_with)}</strong> 共用同一线框图（UI 完全一致），不重复绘制。"
+                     "布局、区域结构与底部操作以主页面线框图为准。</p>")
+        if shared_diff:
+            parts.append(f"<p><strong>与本页差异：</strong>{esc(shared_diff)}</p>")
+        else:
+            parts.append("<p class=\"wireframe-warning\">未描述与主页面的差异（wireframeDiff 为空），请补充差异说明。</p>")
+        parts.append("</div>")
+        return "".join(parts)
     wireframe_data = page.get("wireframe") or page.get("asciiWireframe") or ""
     if isinstance(wireframe_data, dict):
         wireframe_text = str(wireframe_data.get("ascii") or wireframe_data.get("text") or "").strip()
