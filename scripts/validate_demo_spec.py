@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# -*- coding: utf-8 -*-
 """Demo 设计说明书模板契约校验器。
 
 对 Demo JSON 执行 Common Design 模板契约校验，任何模板结构不完整、页面类型不匹配、
@@ -86,7 +87,7 @@ RULES = [
     {"ruleId": "RULE-51", "errorCode": "TABLE_BUTTON_MISPLACED / TABLE_ACTION_NOT_IN_TOOLBAR / WIREFRAME_COLUMN_SETTING_DRAWN", "name": "表格区按钮位置与组件自带功能（线框图，warning）：表格关联按钮（批量操作、子功能入口等）必须统一置于表格区左上角工具栏，出现在表格框下方或工具栏之外的区域时提示；列设置为表格组件自带功能，线框图不得绘制为独立按钮", "check": "check_table_button_placement", "source": "references/01-workflow/04-demo-output-spec.md 11.16 表格区按钮位置（RULE-51）", "tests": "test_table_button_below_table_warns, test_table_button_in_toolbar_passes, test_table_pagination_not_flagged, test_table_batch_action_outside_warns, test_table_button_check_skips_without_table, test_column_setting_drawn_warns, test_column_setting_absent_passes, test_column_setting_below_table_no_misplaced"},
     {"ruleId": "RULE-52", "errorCode": "ENTRY_POINT_INCOMPLETE / ENTRY_POINT_NOT_PLACED / ENTRY_HOST_UNREGISTERED / ENTRY_NOT_DRAWN", "name": "需求入口落位闭环（条件式，顶层声明 requirementEntryPoints 时启用）：PRD 点名的每个入口挂载点必须有落点——in-scope 宿主须在宿主页面 sections/actions 或 operations 中承载触发元素与打开容器并在宿主线框图中绘制入口（缺失阻断/告警）；out-of-scope 宿主须在 entryHosts 登记（含 Tier1 精读与对应开发项，缺失阻断），并写清宿主落位说明（entryHosts[].wireframe 一行文字：宿主内位置 + 触发元素 + 打开容器 + 编码要求；缺失或未含位置/触发元素告警——宿主仅加入口时不再要求绘制宿主完整线框图，落位信息写入 HTML 入口清单防止编码遗漏）；入口声明缺字段或 hostScope 非法阻断", "check": "check_requirement_entry_points", "source": "references/01-workflow/04-demo-output-spec.md 11.17 需求入口落位闭环（RULE-52）", "tests": "test_entry_point_in_scope_placed_passes, test_entry_point_not_placed_fails, test_entry_point_out_of_scope_unregistered_fails, test_entry_point_out_of_scope_registered_passes, test_entry_point_out_of_scope_missing_dev_item_fails, test_entry_point_out_of_scope_dangling_dev_item_fails, test_entry_point_not_drawn_warns, test_entry_point_incomplete_fails, test_entry_point_skips_without_declaration, test_entry_host_wireframe_placeholder_passes, test_entry_host_wireframe_vague_warns"},
     {"ruleId": "RULE-53", "errorCode": "HOST_IDENTITY_UNVERIFIED / HOST_IDENTITY_FILENAME_ONLY / HOST_IDENTITY_AMBIGUOUS / HOST_NAVPATH_MISMATCH", "name": "页面定位证据闭环（条件式，声明 requirementEntryPoints 或 pageIdentityRefs 时启用）：被定位的既有页面必须携带可核验身份证据（逐级导航路径 + 路由/菜单标识 + 标题 + 命中代码实体 + 命中依据），硬性禁止以文件名/目录名作为定位依据（matchedBy 含 filename/dir 即阻断）；out-of-scope 入口宿主缺失或薄弱证据阻断，in-scope 宿主仅在显式提供证据时校验；存在形近候选未记录排除告警；代码导航路径末级与 PRD 声明不符阻断（防张冠李戴，如 alert-list/告警链 误判为 alarm-list/告警列表）", "check": "check_page_identity", "source": "references/01-workflow/04-demo-output-spec.md 11.18 页面定位证据闭环（RULE-53）/ 01-output-templates.md 4.3", "tests": "test_page_identity_ref_valid_passes, test_page_identity_missing_evidence_fails, test_host_identity_filename_only_fails, test_host_identity_navpath_mismatch_fails, test_host_identity_ambiguous_warns, test_host_identity_degraded_mode_passes, test_entry_point_out_of_scope_missing_evidence_fails"},
-    {"ruleId": "RULE-54", "errorCode": "COMPONENT_FORM_MISSING / COMPONENT_FORM_UNKNOWN / FORM_DECISION_MISSING / FORM_DECISION_MISMATCH / COMPONENT_FORM_SOURCE_UNREAD / COMPONENT_FORM_RULE_UNREAD", "name": "组件形态描述闭环（条件式，字段声明 >1 个形态候选 formCandidates 时启用）：组件在 Common Design 中登记多种形态（如 IxTag 多种标签样式、IxSelect 下拉面板的搜索/新增/树/分组、单选/多选的 radio/卡片）时，必须在 iduxComponentForm 写明选用的形态；声明多形态候选却未选形态给 COMPONENT_FORM_MISSING（warning），选用形态不在候选内给 COMPONENT_FORM_UNKNOWN（warning）；iduxComponentForm 支持 Common Design“形态 + 增强项”两段式写法（如“级联（可搜索）”“平铺+搜索”），按最长候选子串匹配形态主值，主值在候选内即通过；已选形态但 formDecision 未写判定结论给 FORM_DECISION_MISSING（warning），formDecision 未引用所选形态给 FORM_DECISION_MISMATCH（warning）——判定链读了必须留痕结论，倒逼判定被执行；形态来源分两层并各自要求已读证据——命名/枚举真值取 Common Design 组件映射（05-components/idux-component-map.md 的组件锚点，缺依据或依据未精读命中给 COMPONENT_FORM_SOURCE_UNREAD，warning），选择依据真值取 Common Design widget patterns（03-patterns/03-widget-patterns/ 的判定小节锚点，按目录级索引 + 命中文件精读读取，缺依据或依据未精读命中给 COMPONENT_FORM_RULE_UNREAD，warning）；仅校验声明候选的字段，单形态组件零负担；形态清单与命名以 Common Design 组件映射为准，本 Skill 不内置形态目录", "check": "check_component_form", "source": "references/01-workflow/04-demo-output-spec.md 11.19 组件形态描述（RULE-54）/ 01-output-templates.md AI Coding指导输出格式", "tests": "test_component_form_missing_warns, test_component_form_unknown_warns, test_component_form_valid_passes, test_component_form_two_part_form_passes, test_component_form_primary_substring_passes, test_component_form_decision_missing_warns, test_component_form_decision_mismatch_warns, test_component_form_decision_complete_passes, test_component_form_single_candidate_passes, test_component_form_source_unread_warns, test_component_form_rule_unread_warns, test_component_form_evidence_index_only_warns, test_component_form_evidence_complete_passes, test_component_form_single_candidate_skips_evidence"},
+    {"ruleId": "RULE-54", "errorCode": "COMPONENT_FORM_MISSING / COMPONENT_FORM_UNKNOWN / FORM_DECISION_MISSING / FORM_DECISION_MISMATCH / COMPONENT_FORM_SOURCE_UNREAD / COMPONENT_FORM_RULE_UNREAD / COMPONENT_VARIANT_WITHOUT_FORM / COMPONENT_VARIANT_MISSING / COMPONENT_VARIANT_MISMATCH", "name": "组件形态描述闭环（条件式，字段声明 >1 个形态候选 formCandidates 时启用）：组件在 Common Design 中登记多种形态（如 IxTag 多种标签样式、IxSelect 下拉面板的搜索/新增/树/分组、单选/多选的 radio/卡片）时，必须在 iduxComponentForm 写明选用的形态；声明多形态候选却未选形态给 COMPONENT_FORM_MISSING（warning），选用形态不在候选内给 COMPONENT_FORM_UNKNOWN（warning）；iduxComponentForm 支持 Common Design“形态 + 增强项”两段式写法（如“级联（可搜索）”“平铺+搜索”），按最长候选子串匹配形态主值，主值在候选内即通过；已选形态但 formDecision 未写判定结论给 FORM_DECISION_MISSING（warning），formDecision 未引用所选形态给 FORM_DECISION_MISMATCH（warning）——判定链读了必须留痕结论，倒逼判定被执行；形态来源分两层并各自要求已读证据——命名/枚举真值取 Common Design 组件映射（05-components/idux-component-map.md 的组件锚点，缺依据或依据未精读命中给 COMPONENT_FORM_SOURCE_UNREAD，warning），选择依据真值取 Common Design widget patterns（03-patterns/03-widget-patterns/ 的判定小节锚点，按目录级索引 + 命中文件精读读取，缺依据或依据未精读命中给 COMPONENT_FORM_RULE_UNREAD，warning）；仅校验声明候选的字段，单形态组件零负担；字段声明样式变体编号 iduxComponentVariantId（Common Design 组件表登记的变体编号，如 IxTag 深色标签 -> IxTag_Filled）时必须成对写 iduxComponentForm，只写编号不写形态名给 COMPONENT_VARIANT_WITHOUT_FORM（warning）；编号落位为条件必填——iduxComponentVariantId（条件必填，Common Design 组件映射表登记了变体编号的形态必须填写）与判定链联动对账：formDecision/形态中已出现本组件前缀的编号 token（如 IxTag_Filled）但字段未填给 COMPONENT_VARIANT_MISSING（warning，编号已产生却未落字段，防止静默跳过），已填但与判定说明引用的编号不一致给 COMPONENT_VARIANT_MISMATCH（warning）；映射表未登记编号的形态留空并在 formDecision 写明“该形态无变体编号登记”；形态清单与命名以 Common Design 组件映射为准，本 Skill 不内置形态目录", "check": "check_component_form", "source": "references/01-workflow/04-demo-output-spec.md 11.19 组件形态描述（RULE-54）/ 01-output-templates.md AI Coding指导输出格式", "tests": "test_component_variant_missing_warns, test_component_variant_mismatch_warns, test_component_variant_no_false_positive, test_component_form_missing_warns, test_component_form_unknown_warns, test_component_form_valid_passes, test_component_form_two_part_form_passes, test_component_form_primary_substring_passes, test_component_form_decision_missing_warns, test_component_form_decision_mismatch_warns, test_component_form_decision_complete_passes, test_component_form_single_candidate_passes, test_component_form_source_unread_warns, test_component_form_rule_unread_warns, test_component_form_evidence_index_only_warns, test_component_form_evidence_complete_passes, test_component_form_single_candidate_skips_evidence"},
     {"ruleId": "RULE-55", "errorCode": "ABILITY_NOT_SWEPT / ABILITY_HIT_NOT_READ", "name": "能力发现完整性（条件式，声明 designContext.productDesign.coverage 时启用）：以 Product Design 自身声明的 coverage 为真值，要求对每个能力在 capabilitySweep 显式判定 命中/未命中（未命中同样留痕），漏项或判定非法给 ABILITY_NOT_SWEPT（warning）；判定为命中的能力须附 evidenceRef 且锚点级命中 readLedger 的 status=read，否则给 ABILITY_HIT_NOT_READ（warning）；用于兜住“该读的没读、该用 Product Design 的组件退回 Common Design”，不硬编码任何产品/文档路径", "check": "check_capability_sweep", "source": "references/01-workflow/00-design-skill-resolver.md 能力识别参考框架（防漏清单）/ references/01-workflow/04-demo-output-spec.md 11.20 能力发现完整性（RULE-55）", "tests": "test_capability_sweep_complete_passes, test_capability_not_swept_warns, test_capability_hit_not_read_warns, test_capability_sweep_absent_warns"},
     {"ruleId": "RULE-56", "errorCode": "TEMPLATE_COVERAGE_UNAPPLIED / LEGACY_TEMPLATE_ID_REF", "name": "模板 ID 一致性与覆盖兜底（条件式，声明 designContext 或页面携带模板引用文本时启用）：coverage/capabilitySweep 声明了 appliesTo 却未命中任何页面时给 TEMPLATE_COVERAGE_UNAPPLIED（warning，兜住模板更名后 Product Design 侧仍用旧 ID 导致覆盖落地校验被静默旁路）；templateSource/layoutSource/组件来源等自由文本引用已废弃旧模板 ID 时给 LEGACY_TEMPLATE_ID_REF（warning）；appliesTo 匹配对旧 ID 自动归一为当前注册表 ID", "check": "check_template_id_consistency", "source": "references/01-workflow/04-demo-output-spec.md 11.21 模板 ID 一致性与覆盖兜底（RULE-56）/ 00-design-skill-resolver.md 3.1 同步规则", "tests": "test_template_coverage_unapplied_warns, test_template_coverage_legacy_id_applied_passes, test_legacy_template_id_ref_warns, test_template_id_consistency_absent_skips"},
     {"ruleId": "RULE-57", "errorCode": "FORM_LAYOUT_MULTI_COLUMN / FORM_LAYOUT_LABEL_NOT_INLINE / FORM_LAYOUT_BASIS_UNREAD", "name": "表单单列布局闭环（条件式，页面为表单承载页时启用）：表单配置必须单列——每行一个配置项、label 与控件水平同一行；ascii（含 variants）同一行出现 >=2 个已声明表单字段给 FORM_LAYOUT_MULTI_COLUMN（warning）；字段名与其控件不在同一行给 FORM_LAYOUT_LABEL_NOT_INLINE（warning）；动态表单列表分流豁免：区块声明 formList: true（或页面 formListBlocks 登记区块名）的动态列表/行内可编辑表格（IxProFormList，“一行一个对象、一行多列”）不适用单列口径，未声明时同行多字段且带行内删除/移除标记的行同样自动豁免；表单布局依据（Common Design 表单规范）未锚点级登记到 designReferences 或未在 readLedger 命中 status=read 给 FORM_LAYOUT_BASIS_UNREAD（warning）", "check": "check_form_layout", "source": "references/01-workflow/04-demo-output-spec.md 11.22 表单单列布局闭环（RULE-57）/ 03-demo-page-decomposition.md 4.3 配置类页面补齐要求", "tests": "test_form_layout_single_column_passes, test_form_layout_multi_column_warns, test_form_layout_label_not_inline_warns, test_form_layout_form_list_section_skips, test_form_layout_inline_delete_row_skips, test_form_layout_basis_unread_warns, test_form_layout_basis_read_passes, test_form_layout_non_form_page_skips"},
@@ -97,7 +98,13 @@ RULES = [
     {"ruleId": "RULE-62", "errorCode": "WIREFRAME_SHARED_TARGET_MISSING / WIREFRAME_SHARED_TARGET_MISMATCH / WIREFRAME_SHARED_HOST_NOT_DRAWN / WIREFRAME_SHARED_DIFF_MISSING", "name": "共用线框差异描述闭环（条件式，页面声明 wireframeSharedWith 时启用）：相同 UI 的页面（如同一对象的新增/编辑共用同一弹窗布局、仅数据不同）以主页面完整绘制线框，从页面不重复绘制、只声明 wireframeSharedWith 指向主页面并用 wireframeDiff 描述差异——主页面不存在给 WIREFRAME_SHARED_TARGET_MISSING（error）；主页面模板 ID 或页面类型与从页面不一致（UI 不同/对象不同，如新增与编辑对象不一样）给 WIREFRAME_SHARED_TARGET_MISMATCH（error）；主页面链式共用或未完整绘制 ascii 给 WIREFRAME_SHARED_HOST_NOT_DRAWN（error）；wireframeDiff 缺失或为空给 WIREFRAME_SHARED_DIFF_MISSING（warning）；声明共用的页面跳过骨架/区域/绘制质量/footer/表格按钮/表单布局等全部线框结构类校验，差异在 HTML 中随页面渲染", "check": "check_wireframe_shared", "source": "references/01-workflow/04-demo-output-spec.md 11.27 共用线框差异描述闭环（RULE-62）", "tests": "test_wireframe_shared_passes, test_wireframe_shared_diff_missing_warns, test_wireframe_shared_target_missing_fails, test_wireframe_shared_target_mismatch_fails, test_wireframe_shared_chain_blocked"},
     {"ruleId": "RULE-63", "errorCode": "COMPLETENESS_ENTRY_INVALID / COMPLETENESS_ITEM_NOT_LANDED / COMPLETENESS_EXCLUSION_REASON_MISSING / COMPLETENESS_BASIS_UNREAD", "name": "设计规范补齐落位闭环（条件式，designContext 声明 designCompleteness 非空 list 时启用，兼容旧字段 productDesignCompleteness）：设计规范补齐项（Product Design / Common Design 声明为需求已建设对象/页面类型固有、必备、默认存在或成对约束能力，需求未提及但默认纳入）不能只在对话框说了，必须落进 demo-spec——每个条目 capability/appliesTo/ref（含 # 锚点）/source（product-design|common-design）/decision（included|excluded，缺省 included）非法给 COMPLETENESS_ENTRY_INVALID（error）；included 条目必须有本次设计落点 landingRef（开发项 ID 如 P01-C01，或 <页面ID>#<操作/区块名>），缺失/指向不存在的页面或开发项/落点处检索不到补齐能力痕迹给 COMPLETENESS_ITEM_NOT_LANDED（error）；excluded 条目缺排除原因给 COMPLETENESS_EXCLUSION_REASON_MISSING（error，仅限用户明确不做或与需求业务事实冲突时剔除）；ref 未在 readLedger 锚点级精读命中给 COMPLETENESS_BASIS_UNREAD（warning）；两个声明均缺失或为空时整条规则跳过，历史 JSON 不误伤", "check": "check_design_completeness", "source": "references/01-workflow/04-demo-output-spec.md 11.28 设计规范补齐落位闭环（RULE-63）/ SKILL.md 设计规范完备性补齐 / references/01-workflow/07-requirement-understanding.md 设计规范补齐项", "tests": "test_design_completeness_passes, test_design_completeness_not_landed_fails, test_design_completeness_missing_landing_ref_fails, test_design_completeness_dev_item_landing_passes, test_design_completeness_excluded_reason_missing_fails, test_design_completeness_entry_invalid_fails, test_design_completeness_basis_unread_warns, test_design_completeness_absent_skips"},
     {"ruleId": "RULE-64", "errorCode": "TEMPLATE_SYNC_ENTRY_INVALID / TEMPLATE_SYNC_TARGET_MISSING / TEMPLATE_SYNC_BASIS_UNREAD", "name": "模板契约差异同步闭环（条件式，designContext.templateSync 非空 list 时启用）：注册表快照与已读取的 Common Design 页面模板定义不一致时，以 Common Design 为准产出设计并逐条登记差异 {templateId, field(footer.buttonOrder|footer.alignment), registryValue, commonDesignValue, ref(含#锚点)}——条目字段缺失或 field/commonDesignValue 取值非法给 TEMPLATE_SYNC_ENTRY_INVALID（error）；templateId 不在注册表给 TEMPLATE_SYNC_TARGET_MISSING（error）；ref 未在 readLedger 锚点级精读命中给 TEMPLATE_SYNC_BASIS_UNREAD（warning）；已登记差异的字段在校验时以 commonDesignValue 覆盖注册表快照（RULE-20 对账与 RULE-37/60 线框判定生效），照 Common Design 原文绘制不再被快照误拦；未声明该字段时不启用，历史 JSON 不误伤", "check": "check_template_sync", "source": "references/01-workflow/04-demo-output-spec.md 11.29 模板契约差异同步闭环（RULE-64）/ references/01-workflow/00-design-skill-resolver.md 同步规则 / SKILL.md Design Context 字段", "tests": "test_template_sync_passes, test_template_sync_override_conflict_fails, test_template_sync_entry_invalid_fails, test_template_sync_target_missing_fails, test_template_sync_basis_unread_warns, test_template_sync_alignment_override_passes, test_template_sync_absent_skips, test_template_sync_deviation_blocked_without_sync"},
-    {"ruleId": "RULE-65", "errorCode": "CARRIER_SWEEP_ENTRY_INVALID / CARRIER_SWEEP_TARGET_MISSING / CARRIER_SWEEP_MISMATCH / CARRIER_SWEEP_CARD_TRACE_MISSING / CARRIER_SWEEP_BASIS_UNREAD / CARRIER_SWEEP_SIGNAL_REVIEW", "name": "承载形式分流闭环（两部分）：其一，designContext.carrierSweep 键显式声明时启用条目对账——CD 存在承载形式分流决策链（如多实例配置内容的表格承载 vs 多卡片承载）时，逐页登记 { pageId, contextRef(分流章节锚点), dataTraits(逐特征判定), decision(CD 原文承载形式), templateRef(落地模板 ID), reason }；条目字段缺失或非法 CARRIER_SWEEP_ENTRY_INVALID（error）、pageId 不存在或 templateRef 不在注册表 CARRIER_SWEEP_TARGET_MISSING（error）、判定模板与页面实际 templateId 不一致 CARRIER_SWEEP_MISMATCH（error）、注册表标记 carrierTraceRequired=true 的特化承载模板（如卡片列表页，CD 明文仅判为对应承载时使用）被使用却无条目 CARRIER_SWEEP_CARD_TRACE_MISSING（error）、contextRef 未精读 CARRIER_SWEEP_BASIS_UNREAD（warning）；其二，可疑信号复核始终启用（warning）——页面文本含第三方对接类特征词（对接/厂商/第三方/平台/连接状态/进度等）却未留痕时告警复核，防止该选卡片承载却回落表格基线；判定语义始终以 CD 分流链原文为准，校验器只做账实一致与留痕完整性，不硬编码任何 CD 词汇与路径", "check": "check_carrier_sweep", "source": "references/01-workflow/04-demo-output-spec.md 11.30 承载形式分流闭环（RULE-65）/ references/01-workflow/00-design-skill-resolver.md 承载形式分流义务 / references/01-workflow/03-demo-page-decomposition.md 4.2.3", "tests": "test_carrier_sweep_passes, test_carrier_sweep_mismatch_fails, test_carrier_sweep_target_missing_fails, test_carrier_sweep_card_trace_missing_fails, test_carrier_sweep_entry_invalid_fails, test_carrier_sweep_basis_unread_warns, test_carrier_sweep_signal_review_warns, test_carrier_sweep_absent_skips, test_carrier_sweep_table_with_trace_passes, test_carrier_sweep_mismatch_reverse_fails"}
+    {"ruleId": "RULE-65", "errorCode": "CARRIER_SWEEP_ENTRY_INVALID / CARRIER_SWEEP_TARGET_MISSING / CARRIER_SWEEP_MISMATCH / CARRIER_SWEEP_CARD_TRACE_MISSING / CARRIER_SWEEP_BASIS_UNREAD / CARRIER_SWEEP_SIGNAL_REVIEW", "name": "承载形式分流闭环（两部分）：其一，designContext.carrierSweep 键显式声明时启用条目对账——CD 存在承载形式分流决策链（如多实例配置内容的表格承载 vs 多卡片承载）时，逐页登记 { pageId, contextRef(分流章节锚点), dataTraits(逐特征判定), decision(CD 原文承载形式), templateRef(落地模板 ID), reason }；条目字段缺失或非法 CARRIER_SWEEP_ENTRY_INVALID（error）、pageId 不存在或 templateRef 不在注册表 CARRIER_SWEEP_TARGET_MISSING（error）、判定模板与页面实际 templateId 不一致 CARRIER_SWEEP_MISMATCH（error）、注册表标记 carrierTraceRequired=true 的特化承载模板（如卡片列表页，CD 明文仅判为对应承载时使用）被使用却无条目 CARRIER_SWEEP_CARD_TRACE_MISSING（error）、contextRef 未精读 CARRIER_SWEEP_BASIS_UNREAD（warning）；其二，可疑信号复核始终启用（warning）——页面文本含第三方对接类特征词（对接/厂商/第三方/平台/连接状态/进度等）却未留痕时告警复核，防止该选卡片承载却回落表格基线；判定语义始终以 CD 分流链原文为准，校验器只做账实一致与留痕完整性，不硬编码任何 CD 词汇与路径", "check": "check_carrier_sweep", "source": "references/01-workflow/04-demo-output-spec.md 11.30 承载形式分流闭环（RULE-65）/ references/01-workflow/00-design-skill-resolver.md 承载形式分流义务 / references/01-workflow/03-demo-page-decomposition.md 4.2.3", "tests": "test_carrier_sweep_passes, test_carrier_sweep_mismatch_fails, test_carrier_sweep_target_missing_fails, test_carrier_sweep_card_trace_missing_fails, test_carrier_sweep_entry_invalid_fails, test_carrier_sweep_basis_unread_warns, test_carrier_sweep_signal_review_warns, test_carrier_sweep_absent_skips, test_carrier_sweep_table_with_trace_passes, test_carrier_sweep_mismatch_reverse_fails"},
+    {"ruleId": "RULE-66", "errorCode": "CHANGE_SYNC_ENTRY_INVALID / CHANGE_SYNC_TARGET_MISSING / CHANGE_SYNC_SOURCE_NOT_LANDED / CHANGE_SYNC_NOT_LANDED / CHANGE_SYNC_EXEMPTION_REASON_MISSING / CHANGE_SYNC_VIEW_UNCOVERED / CHANGE_SYNC_REVIEW", "name": "关联改动同步闭环（条件式，designContext.changeSync 声明时启用）：需求在已有功能上修改（如已有表单新增一个配置项）时，同一业务对象的关联视图（表格汇总列/筛选搜索项/详情展示/卡片）须同步呈现该字段或逐项写明豁免——条目字段缺失或 view 取值非法 CHANGE_SYNC_ENTRY_INVALID（error）；pageId 不存在 CHANGE_SYNC_TARGET_MISSING（error）；sourceField 不在该页 sections 任何字段数组中 CHANGE_SYNC_SOURCE_NOT_LANDED（error，触发字段未落位先按 RULE-36 落字段）；synced 落点指向不存在页面/开发项或落点处检索不到字段痕迹 CHANGE_SYNC_NOT_LANDED（error）；excluded 缺豁免理由 CHANGE_SYNC_EXEMPTION_REASON_MISSING（error，豁免是专业判断：如密码字段不进表格列、时间戳不值得做搜索项、超长描述不进筛选条件但可进关键词搜索）；views 枚举的关联视图未被 synced/excluded 覆盖 CHANGE_SYNC_VIEW_UNCOVERED（error）；反向复核始终对声明条目之外的页面生效（warning）——同页面表单字段均未出现在表格列与筛选项时告警人工复核（字段别名/派生列属正常差异故仅 warning，完整对账以 changeSync 条目为准）；只针对本次需求新增/修改的字段，存量字段历史差异不属本规则范围", "check": "check_change_sync", "source": "references/01-workflow/04-demo-output-spec.md 11.31 关联改动同步闭环（RULE-66）/ references/01-workflow/03-demo-page-decomposition.md 变更影响面识别 / SKILL.md Design Context 字段", "tests": "test_change_sync_passes, test_change_sync_source_not_landed_fails, test_change_sync_not_landed_fails, test_change_sync_exemption_reason_missing_fails, test_change_sync_view_uncovered_fails, test_change_sync_target_missing_fails, test_change_sync_entry_invalid_fails, test_change_sync_reverse_review_warns, test_change_sync_no_reverse_no_noise, test_change_sync_absent_skips"},
+    {"ruleId": "RULE-67", "errorCode": "FORM_TIP_PLACEHOLDER / FORM_TIP_AMBIGUOUS", "name": "小i提示内容义务（条件式，字段 tips 显式声明小i痕迹时启用）：表单配置项有小i提示图标时，必须在小i提示（tips）中写明提示内容本身——具体说明该配置项的含义/影响/限制（如：用于实例鉴权，创建后不可修改），禁止只画图标不给内容或以占位空话（有/需要/待补充/见原型等）充数；tips 含小i痕迹词（小i/[i]/提示图标/tooltip 等）但去除痕迹词后无具体文案（<6字或纯空话）→ warning FORM_TIP_PLACEHOLDER，仅痕迹词与极短残留 → warning FORM_TIP_AMBIGUOUS 提示人工复核；有具体文案（≥6字且非空话）视为已履行义务；范围仅表单字段（formFields 与表单区块 fields），表格/筛选字段 description 列语义不同不适用（RULE-67）", "check": "check_tooltip_content", "source": "references/01-workflow/04-demo-output-spec.md 11.32 小i提示内容义务（RULE-67）/ 06-quality-and-rules.md 1.15 关联改动同步闭环之后", "tests": "test_tooltip_placeholder_warns / test_tooltip_specific_content_passes / test_tooltip_marker_only_warns / test_tooltip_absent_skips / test_tooltip_short_residue_ambiguous_warns / test_tooltip_filter_table_not_scanned"},
+    {"ruleId": "RULE-68", "errorCode": "FEATURE_CONTRACT_ENTRY_INVALID / FEATURE_TARGET_MISSING / FEATURE_PRESERVE_MISSING / FEATURE_ADJUSTMENT_UNREASONED / FEATURE_FORBIDDEN_PATTERN / FEATURE_BASIS_UNREAD / FEATURE_UI_BLUEPRINT_INVALID / FEATURE_UI_BLUEPRINT_ELEMENT_MISSING / FEATURE_UI_BLUEPRINT_NOT_IN_WIREFRAME / FEATURE_UI_BLUEPRINT_NOT_DRAWN", "name": "Feature 契约落位闭环（条件式，designContext.featureContract 声明时启用）：CD Feature 业务功能层文档声明功能契约（哪些结构必须保留/哪些可按业务调整/哪些禁止出现）时，设计命中该功能则 CD 是约束而非参考，契约条款必须落进设计并逐项对账——按 source 文档分组登记 { source(Feature文档路径#契约章节锚点), appliedTo:[{pageId, item, landingRef}], adjustments:[{item, from, to, reason}], forbidden:[{pattern}], reason }；条目 source 缺失或不含 # 锚点、appliedTo 非非空数组、appliedTo 项缺 pageId/item/landingRef、adjustments 项缺 item/from/to、forbidden 项缺 pattern、reason 缺失 FEATURE_CONTRACT_ENTRY_INVALID（error）；appliedTo 的 pageId 不存在 FEATURE_TARGET_MISSING（error）；landingRef 指向不存在页面/开发项、与 pageId 不一致或落点处检索不到 item 痕迹 FEATURE_PRESERVE_MISSING（error，必须保留的契约结构未落位）；adjustments 项缺 reason FEATURE_ADJUSTMENT_UNREASONED（error，可按业务调整的部分调整须留痕：CD 原结构->本设计调整->业务理由，无理由调整视为静默偏离）；forbidden 声明的禁止模式词元出现在任一页面文本 FEATURE_FORBIDDEN_PATTERN（error，禁止模式由 AI 从契约原文声明为数据，校验器只做文本检索，不硬编码任何 CD 词汇）；source 未精读 FEATURE_BASIS_UNREAD（warning）；uiBlueprint 界面蓝图对账维度：Feature 文档含分步线框图时必须逐界面登记 { screen, pageId, structuralElements:[结构元素...] }（禁止选择性登记，resolver 层全量登记义务），条目缺 screen/pageId/structuralElements 非空数组 FEATURE_UI_BLUEPRINT_INVALID（error）、落点页不存在复用 FEATURE_TARGET_MISSING、页面无 wireframe.ascii 且无 wireframeSharedWith 共用声明 FEATURE_UI_BLUEPRINT_NOT_DRAWN（warning）、结构元素在页面全文（ascii+variants+区块字段）检索不到 FEATURE_UI_BLUEPRINT_ELEMENT_MISSING（error）、未在 ascii 命中但在页面其他文本命中 FEATURE_UI_BLUEPRINT_NOT_IN_WIREFRAME（warning，疑似只是文字提及未画进线框）；三层检索口径：ascii 命中通过/文本命中告警/全无阻断；结构形态对错机器不判定（诚实边界），由 resolver 义务与确认点对照兜底；机制通用不绑定功能词，CD 新增 Feature 文档零改动，历史 JSON 不误伤", "check": "check_feature_contract", "source": "references/01-workflow/04-demo-output-spec.md 11.33 Feature 契约落位闭环（RULE-68）/ references/01-workflow/00-design-skill-resolver.md Feature 契约遵守义务 / references/01-workflow/03-demo-page-decomposition.md 功能契约对账", "tests": "test_feature_contract_passes, test_feature_contract_entry_invalid_fails, test_feature_contract_target_missing_fails, test_feature_contract_preserve_missing_fails, test_feature_contract_adjustment_unreasoned_fails, test_feature_contract_forbidden_pattern_fails, test_feature_contract_basis_unread_warns, test_feature_contract_absent_skips, test_feature_ui_blueprint_passes, test_feature_ui_blueprint_invalid_fails, test_feature_ui_blueprint_element_missing_fails, test_feature_ui_blueprint_not_in_wireframe_warns, test_feature_ui_blueprint_not_drawn_warns, test_feature_ui_blueprint_variants_ascii_hit"},
+    {"ruleId": "RULE-70", "errorCode": "REGION_BASIS_UNDECLARED / REGION_BASIS_UNREAD", "name": "区域规范精读闭环 v2（双轨制，条件式，页面 sections 或 wireframe.regions 命中区域识别枚举时启用）：本 Skill 不预置、不维护任何规范文档路径，「读什么」的权威在实际加载的 Common Design / Product Design 目录。区块命中区域（表格/概览/树/表单/筛选/步骤条/详情/导航）后：designContext 与页面级 regionBasisDeclarations 均未声明该区域依据给 REGION_BASIS_UNDECLARED（warning）；声明了依据但 ref 未在 readLedger 锚点级精读命中给 REGION_BASIS_UNREAD（warning）；防「页面明显有表格却没读表格规范也照常输出」导致规范真值（操作列收纳、列配置、空态、信息层级等）整体缺失；复用业务组件容器页（RULE-59）、PD override 页、wireframeSharedFrom 从页面跳过；regionBasisExempt（页面级，含 reason）豁免", "check": "check_region_basis_reading", "source": "references/01-workflow/04-demo-output-spec.md 11.35 区域规范精读闭环（RULE-70）/ references/02-template-contracts/common-design-template-registry.json regionReadingContract", "tests": "test_region_basis_undeclared_warns, test_region_basis_unread_warns, test_region_basis_read_passes, test_region_basis_doc_level_read_not_enough, test_region_basis_page_level_decl_passes, test_region_basis_non_design_context_skips, test_region_basis_exempt_skips, test_region_basis_pd_source_decl_passes"},
+    {"ruleId": "RULE-71", "errorCode": "ACTION_COLUMN_OVERFLOW", "name": "表格行内操作收纳检验（条件式，页面含表格区块时启用）：表格区块行内操作数量超过收纳阈值（默认 3，区块/页面 actionColumnLimit 可覆盖）且未声明收纳时给 ACTION_COLUMN_OVERFLOW（warning，提醒按已读取的 Common Design 表格规范将超出部分收纳进「更多」，本 Skill 不内置规范真值数值，阈值仅为通用提醒口径）；行内操作来源优先 rowActions 数组，其次 actions[].scope=row 的项，两者均未声明时以区块 actions 总数启发判定并提示区分 scope；区块 actionOverflow=true 或 description/interactionNotes/ascii 已含「更多」收纳痕迹豁免", "check": "check_action_column_overflow", "source": "references/01-workflow/04-demo-output-spec.md 11.36 表格行内操作收纳检验（RULE-71）/ references/01-workflow/01-output-templates.md 行内操作契约", "tests": "test_action_overflow_warns, test_action_overflow_within_limit_passes, test_action_overflow_declared_passes, test_action_overflow_more_mark_passes, test_action_overflow_row_scope_counts, test_action_overflow_limit_override, test_action_overflow_ambiguous_actions_hint"},
+    {"ruleId": "RULE-69", "errorCode": "OVERVIEW_STYLE_INVALID / OVERVIEW_STYLE_MISSING / OVERVIEW_CHART_STYLE_NOT_DRAWN / OVERVIEW_METRIC_COMPONENT_MISSING", "name": "概览区形态还原闭环（条件式，页面 templateId 命中注册表含 overviewVariants 的模板或 regions 含 overview 区域时启用）：概览表格页与概览左树表格页的概览区在 Common Design 中定义了多种形态（数字统计型/饼图/折线图/条形图等），概览区块必须声明 overviewStyle（形态值取注册表 overviewVariants.styles 的 id）与 overviewMetrics（指标数组 name/display/iduxComponent/description），线框图概览区按声明形态绘制可辨识痕迹（统计型=指标名+数字统计卡行，图表=图表占位框+形态标注）——声明非法形态值给 OVERVIEW_STYLE_INVALID（error，形态枚举以精读 CD 模板原文为准，禁止凭经验新增）；启用页面概览区块均未声明形态给 OVERVIEW_STYLE_MISSING（warning，形态信息缺失导致 AI Coding 只能自绘通用卡片）；声明图表形态但 ascii（含 variants）检索不到形态名痕迹给 OVERVIEW_CHART_STYLE_NOT_DRAWN（warning，疑似只写文字未画进线框）；overviewMetrics 项缺 name/iduxComponent/description 给 OVERVIEW_METRIC_COMPONENT_MISSING（warning）；复用业务组件容器页（RULE-59）、wireframeSharedWith 从页面（RULE-62）、PD override 页跳过；overviewStyleExempt（页面级，含 reason）豁免 MISSING", "check": "check_overview_style", "source": "references/01-workflow/04-demo-output-spec.md 11.34 概览区形态还原闭环（RULE-69）/ references/02-template-contracts/common-design-template-registry.json overviewVariants / references/01-workflow/01-output-templates.md 概览区块形态契约", "tests": "test_overview_style_stat_passes, test_overview_style_invalid_fails, test_overview_style_missing_warns, test_overview_style_chart_not_drawn_warns, test_overview_metric_component_missing_warns, test_overview_style_exempt_skips, test_overview_style_non_overview_page_skips, test_overview_style_region_trigger_enabled"},
 ]
 
 # 页面 type（中文）与标准模板的映射：由模板注册表 templates[*].name 派生，
@@ -650,6 +657,8 @@ class Validator:
         self.errors = []
         self.page_ids = set()
         self.type_template_map = build_type_template_map(registry)
+        # 区域级规范精读契约（RULE-70）：优先取注册表 regionReadingContract.regions
+        self._region_read_contract = (registry.get("regionReadingContract") or {}).get("regions") or {}
         # Product Design override 模板动态注册（视为注册表新增模板，可直接作为 templateId）
         self.pd_templates = {}
         self._collect_pd_templates()
@@ -1203,6 +1212,334 @@ class Validator:
                                    fix="调整平铺筛选行组件顺序：搜索框移至该行最右侧（时间范围/选择框之前不得出现搜索框）；"
                                        "若 PRD 或 Product Design 明确指定其他顺序，在页面 filterOrderOverride 声明说明后豁免本检查")
 
+    # ------------------------------------------------------------------
+    # RULE-70 区域规范精读闭环 / RULE-71 表格行内操作收纳检验
+    # ------------------------------------------------------------------
+    REGION_TYPE_MATCHERS = {
+        "table": ("表格", "table"),
+        "overview": ("概览", "overview"),
+        "tree": ("树", "tree"),
+        "form": ("表单", "form"),
+        "filter": ("筛选", "filter"),
+        "steps": ("步骤", "steps"),
+        "detail": ("详情", "detail"),
+        "nav": ("导航", "nav"),
+    }
+    ACTION_OVERFLOW_DEFAULT_LIMIT = 3
+
+    def _block_region_key(self, block):
+        """按区块 type/title 推定所属区域键（table/overview/tree），未命中返回 None。"""
+        text = f"{block.get('type', '')} {block.get('title', '')}".strip().lower()
+        for region_key, matchers in self.REGION_TYPE_MATCHERS.items():
+            for m in matchers:
+                if m in text:
+                    return region_key
+        return None
+
+    def _page_region_hits(self, page, contract_keys):
+        """收集页面命中区域识别枚举的内容区块 {region_key: 命中标签集合}。
+
+        触发面只取 sections 内容区块——区块是 AI 拆解设计决策的载体，其规范依据
+        才需要声明与精读。wireframe.regions 的 templateRegion 属于模板必需骨架
+        （由模板契约与区域绘制规则管辖），不参与依据声明触发，避免每张表格页
+        都强制声明筛选/分页等骨架规范造成噪音。
+        """
+        hits = {}
+        sections = page.get("sections")
+        if isinstance(sections, list):
+            for section in sections:
+                if not isinstance(section, dict):
+                    continue
+                key = self._block_region_key(section)
+                if key in contract_keys:
+                    label = str(section.get("title") or section.get("type") or key).strip()
+                    hits.setdefault(key, set()).add(label)
+        return hits
+
+    def _page_basis_declarations(self, page):
+        """合并 designContext 与页面级 regionBasisDeclarations，按 region 分组（列表）。"""
+        groups = {}
+        dc = self.data.get("designContext") or {}
+        for src in (dc.get("regionBasisDeclarations"), page.get("regionBasisDeclarations")):
+            if not isinstance(src, list):
+                continue
+            for item in src:
+                if not isinstance(item, dict):
+                    continue
+                region = str(item.get("region", "")).strip().lower()
+                ref = str(item.get("ref", "")).strip()
+                if region and ref:
+                    groups.setdefault(region, []).append(item)
+        return groups
+
+    def check_region_basis_reading(self):
+        """RULE-70 区域规范精读闭环 v2（双轨制，warning）：
+
+        本 Skill 不维护、不预置任何规范文档路径（规范分布在 Common Design / Product Design
+        多个目录且随版本演进，「读什么」的权威在实际加载的 CD/PD 内容）。判定双轨：
+        1. 权威轨：区块命中区域后，查声明池（designContext 与页面级 regionBasisDeclarations
+           合并）。声明池无该区域依据 -> REGION_BASIS_UNDECLARED；声明了依据但 ref 未在
+           readLedger 锚点级精读命中（#* 整篇可命中）-> REGION_BASIS_UNREAD。
+        2. 兜底轨：注册表 regionReadingContract 仅登记「区域识别枚举」（label/desc），
+           用于命中判定与提示文案，不参与路径判定。
+        """
+        dc = self.data.get("designContext")
+        if not isinstance(dc, dict):
+            return  # 历史 JSON 无 designContext，不启用（不误伤）
+        contract = getattr(self, "_region_read_contract", None) or {}
+        if not isinstance(contract, dict):
+            contract = {}
+        # 区域键 = 校验器内置识别枚举 ∪ 注册表登记枚举（registry 仅兜底，可扩展）
+        region_keys = set(self.REGION_TYPE_MATCHERS.keys()) | set(contract.keys())
+        ledger = self._build_ledger(dc.get("readLedger"))
+        src_ref = ("references/01-workflow/04-demo-output-spec.md 11.35 区域规范精读闭环（RULE-70）/"
+                   " references/02-template-contracts/common-design-template-registry.json regionReadingContract")
+        for page, path in self.all_pages:
+            pid = page.get("id", "")
+            if self._page_reuse_business(page) or self._page_override_enabled(page):
+                continue
+            if str(page.get("wireframeSharedFrom") or "").strip():
+                continue  # 与其他页面共用线框，从页面跳过（主页面承担）
+            exempt = page.get("regionBasisExempt")
+            if isinstance(exempt, dict) and str(exempt.get("reason", "")).strip():
+                continue
+            hits = self._page_region_hits(page, region_keys)
+            declared = self._page_basis_declarations(page)
+            for region_key in sorted(hits.keys()):
+                region_label = "、".join(sorted(hits[region_key]))
+                entry = contract.get(region_key) or {}
+                region_name = str(entry.get("label") or region_key)
+                desc = str(entry.get("desc", "")).strip()
+                decls = declared.get(region_key) or []
+                if not decls:
+                    self.add_error(
+                        pid, "REGION_BASIS_UNDECLARED", "warning",
+                        f"{path}.designContext.regionBasisDeclarations",
+                        f"页面存在{region_label}区块（区域 {region_key}），但 designContext 与页面级 regionBasisDeclarations "
+                        f"均未声明该区域的规范依据。本 Skill 不预置规范文档路径，须按当前实际加载的 Common Design / "
+                        f"Product Design 目录确认{region_name}相关规范（{desc}），登记依据声明并精读",
+                        "designContext.regionBasisDeclarations 含该区域 {region, ref, source} 声明",
+                        "无该区域任何依据声明",
+                        source_ref=src_ref,
+                        fix=f"在 designContext.regionBasisDeclarations 补 {{region: \"{region_key}\", ref: \"<实际加载的 CD/PD 规范文档路径>#<锚点>\", source: \"common-design|product-design\"}}；"
+                            "并在 designContext.readLedger 对应锚点登记 status=read；"
+                            "确无对应规范或确属豁免场景时，页面声明 regionBasisExempt: {reason: \"...\"}")
+                    continue
+                # 逐条声明校验锚点级精读命中（#* 整篇已读覆盖任意锚点，与 RULE-43 口径一致）
+                for item in decls:
+                    ref = str(item.get("ref", "")).strip()
+                    doc, anchor = self._norm_ref(ref)
+                    hit = ledger.get((doc, anchor)) == "read" or ledger.get((doc, "*")) == "read"
+                    if hit:
+                        continue
+                    where = "readLedger 无该条目" if ledger.get((doc, anchor)) is None else f"readLedger 状态为 {ledger.get((doc, anchor))}（仅读索引）"
+                    self.add_error(
+                        pid, "REGION_BASIS_UNREAD", "warning",
+                        f"{path}.designContext.readLedger",
+                        f"页面存在{region_label}区块（区域 {region_key}），声明的规范依据「{ref}」未在 readLedger "
+                        f"锚点级精读命中（{where}）。该区域规范真值未进入设计依据，编码阶段会按 AI 经验自绘",
+                        f"readLedger 含 {ref} 且 status=read（#* 整篇已读可命中）",
+                        f"{where}",
+                        source_ref=src_ref,
+                        fix=f"精读 {ref} 指向的规范小节，在 designContext.readLedger 登记 status=read；"
+                            "并按精读结论修正区块设计（如操作列收纳、列配置、空态、信息层级）；"
+                            "声明路径有误时更正 regionBasisDeclarations 的 ref")
+                    break  # 每区域报一条，避免刷屏
+
+    def check_action_column_overflow(self):
+        """RULE-71 表格行内操作收纳检验（条件式，warning）：
+
+        表格区块行内操作超过收纳阈值（默认 3，actionColumnLimit 可覆盖）且未声明收纳
+        时提醒收敛进「更多」。本 Skill 不内置规范真值数值，阈值仅为通用提醒口径，
+        真值以已读取的 Common Design 表格规范为准。
+        """
+        src_ref = "references/01-workflow/04-demo-output-spec.md 11.36 表格行内操作收纳检验（RULE-71）"
+        for page, path in self.all_pages:
+            pid = page.get("id", "")
+            if self._page_reuse_business(page) or self._page_override_enabled(page):
+                continue
+            if str(page.get("wireframeSharedFrom") or "").strip():
+                continue
+            sections = page.get("sections")
+            if not isinstance(sections, list):
+                continue
+            for si, block in enumerate(sections):
+                if not isinstance(block, dict):
+                    continue
+                if self._block_region_key(block) != "table":
+                    continue
+                if block.get("actionOverflow"):
+                    continue  # 已声明收纳
+                limit_raw = block.get("actionColumnLimit") or page.get("actionColumnLimit")
+                try:
+                    limit = int(limit_raw) if str(limit_raw or "").strip() else self.ACTION_OVERFLOW_DEFAULT_LIMIT
+                except (TypeError, ValueError):
+                    limit = self.ACTION_OVERFLOW_DEFAULT_LIMIT
+                row_actions = block.get("rowActions")
+                actions = block.get("actions") if isinstance(block.get("actions"), list) else []
+                ambiguous = False
+                if not isinstance(row_actions, list):
+                    scope_rows = [a for a in actions
+                                  if isinstance(a, dict) and str(a.get("scope", "")).strip().lower() == "row"]
+                    has_scope = any(isinstance(a, dict) and str(a.get("scope", "")).strip() for a in actions)
+                    if has_scope:
+                        row_actions = scope_rows  # 已显式区分：只统计行内操作
+                    else:
+                        row_actions = actions  # 启发式：未区分 scope 时以区块操作总数判定并提示
+                        ambiguous = True
+                count = len(row_actions or [])
+                if count <= limit:
+                    continue
+                wireframe = page.get("wireframe") or {}
+                haystack = " ".join([
+                    str(wireframe.get("ascii", "") or ""),
+                    str(block.get("description", "") or ""),
+                    " ".join(str(x) for x in (block.get("interactionNotes") or []) if isinstance(x, str)),
+                ])
+                if "更多" in haystack:
+                    continue  # 已有收纳痕迹
+                # ambiguous 已在上方按声明情况判定
+                scope_hint = ("当前区块未声明 rowActions 也未在 actions 上标记 scope，无法区分工具栏操作与行内操作，"
+                              "请用 rowActions 数组或 actions[].scope=row/toolbar 显式区分；"
+                              if ambiguous else "")
+                self.add_error(
+                    pid, "ACTION_COLUMN_OVERFLOW", "warning",
+                    f"{path}.sections[{si}]",
+                    f"表格区块「{block.get('title', '')}」行内操作数量为 {count}，超过收纳阈值 {limit}，"
+                    "未发现收纳痕迹。按已读取的 Common Design 表格规范，超出阈值的行内操作应收纳进「更多」；"
+                    "平铺过多行内操作会导致列宽挤压、操作溢出换行",
+                    f"行内操作 <= {limit} 个，或声明 actionOverflow=true / 线框与说明含「更多」收纳",
+                    f"行内操作 {count} 个且无收纳声明",
+                    source_ref=src_ref,
+                    fix=scope_hint +
+                        "按已精读的 Common Design 表格规范收纳超出部分进「更多」（区块声明 actionOverflow: true 并在线框绘制「更多」）；"
+                        "若业务确需全部平铺，将区块 actionColumnLimit 设为实际值并说明依据")
+
+    # ------------------------------------------------------------------
+    # RULE-69 概览区形态还原闭环
+    # ------------------------------------------------------------------
+    OVERVIEW_SECTION_KEYS = ("概览", "统计", "overview", "指标")
+
+    def _overview_variants_for(self, template_id):
+        """返回模板登记的 overviewVariants（无则 None）。"""
+        template = self._effective_template(template_id) or {}
+        variants = template.get("overviewVariants")
+        return variants if isinstance(variants, dict) else None
+
+    def _page_overview_blocks(self, page):
+        """收集页面的概览区块：type/title 命中概览语义，或声明了 overviewStyle/overviewMetrics 的区块。"""
+        blocks = []
+        for i, section in enumerate(page.get("sections") or []):
+            if not isinstance(section, dict):
+                continue
+            type_text = str(section.get("type") or "").lower()
+            title_text = str(section.get("title") or "").lower()
+            hit = (any(k.lower() in type_text for k in self.OVERVIEW_SECTION_KEYS)
+                   or any(k.lower() in title_text for k in self.OVERVIEW_SECTION_KEYS)
+                   or section.get("overviewStyle") or section.get("overviewMetrics"))
+            if hit:
+                blocks.append((i, section))
+        return blocks
+
+    def check_overview_style(self):
+        """RULE-69 概览区形态还原闭环（条件式）：
+        页面 templateId 命中注册表含 overviewVariants 的模板（概览表格页/概览左树表格页），
+        或 regions 含 overview 区域时启用。概览区块必须声明 overviewStyle（注册表形态 id）
+        与 overviewMetrics（指标数组），线框图按形态绘制痕迹。"""
+        src_ref = "references/01-workflow/04-demo-output-spec.md 11.34 概览区形态还原闭环（RULE-69）"
+        for page, ppath in self.all_pages:
+            if self._page_reuse_business(page):
+                continue
+            if self._wireframe_shared_with(page):
+                continue
+            if self._page_override_enabled(page):
+                continue
+            pid = page.get("id", "")
+            tid = self.page_template(page)
+            variants = self._overview_variants_for(tid)
+            wf = self.page_wireframe(page)
+            regions = (wf or {}).get("regions") or [] if isinstance(wf, dict) else []
+            region_triggered = any(
+                isinstance(r, dict) and str(r.get("templateRegion") or "") == "overview"
+                for r in regions)
+            if not variants and not region_triggered:
+                continue
+            blocks = self._page_overview_blocks(page)
+            declared_styles = []
+            has_overview_block = bool(blocks)
+            for bi, block in blocks:
+                style = str(block.get("overviewStyle") or "").strip()
+                metrics = block.get("overviewMetrics") or []
+                exempt = page.get("overviewStyleExempt")
+                if style:
+                    style_ids = {str(s.get("id") or "").strip()
+                                 for s in (variants or {}).get("styles", []) if isinstance(s, dict)}
+                    if not style_ids or style not in style_ids:
+                        valid = "、".join(sorted(v for v in style_ids if v)) or "该模板未登记 overviewVariants（禁止声明形态值）"
+                        self.add_error(pid, "OVERVIEW_STYLE_INVALID", "error",
+                                       f"{ppath}.sections[{bi}].overviewStyle",
+                                       f"概览区块声明的 overviewStyle「{style}」不在模板 {tid} 登记的形态枚举内",
+                                       f"形态枚举（以精读 Common Design 模板原文为准）：{valid}",
+                                       f"声明值 {style}",
+                                       source_ref=src_ref,
+                                       fix=f"将 overviewStyle 改为模板 {tid} overviewVariants.styles 中登记的形态 id，形态枚举以精读 Common Design 模板文档原文为准，禁止凭经验新增")
+                    else:
+                        declared_styles.append((bi, style, block))
+                else:
+                    declared_styles.append((bi, "", block))
+                # overviewMetrics 项审计
+                if isinstance(metrics, list):
+                    for mi, metric in enumerate(metrics):
+                        if not isinstance(metric, dict):
+                            self.add_error(pid, "OVERVIEW_METRIC_COMPONENT_MISSING", "warning",
+                                           f"{ppath}.sections[{bi}].overviewMetrics[{mi}]",
+                                           "overviewMetrics 项必须是对象（含 name/iduxComponent/description）",
+                                           "对象：指标名+展示形式+组件+说明", f"实际值类型 {type(metric).__name__}",
+                                           source_ref=src_ref,
+                                           fix="为指标项补齐 name/display/iduxComponent/description 字段")
+                            continue
+                        missing = [k for k in ("name", "iduxComponent", "description") if not str(metric.get(k) or "").strip()]
+                        if missing:
+                            self.add_error(pid, "OVERVIEW_METRIC_COMPONENT_MISSING", "warning",
+                                           f"{ppath}.sections[{bi}].overviewMetrics[{mi}]",
+                                           f"概览指标「{str(metric.get('name') or '未命名')[:20]}」缺 {('、'.join(missing))} 声明",
+                                           "每项指标声明 name/display/iduxComponent/description（图表形态须声明维度与图例）",
+                                           f"缺失字段：{'、'.join(missing)}",
+                                           source_ref=src_ref,
+                                           fix="补齐指标组件与说明；图表组件名以已读取 Common Design 组件映射表为准，本 Skill 不保存组件映射清单")
+            # 图表形态痕迹校验：声明 chart 形态但 ascii 检索不到形态名
+            if wf and isinstance(wf, dict):
+                ascii_text = str(wf.get("ascii") or "")
+                variants_ascii = " ".join(str((v or {}).get("ascii") or "") for v in (wf.get("variants") or []) if isinstance(v, dict))
+                ascii_blob = ascii_text + " " + variants_ascii
+                style_meta = {str(s.get("id") or "").strip(): s
+                              for s in (variants or {}).get("styles", []) if isinstance(s, dict)}
+                for bi, style, block in declared_styles:
+                    meta = style_meta.get(style) or {}
+                    if str(meta.get("drawKind") or "") != "chart":
+                        continue
+                    style_name = str(meta.get("name") or "").strip()
+                    if not style_name:
+                        continue
+                    if style_name not in ascii_blob:
+                        self.add_error(pid, "OVERVIEW_CHART_STYLE_NOT_DRAWN", "warning",
+                                       f"{ppath}.wireframe.ascii",
+                                       f"概览区块声明了图表形态「{style_name}」，但线框图概览区未绘制该形态痕迹",
+                                       f"概览区画图表占位框并标注形态（如 [{style_name}：维度名]），占位提示：{str(meta.get('drawHint') or '')[:60]}",
+                                       f"ascii 概览区未出现「{style_name}」标注",
+                                       source_ref=src_ref,
+                                       fix=f"在线框图概览区绘制 [{style_name}：维度名] 图表占位框（或补充形态标注文字）")
+            # 形态缺失告警：启用页面存在概览区块但均未声明 overviewStyle
+            if has_overview_block and not page.get("overviewStyleExempt"):
+                if all(not str(b.get("overviewStyle") or "").strip() for _, b in blocks):
+                    self.add_error(pid, "OVERVIEW_STYLE_MISSING", "warning",
+                                   f"{ppath}.sections",
+                                   "概览页面的概览区块均未声明 overviewStyle（概览形态信息缺失）",
+                                   "概览区块声明 overviewStyle（stat-number/pie-chart/line-chart/bar-chart 等注册表登记形态）与 overviewMetrics，供 AI Coding 还原 Common Design 概览样式",
+                                   "无任何概览形态声明，AI Coding 只能自绘通用卡片",
+                                   source_ref=src_ref,
+                                   fix="为概览区块补充 overviewStyle 与 overviewMetrics（形态枚举取注册表 overviewVariants.styles 的 id，以精读 Common Design 模板原文为准）；确不适用时在页面 overviewStyleExempt 声明理由")
+
     @staticmethod
     def _page_prosearch_filter(page):
         """判断页面筛选组件是否声明为高级搜索（IxProSearch/高级搜索）。"""
@@ -1656,13 +1993,16 @@ class Validator:
                                    fix="将该子容器提升为 pages 数组的独立页面对象（含 templateContract/wireframe/sections/codingGuide），父页面 children 只保留其 ID 引用（字符串）")
 
     def check_requirement_fields(self):
-        """RULE-36 字段完整性闭环：需求/规范明确要求的字段必须逐项落入对应字段数组（表格列/表单项/筛选项/详情描述字段）或 excludedFields 排除声明。"""
+        """RULE-36 字段完整性闭环：需求/规范明确要求的字段必须落入对应字段数组（表格列/表单项/筛选项/详情描述字段）、
+        excludedFields 排除声明，或 mergedFields 合并承载声明（覆盖是包含关系而非一一对应：
+        需求配置项可经设计手法合并承载，如地理位置级联、执行周期复合配置）。"""
         for page in self.data.get("pages", []):
             pid = page.get("id", "")
             required = page.get("requirementFieldNames") or []
             if not required:
                 continue
             excluded = page.get("excludedFields") or {}
+            merged = page.get("mergedFields") if isinstance(page.get("mergedFields"), dict) else {}
             covered = set()
             for section in self.page_sections(page):
                 for key in ("tableFields", "formFields", "cardFields", "fields", "filterFields", "detailFields"):
@@ -1682,6 +2022,27 @@ class Validator:
                     continue
                 if any(n in c or c in n for c in covered if len(c) >= 2 and len(n) >= 2):
                     continue
+                # mergedFields 合并承载声明：into（字符串或字符串数组）须全部命中真实落位字段
+                entry = merged.get(n)
+                if isinstance(entry, dict) and str(entry.get("note", "")).strip():
+                    raw_into = entry.get("into")
+                    if isinstance(raw_into, str):
+                        into_list = [raw_into.strip()] if raw_into.strip() else []
+                    elif isinstance(raw_into, (list, tuple)):
+                        into_list = [str(x).strip() for x in raw_into if str(x).strip()]
+                    else:
+                        into_list = []
+                    if into_list and all(t in covered for t in into_list):
+                        continue  # 合并目标全部真实落位，覆盖成立
+                    self.add_error(
+                        pid, "MERGED_FIELD_TARGET_MISSING", "warning",
+                        f"$.pages[{self._idx(page)}].mergedFields.{n}.into",
+                        f"字段 {n} 的 mergedFields 合并声明无效：into 目标 "
+                        f"{'、'.join(into_list) if into_list else '缺失或为空'}"
+                        f"未全部命中本页面实际落位字段数组（{'、'.join(sorted(covered)) or '无任何落位字段'}）",
+                        "into 指向的字段必须真实出现在本页面 tableFields/formFields/filterFields/cardFields/fields/detailFields 中，且不指向 excludedFields 排除的字段",
+                        f"声明的 into：{'、'.join(into_list) if into_list else '（空）'}",
+                        fix="修正 into 为实际落位字段名（合并目标须真实存在），或拆回独立配置项落入字段数组，或确属不展示时改用 excludedFields 并说明原因")
                 missing.append(n)
             if missing:
                 self.add_error(pid, "REQUIRED_FIELD_MISSING", "error",
@@ -1689,7 +2050,7 @@ class Validator:
                                f"需求明确要求的字段未落入设计说明书：{'、'.join(missing)}",
                                "需求/规范明确列出的每个字段都出现在对应区块的字段数组（表格列/表单项/筛选项/详情字段）中，或写入 excludedFields 并说明排除原因",
                                f"缺失字段：{'、'.join(missing)}",
-                               fix="将缺失字段补充到对应区块的字段数组（tableFields/formFields/filterFields/cardFields/fields等），若该页面确实不展示则写入 excludedFields 并说明原因")
+                               fix="将缺失字段补充到对应区块的字段数组（tableFields/formFields/filterFields/cardFields/fields等），字段经设计手法合并承载时（如地理位置级联、执行周期复合配置）在页面 mergedFields 登记合并声明（into 指向实际落位字段 + note 说明手法，覆盖为包含关系无需一一对应），若该页面确实不展示则写入 excludedFields 并说明原因")
 
     def _collect_option_fields(self, page):
         """收集页面各字段数组中的字段，返回 [(name, array_key, field_dict)]。"""
@@ -2388,7 +2749,8 @@ class Validator:
                                        "中性描述字段使用普通文本或等宽文本", f"「{name}」使用标签组件",
                                        source_ref=source_ref,
                                        fix=f"将「{name}」改为普通文本或等宽文本，把标签配额留给需要凸显的重要业务状态字段")
-
+    # RULE-67 小i提示痕迹词：tips 值含这些标记视为“字段声明了小i提示图标”
+    TOOLTIP_HINT_MARKERS = ("[i]", "(i)", "提示图标", "小i", "小 i", "小i提示", "小 i 提示", "小i图标", "小 i 图标", "i图标", "i 图标", "tooltip", "tooltip提示", "hover提示", "悬浮提示")
     def check_field_key_contract(self):
         """RULE-41 字段形态键契约：字段内容必须写在渲染器实际渲染的键上。
 
@@ -2455,6 +2817,88 @@ class Validator:
                     f"仅使用渲染键 {list(rendered)}",
                     f"同时使用了不渲染键 {alien_present}",
                     fix=f"删除 {alien_present}，内容统一写入渲染键 {list(rendered)}",
+                )
+
+    def check_tooltip_content(self):
+        """RULE-67 小i提示内容义务（条件式）：字段声明了小i提示图标，必须写明提示内容。
+
+        触发口径（键声明才启用，历史 JSON 不误伤）：字段对象显式声明提示图标
+        —— tips/tooltip/hint 键值含小i痕迹标记（TOOLTIP_HINT_MARKERS），
+        或字段 name 附近线框/ascii 含图标痕迹；仅"图标存在、内容缺失"时告警。
+
+        检查项（warning，不阻断 code）：
+        - FORM_TIP_PLACEHOLDER：formFields/表单区块 fields 中字段 tips 值仅为
+          占位空话（"有"/"需要"/"待补充"/"是"/"小i提示"/"见原型"等）或为空，
+          未写明提示内容本身——配置项有小i时，提示内容是设计交付物的一部分，
+          必须写明具体文案（如"用于实例鉴权，创建后不可修改"），禁止只画图标不给内容。
+        - FORM_TIP_AMBIGUOUS：tips 存在但仅写"小i提示"/"提示图标"等痕迹词本身，
+          无法区分提示内容与图标声明。
+        豁免：tips 内容含具体文案（长度>=6 且非纯痕迹词）视为已履行义务。
+        范围：仅表单字段（formFields 与含"表单/form"区块的 fields），表格/筛选
+        字段的 description 列语义不同，不在本规则内。
+        """
+        for page, path in self.all_pages:
+            pid = page.get("id", "")
+            sections = page.get("sections")
+            section_list = sections if isinstance(sections, list) else []
+            self._audit_tooltip_content(
+                pid, page.get("formFields"), f"{path}.formFields", section_list)
+            for si, section in enumerate(section_list):
+                if not isinstance(section, dict):
+                    continue
+                block_type = f"{section.get('type', '')} {section.get('title', '')}"
+                if "表单" not in block_type and "form" not in block_type.lower():
+                    continue
+                self._audit_tooltip_content(
+                    pid, section.get("formFields"),
+                    f"{path}.sections[{si}].formFields", section_list)
+                legacy = section.get("fields")
+                if isinstance(legacy, list):
+                    self._audit_tooltip_content(
+                        pid, legacy, f"{path}.sections[{si}].fields", section_list)
+
+    def _audit_tooltip_content(self, pid, fields, base_path, section_list):
+        """对一组表单字段执行小i提示内容义务审计（RULE-67 单数组检查）。"""
+        if not isinstance(fields, list):
+            return
+        trace_text = " ".join(
+            self._page_trace_text(sec) for sec in section_list if isinstance(sec, dict))
+        for i, field in enumerate(fields):
+            if not isinstance(field, dict):
+                continue
+            fname = str(field.get("name", "")).strip()
+            fpath = f"{base_path}[{i}]"
+            raw_tip = field.get("tips")
+            tip_text = raw_tip if isinstance(raw_tip, str) else ""
+            stripped = tip_text.strip()
+            if not stripped:
+                continue
+            marker_hit = [mk for mk in self.TOOLTIP_HINT_MARKERS if mk.lower() in stripped.lower()]
+            if not marker_hit:
+                continue
+            # 去掉痕迹词后剩余文本 = 提示内容本体
+            residue = stripped
+            for m in sorted(marker_hit, key=len, reverse=True):
+                residue = residue.replace(m, "").replace(m.lower(), "")
+            residue = residue.strip("：: 　，,。；;·-—|")
+            if len(residue) >= 6:
+                continue  # 有具体文案，义务已履行
+            if len(residue) > 0 and residue not in ("有", "需要", "是", "待补充", "见原型", "略"):
+                # 残留短文本但非空话：给 warning 让人工复核（如"长度64"）
+                self.add_error(
+                    pid, "FORM_TIP_AMBIGUOUS", "warning", fpath,
+                    f"字段「{fname}」的 tips 仅含小i痕迹词与极短残留「{residue}」，提示内容是否完整需人工复核",
+                    "tips 写明小i提示的具体文案（如：用于实例鉴权，创建后不可修改）",
+                    f"tips 原文：{stripped[:60]}",
+                    fix="把小i提示的内容写进 tips（具体说明该配置项的含义/影响/限制），痕迹词本身不是提示内容",
+                )
+            else:
+                self.add_error(
+                    pid, "FORM_TIP_PLACEHOLDER", "warning", fpath,
+                    f"字段「{fname}」声明了小i提示但 tips 未写明提示内容（仅占位：{stripped[:30]}）",
+                    "tips 写明小i提示的具体文案（如：用于实例鉴权，创建后不可修改）",
+                    f"tips 仅为占位：{stripped[:30]}",
+                    fix="配置项有小i时必须写明提示内容本身——把具体说明文案写进 tips；若确实无提示内容则删除痕迹词",
                 )
 
     def check_design_references(self):
@@ -4271,8 +4715,42 @@ class Validator:
                     fname = str(field.get("name") or field.get("label") or i)
                     fpath = f"{base_path}[{i}]"
                     flagged.append((fpath, fname))
+                    # 样式变体编号（Common Design 组件表新增编号，如 IxTag 深色标签 -> IxTag_Filled）：
+                    # 编号必须挂在形态上展示（IxTag（深色标签 · IxTag_Filled）），只写编号不写形态名会丢失可读性。
+                    if str(field.get("iduxComponentVariantId") or "").strip() and not str(field.get("iduxComponentForm") or "").strip():
+                        self.add_error(
+                            pid, "COMPONENT_VARIANT_WITHOUT_FORM", "warning", fpath,
+                            f"字段“{fname}”声明了样式变体编号 iduxComponentVariantId，但未写 iduxComponentForm 形态名——编号必须与形态名成对出现，否则展示层丢失可读性",
+                            "iduxComponentForm 写明形态中文名（如“深色标签”），iduxComponentVariantId 填对应变体编号（如“IxTag_Filled”）",
+                            "iduxComponentForm 缺失",
+                            fix="按 Common Design 组件映射补写形态中文名到 iduxComponentForm；映射表未登记编号时 iduxComponentVariantId 留空即可",
+                        )
                     chosen = str(field.get("iduxComponentForm") or "").strip()
                     comp = str(field.get("iduxComponent") or field.get("component") or "").strip()
+                    # 样式变体编号漏填/不一致检查（启发式，warning）：校验器不知道 CD 映射表哪些形态登记了编号，
+                    # 但 formDecision/form 中若已出现本组件前缀的编号 token（如 IxTag_Filled），即可判定“编号已在判定链中产生却未落字段”。
+                    if chosen:
+                        variant_id = str(field.get("iduxComponentVariantId") or "").strip()
+                        decision_text = str(field.get("formDecision") or "") + " " + chosen
+                        base = re.split(r"[\s（(]", comp)[0] if comp else ""
+                        tokens = re.findall(r"\bIx[A-Za-z0-9]+_[A-Za-z0-9]+\b", decision_text)
+                        related = [t for t in tokens if base and t.split("_")[0] == base]
+                        if related and not variant_id:
+                            self.add_error(
+                                pid, "COMPONENT_VARIANT_MISSING", "warning", fpath,
+                                f"字段“{fname}”的判定说明中已出现本组件的样式变体编号（{', '.join(related)}），但 iduxComponentVariantId 未填写——编号已在判定链中产生却未落到字段，HTML 展示将停留在“{comp}（{chosen}）”",
+                                "iduxComponentVariantId 填写判定说明中引用的变体编号",
+                                "iduxComponentVariantId 缺失",
+                                fix="把判定说明中的编号填入 iduxComponentVariantId；若该形态确认无编号登记，将 formDecision 中的编号移除或写明“该形态无变体编号登记”",
+                            )
+                        elif related and variant_id and variant_id not in related:
+                            self.add_error(
+                                pid, "COMPONENT_VARIANT_MISMATCH", "warning", fpath,
+                                f"字段“{fname}”的 iduxComponentVariantId（{variant_id}）与判定说明中引用的编号（{', '.join(related)}）不一致——编号与判定结论脱节，编码侧将引用错误变体",
+                                f"iduxComponentVariantId 与判定说明引用的编号一致（{related[0]}）",
+                                variant_id,
+                                fix="以 Common Design 组件映射为准统一编号：修正 iduxComponentVariantId 或 formDecision，两者必须指向同一变体",
+                            )
                     if not chosen:
                         self.add_error(
                             pid, "COMPONENT_FORM_MISSING", "warning", fpath,
@@ -4576,6 +5054,498 @@ class Validator:
                                    "landingRef 须为某页面 codingGuide.pageItems[].id 或 <页面ID>#<操作/区块名>",
                                    f"未找到开发项 {landing}", source_ref=src_ref,
                                    fix="修正 landingRef 为实际承载补齐能力的开发项；或先在页面开发项中补齐该能力")
+
+    # ---- 关联改动同步闭环（RULE-66，条件式）：已有功能上新增/修改字段时，关联视图同步或显式豁免 ----
+    CHANGE_SYNC_VIEW_TYPES = ("form", "table", "filter", "detail", "card")
+
+    def check_change_sync(self):
+        """RULE-66 关联改动同步闭环（条件式，designContext.changeSync 声明时启用）。
+
+        场景：需求在已有功能上修改（如已有表单新增一个配置项）。同一业务对象的关联视图
+        （表格汇总列/筛选搜索项/详情展示/卡片等）须同步呈现该字段——或逐项写明豁免理由，
+        禁止静默遗漏。只针对本次需求新增/修改的字段，存量字段历史差异不属本规则范围：
+        - 条目字段缺失或 view 取值非法 -> error CHANGE_SYNC_ENTRY_INVALID
+        - pageId 不存在于 pages -> error CHANGE_SYNC_TARGET_MISSING
+        - sourceField 不在该页 sections 任何字段数组中（触发字段本身未落位，先按 RULE-36 落字段）
+          -> error CHANGE_SYNC_SOURCE_NOT_LANDED
+        - synced 落点指向不存在页面/开发项或落点处检索不到字段痕迹 -> error CHANGE_SYNC_NOT_LANDED
+        - excluded 缺豁免理由 -> error CHANGE_SYNC_EXEMPTION_REASON_MISSING
+          （豁免是专业判断：如密码字段不进表格列、时间戳不值得做搜索项、超长描述不进筛选条件
+          但可进关键词搜索；无理由豁免视为遗漏）
+        - views 枚举的关联视图未被 synced/excluded 覆盖 -> error CHANGE_SYNC_VIEW_UNCOVERED
+        反向复核（warning，changeSync 键声明时启用，对未被条目触碰的页面生效）：同页面表单字段均未出现在表格列与
+        筛选项时提示人工复核——机器只认字段名交集，字段别名/派生列（状态列、操作列、聚合列）
+        属正常差异，故仅 warning；完整对账以 changeSync 条目为准。
+        """
+        dc = self.data.get("designContext")
+        if not isinstance(dc, dict):
+            return
+        entries = dc.get("changeSync")
+        if "changeSync" not in dc or not isinstance(entries, list):
+            return
+        src_ref = "references/01-workflow/04-demo-output-spec.md 11.31 关联改动同步闭环（RULE-66）"
+        pages_by_id = {}
+        for page, _ in self.all_pages:
+            pid_key = str(page.get("id", "")).strip()
+            if pid_key:
+                pages_by_id[pid_key] = page
+        dev_item_ids = set()
+        for page, _ in self.all_pages:
+            items = (page.get("codingGuide") or {}).get("pageItems") or []
+            if isinstance(items, list):
+                for it in items:
+                    if isinstance(it, dict) and str(it.get("id", "")).strip():
+                        dev_item_ids.add(str(it.get("id")).strip())
+        page_traces = {}
+
+        def _section_field_names(page):
+            names = set()
+            for section in self.page_sections(page):
+                if not isinstance(section, dict):
+                    continue
+                for key in ("tableFields", "formFields", "cardFields", "filterFields", "detailFields"):
+                    for f in section.get(key) or []:
+                        if isinstance(f, dict) and str(f.get("name", "")).strip():
+                            names.add(str(f.get("name")).strip())
+            return names
+
+        name_cache = {}
+        touched_pages = set()
+        for i, entry in enumerate(entries):
+            base = f"$.designContext.changeSync[{i}]"
+            if not isinstance(entry, dict):
+                self.add_error("-", "CHANGE_SYNC_ENTRY_INVALID", "error", base,
+                               "changeSync 条目必须为对象",
+                               "含 sourceField/pageId/views/synced/excluded 的对象",
+                               type(entry).__name__, source_ref=src_ref,
+                               fix="按 11.31 条目结构登记关联改动同步判定")
+                continue
+            source_field = str(entry.get("sourceField", "")).strip()
+            page_id = str(entry.get("pageId", "")).strip()
+            views = entry.get("views")
+            synced = entry.get("synced")
+            excluded = entry.get("excluded")
+            invalid = []
+            if not source_field:
+                invalid.append("sourceField")
+            if not page_id:
+                invalid.append("pageId")
+            if not (isinstance(views, list) and views):
+                invalid.append("views（须为非空数组，枚举对象关联视图）")
+            if not isinstance(synced, list):
+                invalid.append("synced（须为数组，可为空）")
+            if not isinstance(excluded, list):
+                invalid.append("excluded（须为数组，可为空）")
+            if invalid:
+                self.add_error("-", "CHANGE_SYNC_ENTRY_INVALID", "error", base,
+                               f"changeSync 条目字段缺失或非法：{'；'.join(invalid)}",
+                               "sourceField/pageId 非空、views 非空数组、synced/excluded 为数组",
+                               "；".join(invalid), source_ref=src_ref,
+                               fix="按 11.31 条目结构补齐后重新校验")
+                continue
+            page = pages_by_id.get(page_id)
+            if page is None:
+                self.add_error("-", "CHANGE_SYNC_TARGET_MISSING", "error", base,
+                               f"changeSync 条目的 pageId {page_id} 不存在于 pages",
+                               "pageId 须为 pages 中已有页面", page_id, source_ref=src_ref,
+                               fix="核对页面 ID 后修正条目")
+                continue
+            if page_id not in name_cache:
+                name_cache[page_id] = _section_field_names(page)
+            if source_field not in name_cache[page_id]:
+                self.add_error("-", "CHANGE_SYNC_SOURCE_NOT_LANDED", "error", base,
+                               f"触发字段「{source_field}」未在页面 {page_id} 的 sections 字段中落位——触发字段本身尚未落地，关联同步无从谈起",
+                               "sourceField 须为该页 sections（表单/表格/筛选/详情/卡片）中已存在的字段",
+                               f"页面 {page_id} 中未找到字段「{source_field}」", source_ref=src_ref,
+                               fix="先按 RULE-36 把触发字段落进页面字段数组，再登记关联同步")
+                continue
+            swept_views = set()
+            for j, item in enumerate(synced):
+                sbase = f"{base}.synced[{j}]"
+                if not isinstance(item, dict):
+                    self.add_error("-", "CHANGE_SYNC_ENTRY_INVALID", "error", sbase,
+                                   "synced 视图项必须为对象", "含 view/landingRef 的对象",
+                                   type(item).__name__, source_ref=src_ref,
+                                   fix="按 11.31 视图项结构改写为对象")
+                    continue
+                view = str(item.get("view", "")).strip()
+                landing = str(item.get("landingRef", "")).strip()
+                bad = []
+                if not view:
+                    bad.append("view")
+                elif view not in self.CHANGE_SYNC_VIEW_TYPES:
+                    bad.append(f"view 取值非法：{view}（须为 form/table/filter/detail/card）")
+                if not landing:
+                    bad.append("landingRef")
+                if bad:
+                    self.add_error("-", "CHANGE_SYNC_ENTRY_INVALID", "error", sbase,
+                                   f"synced 视图项字段缺失或非法：{'；'.join(bad)}",
+                                   "view 取 form/table/filter/detail/card、landingRef 非空",
+                                   "；".join(bad), source_ref=src_ref,
+                                   fix="补齐或修正 synced 视图项")
+                    continue
+                swept_views.add(view)
+                if "#" in landing:
+                    lpid, _, point = landing.partition("#")
+                    lpid, point = lpid.strip(), point.strip()
+                    lpage = pages_by_id.get(lpid)
+                    if lpage is None:
+                        self.add_error("-", "CHANGE_SYNC_NOT_LANDED", "error", sbase + ".landingRef",
+                                       f"字段「{source_field}」同步视图 {view} 的落点 landingRef「{landing}」指向的页面 {lpid} 不存在于 pages",
+                                       "landingRef 的页面 ID 须存在于 pages", f"未找到页面 {lpid}",
+                                       source_ref=src_ref, fix="修正 landingRef 为实际承载同步的页面；或先补该页同步内容")
+                        continue
+                    trace = page_traces.get(lpid)
+                    if trace is None:
+                        trace = self._page_trace_text(lpage)
+                        page_traces[lpid] = trace
+                    if not point or point.lower() not in trace:
+                        self.add_error("-", "CHANGE_SYNC_NOT_LANDED", "error", sbase + ".landingRef",
+                                       f"字段「{source_field}」同步视图 {view} 的落点「{landing}」处检索不到字段痕迹，同步未实际落位",
+                                       "落点页面可检索到同步视图区块或字段名", f"页面 {lpid} 中未找到「{point}」",
+                                       source_ref=src_ref,
+                                       fix=f"在落点页面的 {view} 视图中补上字段「{source_field}」，或将 landingRef 修正为真实落点")
+                elif landing not in dev_item_ids:
+                    self.add_error("-", "CHANGE_SYNC_NOT_LANDED", "error", sbase + ".landingRef",
+                                   f"字段「{source_field}」同步视图 {view} 的落点 landingRef「{landing}」指向的开发项不存在",
+                                   "landingRef 须为某页面 codingGuide.pageItems[].id 或 <页面ID>#<区块/字段名>",
+                                   f"未找到开发项 {landing}", source_ref=src_ref,
+                                   fix="修正 landingRef 为实际承载同步的开发项或页面落点")
+            for j, item in enumerate(excluded):
+                sbase = f"{base}.excluded[{j}]"
+                if not isinstance(item, dict):
+                    self.add_error("-", "CHANGE_SYNC_ENTRY_INVALID", "error", sbase,
+                                   "excluded 视图项必须为对象", "含 view/reason 的对象",
+                                   type(item).__name__, source_ref=src_ref,
+                                   fix="按 11.31 视图项结构改写为对象")
+                    continue
+                view = str(item.get("view", "")).strip()
+                reason = str(item.get("reason", "")).strip()
+                if not view or view not in self.CHANGE_SYNC_VIEW_TYPES:
+                    self.add_error("-", "CHANGE_SYNC_ENTRY_INVALID", "error", sbase,
+                                   f"excluded 视图项 view 缺失或非法：{view or '空'}（须为 form/table/filter/detail/card）",
+                                   "view 取 form/table/filter/detail/card", view, source_ref=src_ref,
+                                   fix="补齐或修正 excluded 视图项 view")
+                    continue
+                swept_views.add(view)
+                if not reason:
+                    self.add_error("-", "CHANGE_SYNC_EXEMPTION_REASON_MISSING", "error", sbase + ".reason",
+                                   f"字段「{source_field}」对视图 {view} 声明豁免但缺少豁免理由——无理由豁免视为遗漏",
+                                   "excluded 须写明专业豁免理由（如密码字段不进表格列、时间戳不值得做搜索项、超长描述不进筛选条件但可进关键词搜索）",
+                                   "缺失", source_ref=src_ref,
+                                   fix="补 reason 说明为何该视图不同步；无正当理由时补同步内容")
+            uncovered = [str(v).strip() for v in views if str(v).strip() and str(v).strip() not in swept_views]
+            if uncovered:
+                self.add_error("-", "CHANGE_SYNC_VIEW_UNCOVERED", "error", base + ".views",
+                               f"字段「{source_field}」枚举的关联视图 {'、'.join(uncovered)} 既未在 synced 登记同步、也未在 excluded 登记豁免",
+                               "views 枚举的每个视图须在 synced（同步）或 excluded（豁免+理由）中出现其一",
+                               f"未覆盖：{'、'.join(uncovered)}", source_ref=src_ref,
+                               fix="为遗漏视图补 synced 落点或 excluded 豁免理由；视图枚举本身有误则修正 views")
+            touched_pages.add(page_id)
+        # 反向复核（warning）：同页面表单字段均未出现在表格列与筛选项时提示人工复核
+        for page, _ in self.all_pages:
+            pid = page.get("id", "")
+            if not pid or pid in touched_pages:
+                continue
+            form_names, list_names = set(), set()
+            for section in self.page_sections(page):
+                if not isinstance(section, dict):
+                    continue
+                for f in section.get("formFields") or []:
+                    if isinstance(f, dict) and str(f.get("name", "")).strip():
+                        form_names.add(str(f.get("name")).strip())
+                for key in ("tableFields", "filterFields"):
+                    for f in section.get(key) or []:
+                        if isinstance(f, dict) and str(f.get("name", "")).strip():
+                            list_names.add(str(f.get("name")).strip())
+            if not form_names or not list_names:
+                continue
+            gap = sorted(n for n in form_names if n not in list_names)
+            if gap:
+                self.add_error(pid, "CHANGE_SYNC_REVIEW", "warning",
+                               f"$.pages[{self._idx(page)}].sections",
+                               f"同页面表单字段 {'、'.join(gap[:3])} 等 {len(gap)} 个字段未出现在表格列与筛选项中，请复核是否为本次改动的关联视图遗漏",
+                               "新增/修改字段在关联视图（表格列/筛选项）同步呈现，或在 designContext.changeSync 逐项豁免并写明理由",
+                               f"{len(gap)} 个字段仅存在于表单视图", source_ref=src_ref,
+                               fix="确属本次改动遗漏 -> 补表格列/筛选项或登记 changeSync；属存量差异或专业豁免（如密码不进表格、时间戳不值得做搜索项、超长描述不进筛选但可进关键词搜索）-> 登记 changeSync 豁免留痕")
+
+    # ---- Feature 契约落位闭环（RULE-68，条件式）：CD Feature 功能契约的保留/调整/禁止三级约束留痕对账 ----
+    def check_feature_contract(self):
+        """RULE-68 Feature 契约落位闭环（条件式，designContext.featureContract 声明时启用）。
+
+        场景：Common Design Feature 业务功能层文档声明了功能契约——哪些结构必须保留、
+        哪些可按业务调整、哪些禁止出现。设计命中该功能时，CD 是约束而非参考，契约条款必须落进设计：
+        - 条目 source 缺失或不含 # 锚点 / appliedTo 非非空数组 / appliedTo 项缺 pageId/item/landingRef /
+          adjustments 项缺 item/from/to / forbidden 项缺 pattern / reason 缺失
+          -> error FEATURE_CONTRACT_ENTRY_INVALID
+        - appliedTo 项 pageId 不存在于 pages -> error FEATURE_TARGET_MISSING
+        - appliedTo 项 landingRef 指向不存在页面/开发项、与 pageId 不一致，或落点处检索不到 item 痕迹
+          -> error FEATURE_PRESERVE_MISSING（必须保留的契约结构未落位）
+        - adjustments 项缺 reason -> error FEATURE_ADJUSTMENT_UNREASONED（可按业务调整的部分调整须留痕：
+          CD 原结构 -> 本设计调整 -> 业务理由，无理由调整视为静默偏离）
+        - forbidden 声明的禁止模式（词元）出现在任一页面文本 -> error FEATURE_FORBIDDEN_PATTERN
+          （禁止模式由 AI 从契约原文声明为数据，校验器只做文本检索，不硬编码任何 CD 词汇）
+        - source 未在 readLedger 锚点级精读命中 -> warning FEATURE_BASIS_UNREAD
+        机制通用：不绑定任何具体功能词，CD 新增 Feature 文档零改动；未声明 featureContract 键的
+        历史 JSON 不启用，不误伤。
+        """
+        dc = self.data.get("designContext")
+        if not isinstance(dc, dict):
+            return
+        entries = dc.get("featureContract")
+        if "featureContract" not in dc or not isinstance(entries, list):
+            return
+        src_ref = "references/01-workflow/04-demo-output-spec.md 11.33 Feature 契约落位闭环（RULE-68）"
+        ledger = self._build_ledger(dc.get("readLedger"))
+        pages_by_id = {}
+        for page, _ in self.all_pages:
+            pid_key = str(page.get("id", "")).strip()
+            if pid_key:
+                pages_by_id[pid_key] = page
+        dev_item_ids = set()
+        for page, _ in self.all_pages:
+            items = (page.get("codingGuide") or {}).get("pageItems") or []
+            if isinstance(items, list):
+                for it in items:
+                    if isinstance(it, dict) and str(it.get("id", "")).strip():
+                        dev_item_ids.add(str(it.get("id")).strip())
+        page_traces = {}
+        all_traces = []
+        for page, _ in self.all_pages:
+            pid = str(page.get("id", "")).strip()
+            trace = self._page_trace_text(page)
+            page_traces[pid] = trace
+            all_traces.append((pid, trace))
+        for i, entry in enumerate(entries):
+            base = f"$.designContext.featureContract[{i}]"
+            if not isinstance(entry, dict):
+                self.add_error("-", "FEATURE_CONTRACT_ENTRY_INVALID", "error", base,
+                               "featureContract 条目必须为对象",
+                               "含 source/appliedTo/adjustments/forbidden/reason 的对象",
+                               type(entry).__name__, source_ref=src_ref,
+                               fix="按 11.33 条目结构登记 Feature 契约对账")
+                continue
+            source = str(entry.get("source", "")).strip()
+            applied_to = entry.get("appliedTo")
+            adjustments = entry.get("adjustments")
+            forbidden = entry.get("forbidden")
+            reason = str(entry.get("reason", "")).strip()
+            invalid = []
+            if not source or "#" not in source:
+                invalid.append("source（须为 <Feature文档路径>#<契约章节锚点>）")
+            if not (isinstance(applied_to, list) and applied_to):
+                invalid.append("appliedTo（须为非空数组，逐项登记契约条款落点）")
+            if adjustments is not None and not isinstance(adjustments, list):
+                invalid.append("adjustments（须为数组，可为空）")
+            if forbidden is not None and not isinstance(forbidden, list):
+                invalid.append("forbidden（须为数组，可为空）")
+            if not reason:
+                invalid.append("reason（须写明该 Feature 契约为何适用本需求）")
+            if invalid:
+                self.add_error("-", "FEATURE_CONTRACT_ENTRY_INVALID", "error", base,
+                               f"featureContract 条目字段缺失或非法：{'；'.join(invalid)}",
+                               "source 含 # 锚点、appliedTo 非空数组、adjustments/forbidden 为数组（可空）、reason 非空",
+                               "；".join(invalid), source_ref=src_ref,
+                               fix="按 11.33 条目结构补齐后重新校验")
+                continue
+            doc, anchor = self._norm_ref(source)
+            if not (ledger.get((doc, anchor)) == "read" or ledger.get((doc, "*")) == "read"):
+                self.add_error("-", "FEATURE_BASIS_UNREAD", "warning", base + ".source",
+                               f"Feature 契约依据 {source} 未在 readLedger 中精读命中（status=read）",
+                               "readLedger 中 status=read 且锚点匹配", source,
+                               source_ref=src_ref,
+                               fix="精读该 Feature 契约章节原文并登记 readLedger 为 read")
+            for j, item in enumerate(applied_to or []):
+                abase = f"{base}.appliedTo[{j}]"
+                if not isinstance(item, dict):
+                    self.add_error("-", "FEATURE_CONTRACT_ENTRY_INVALID", "error", abase,
+                                   "appliedTo 落点项必须为对象", "含 pageId/item/landingRef 的对象",
+                                   type(item).__name__, source_ref=src_ref,
+                                   fix="按 11.33 appliedTo 项结构改写为对象")
+                    continue
+                page_id = str(item.get("pageId", "")).strip()
+                item_name = str(item.get("item", "")).strip()
+                landing = str(item.get("landingRef", "")).strip()
+                bad = []
+                if not page_id:
+                    bad.append("pageId")
+                if not item_name:
+                    bad.append("item")
+                if not landing:
+                    bad.append("landingRef")
+                if bad:
+                    self.add_error("-", "FEATURE_CONTRACT_ENTRY_INVALID", "error", abase,
+                                   f"appliedTo 落点项字段缺失：{'、'.join(bad)}",
+                                   "pageId/item/landingRef 非空", "、".join(bad), source_ref=src_ref,
+                                   fix="补齐 appliedTo 落点项字段")
+                    continue
+                page = pages_by_id.get(page_id)
+                if page is None:
+                    self.add_error("-", "FEATURE_TARGET_MISSING", "error", abase + ".pageId",
+                                   f"契约条款「{item_name}」的落点页 pageId {page_id} 不存在于 pages",
+                                   "pageId 须为 pages 中已有页面", page_id, source_ref=src_ref,
+                                   fix="核对页面 ID；契约要求保留的结构须有页面承载")
+                    continue
+                if "#" in landing:
+                    lpid, _, point = landing.partition("#")
+                    lpid, point = lpid.strip(), point.strip()
+                    if lpid != page_id:
+                        self.add_error("-", "FEATURE_PRESERVE_MISSING", "error", abase + ".landingRef",
+                                       f"契约条款「{item_name}」的 landingRef「{landing}」与声明页面 {page_id} 不一致",
+                                       f"landingRef 页面 ID 须与 pageId 一致（{page_id}）", lpid,
+                                       source_ref=src_ref, fix="修正 landingRef 为该页面内的实际落点")
+                        continue
+                    trace = page_traces.get(lpid) or ""
+                    probes = [point] if point else []
+                    probes.extend(w for w in re.split(r"[\s/，,、()（）\-]+", item_name) if len(w) >= 2)
+                    if not any(p.lower() in trace for p in probes if p):
+                        self.add_error("-", "FEATURE_PRESERVE_MISSING", "error", abase + ".landingRef",
+                                       f"契约要求保留的「{item_name}」在落点「{landing}」处检索不到痕迹——必须保留的契约结构未落位",
+                                       "落点页面可检索到该契约结构（区块标题/字段名/线框文本）",
+                                       f"页面 {page_id} 中未找到「{point or item_name}」", source_ref=src_ref,
+                                       fix=f"在页面 {page_id} 落位契约要求保留的结构，或将 landingRef 修正为真实落点")
+                else:
+                    if landing not in dev_item_ids:
+                        self.add_error("-", "FEATURE_PRESERVE_MISSING", "error", abase + ".landingRef",
+                                       f"契约条款「{item_name}」的落点 landingRef「{landing}」指向的开发项不存在",
+                                       "landingRef 须为某页面 codingGuide.pageItems[].id 或 <页面ID>#<区块/字段名>",
+                                       f"未找到开发项 {landing}", source_ref=src_ref,
+                                       fix="修正 landingRef 为实际承载契约结构的开发项或页面落点")
+            for j, adj in enumerate(adjustments or []):
+                abase = f"{base}.adjustments[{j}]"
+                if not isinstance(adj, dict):
+                    self.add_error("-", "FEATURE_CONTRACT_ENTRY_INVALID", "error", abase,
+                                   "adjustments 调整项必须为对象", "含 item/from/to/reason 的对象",
+                                   type(adj).__name__, source_ref=src_ref,
+                                   fix="按 11.33 adjustments 项结构改写为对象")
+                    continue
+                adj_item = str(adj.get("item", "")).strip()
+                adj_from = str(adj.get("from", "")).strip()
+                adj_to = str(adj.get("to", "")).strip()
+                missing = [k for k, v in (("item", adj_item), ("from", adj_from), ("to", adj_to)) if not v]
+                if missing:
+                    self.add_error("-", "FEATURE_CONTRACT_ENTRY_INVALID", "error", abase,
+                                   f"adjustments 调整项字段缺失：{'、'.join(missing)}",
+                                   "item/from/to 非空（CD 原结构 -> 本设计调整）", "、".join(missing),
+                                   source_ref=src_ref, fix="补齐调整项的 item/from/to")
+                    continue
+                if not str(adj.get("reason", "")).strip():
+                    self.add_error("-", "FEATURE_ADJUSTMENT_UNREASONED", "error", abase + ".reason",
+                                   f"契约条款「{adj_item}」声明为按业务调整但缺少调整理由——无理由调整视为静默偏离契约",
+                                   "reason 须写明业务事实（为何本需求无法沿用 CD 原结构）", "缺失",
+                                   source_ref=src_ref,
+                                   fix="补 reason；结构调整偏离契约时须在确认点向用户呈现并确认")
+            for j, fb in enumerate(forbidden or []):
+                fbase = f"{base}.forbidden[{j}]"
+                if not isinstance(fb, dict):
+                    self.add_error("-", "FEATURE_CONTRACT_ENTRY_INVALID", "error", fbase,
+                                   "forbidden 禁止项必须为对象", "含 pattern 的对象",
+                                   type(fb).__name__, source_ref=src_ref,
+                                   fix="按 11.33 forbidden 项结构改写为对象")
+                    continue
+                pattern = str(fb.get("pattern", "")).strip()
+                if not pattern:
+                    self.add_error("-", "FEATURE_CONTRACT_ENTRY_INVALID", "error", fbase + ".pattern",
+                                   "forbidden 禁止项缺少 pattern（契约禁止出现的结构/模式描述）",
+                                   "pattern 非空（取自契约原文）", "缺失", source_ref=src_ref,
+                                   fix="补 pattern（从契约原文逐条抄录禁止模式）")
+                    continue
+                tokens = [w for w in re.split(r"[\s/，,、()（）\-]+", pattern) if len(w) >= 2]
+                for pid, trace in all_traces:
+                    hit = next((w for w in tokens if w.lower() in trace), "")
+                    if hit:
+                        self.add_error("-", "FEATURE_FORBIDDEN_PATTERN", "error", fbase + ".pattern",
+                                       f"契约禁止模式「{pattern}」在页面 {pid} 中命中（词元「{hit}」）——禁止出现的结构不得出现在设计中",
+                                       "声明为 forbidden 的禁止模式不出现在任何页面（线框/区块/字段/操作）",
+                                       f"页面 {pid} 含「{hit}」", source_ref=src_ref,
+                                       fix="移除页面中违反契约的结构；若 pattern 抄录有误则修正 forbidden 声明")
+                        break
+            ui_blueprint = entry.get("uiBlueprint")
+            if ui_blueprint is None:
+                continue
+            if not isinstance(ui_blueprint, list):
+                self.add_error("-", "FEATURE_UI_BLUEPRINT_INVALID", "error", base + ".uiBlueprint",
+                               "uiBlueprint 界面蓝图对账数组非法（Feature 文档含分步线框图时必须逐界面登记，禁止选择性登记）",
+                               "数组，每个元素对应 Feature 线框图中的一个界面",
+                               type(ui_blueprint).__name__, source_ref=src_ref,
+                               fix="按 11.33 uiBlueprint 条目结构逐界面登记（每个界面含 screen/pageId/structuralElements）")
+                continue
+            for j, bp in enumerate(ui_blueprint):
+                bbase = f"{base}.uiBlueprint[{j}]"
+                if not isinstance(bp, dict):
+                    self.add_error("-", "FEATURE_UI_BLUEPRINT_INVALID", "error", bbase,
+                                   "uiBlueprint 界面条目必须为对象", "含 screen/pageId/structuralElements 的对象",
+                                   type(bp).__name__, source_ref=src_ref,
+                                   fix="按 11.33 uiBlueprint 条目结构改写为对象")
+                    continue
+                screen = str(bp.get("screen", "")).strip()
+                bp_page = str(bp.get("pageId", "")).strip()
+                elements = bp.get("structuralElements")
+                bad = []
+                if not screen:
+                    bad.append("screen（界面名，对应 Feature 线框图中的一个界面/步骤）")
+                if not bp_page:
+                    bad.append("pageId（该界面落位页面）")
+                if not (isinstance(elements, list) and elements):
+                    bad.append("structuralElements（非空数组：该界面的结构元素清单）")
+                if bad:
+                    self.add_error("-", "FEATURE_UI_BLUEPRINT_INVALID", "error", bbase,
+                                   f"uiBlueprint 界面条目字段缺失或非法：{'；'.join(bad)}",
+                                   "screen 非空、pageId 非空、structuralElements 为非空数组", "；".join(bad),
+                                   source_ref=src_ref,
+                                   fix="精读 Feature 线框图，把该界面拆成结构元素清单（步骤条/列表/进度条/操作列等）后补齐")
+                    continue
+                target_page = pages_by_id.get(bp_page)
+                if target_page is None:
+                    self.add_error("-", "FEATURE_TARGET_MISSING", "error", bbase + ".pageId",
+                                   f"界面「{screen}」的落点页 pageId {bp_page} 不存在于 pages",
+                                   "pageId 须为 pages 中已有页面", bp_page, source_ref=src_ref,
+                                   fix="核对页面 ID；Feature 线框图的每个界面须有页面承载")
+                    continue
+                wf = target_page.get("wireframe") if isinstance(target_page.get("wireframe"), dict) else {}
+                ascii_parts = []
+                if wf:
+                    main_ascii = str(wf.get("ascii", "") or "").strip()
+                    if main_ascii:
+                        ascii_parts.append(main_ascii.lower())
+                    for variant in wf.get("variants") or []:
+                        if isinstance(variant, dict):
+                            v_ascii = str(variant.get("ascii", "") or "").strip()
+                            if v_ascii:
+                                ascii_parts.append(v_ascii.lower())
+                ascii_text = " ".join(ascii_parts)
+                shared_with = str(target_page.get("wireframeSharedWith", "") or "").strip()
+                if not ascii_parts and not shared_with:
+                    self.add_error("-", "FEATURE_UI_BLUEPRINT_NOT_DRAWN", "warning", bbase + ".pageId",
+                                   f"界面「{screen}」落位页 {bp_page} 未绘制线框图（无 wireframe.ascii 也未声明共用线框）——Feature 界面蓝图须画进线框",
+                                   "页面 wireframe.ascii 完整绘制该界面结构", "页面无线框图",
+                                   source_ref=src_ref,
+                                   fix="补绘该页面线框图，把 structuralElements 画进 ascii")
+                    continue
+                for k, element in enumerate(elements):
+                    if not isinstance(element, str) or not str(element).strip():
+                        self.add_error("-", "FEATURE_UI_BLUEPRINT_INVALID", "error", bbase + f".structuralElements[{k}]",
+                                       "结构元素必须为非空字符串", "取自 Feature 线框图的结构元素描述",
+                                       type(element).__name__ if not isinstance(element, str) else "空字符串",
+                                       source_ref=src_ref, fix="补结构元素描述（步骤条/列表/进度条/操作列等）")
+                        continue
+                    element_text = str(element).strip()
+                    tokens = [w for w in re.split(r"[\s/，,、()（）\-]+", element_text) if len(w) >= 2]
+                    trace = page_traces.get(bp_page) or ""
+                    if any(w.lower() in ascii_text for w in tokens):
+                        continue
+                    if any(w.lower() in trace for w in tokens):
+                        self.add_error("-", "FEATURE_UI_BLUEPRINT_NOT_IN_WIREFRAME", "warning", bbase + f".structuralElements[{k}]",
+                                       f"界面「{screen}」的结构元素「{element_text}」未画进线框图 ascii，仅出现在页面文本中——疑似只是文字提及未按 Feature 原图绘制",
+                                       f"结构元素「{element_text}」在线框图 ascii 中有绘制痕迹", "ascii 未命中、页面文本命中",
+                                       source_ref=src_ref,
+                                       fix="把该结构元素画进线框图（区块标题/线框文本），而非只在字段说明提及")
+                    else:
+                        self.add_error("-", "FEATURE_UI_BLUEPRINT_ELEMENT_MISSING", "error", bbase + f".structuralElements[{k}]",
+                                       f"界面「{screen}」的结构元素「{element_text}」在页面 {bp_page} 全文检索不到——Feature 线框结构未落位",
+                                       f"页面（线框/区块/字段）可检索到结构元素「{element_text}」", f"页面 {bp_page} 未找到",
+                                       source_ref=src_ref,
+                                       fix="按 Feature 原图在该页面落位该结构元素并画进线框图；若登记有误则修正 structuralElements")
 
     # ---- 模板 ID 一致性与覆盖兜底（RULE-56，条件式）----
     def check_template_id_consistency(self):
@@ -5110,6 +6080,12 @@ class Validator:
         self.check_wireframe_region_ascii_order()
         self.check_wireframe_duplicate_control()
         self.check_wireframe_flat_filter_order()
+        # ---- 概览区形态还原闭环（RULE-69）：概览区块形态声明与线框痕迹对账（条件式，概览模板/概览区域启用）----
+        self.check_overview_style()
+        # ---- 区域规范精读闭环（RULE-70）：表格/概览/树区块存在时对应规范文档必须已精读（存在性触发）----
+        self.check_region_basis_reading()
+        # ---- 表格行内操作收纳检验（RULE-71）：行内操作超阈值未收纳提醒 ----
+        self.check_action_column_overflow()
         # ---- 线框图列对齐一致性（RULE-47）：右边界错位/两列结构断裂提示 ----
         self.check_wireframe_column_alignment()
         # ---- 页面平铺闭环（RULE-35）：children 禁止内嵌完整页面设计对象 ----
@@ -5118,6 +6094,7 @@ class Validator:
         self.check_requirement_fields()
         # ---- 字段形态键契约（RULE-41）：内容必须写在渲染器实际渲染的键上，跨形态套键阻断 ----
         self.check_field_key_contract()
+        self.check_tooltip_content()
         # ---- 下拉选项完整性（RULE-48）：固定选项型下拉须完整列出选项，缺项阻断/截断指纹告警 ----
         self.check_option_completeness()
         # ---- 表格与详情字段一致性闭环（RULE-38）：表格展示字段必须在对应详情容器中存在 ----
@@ -5155,6 +6132,9 @@ class Validator:
         self.check_business_reuse()
         self.check_template_sync()
         self.check_carrier_sweep()
+        self.check_change_sync()
+        # ---- Feature 契约落位闭环（RULE-68）：CD Feature 功能契约保留/调整/禁止三级约束对账（条件式）----
+        self.check_feature_contract()
         self.check_footer_ascii_order()
         self.check_footer_ascii_alignment()
         # ---- 共用线框差异描述闭环（RULE-62）：相同 UI 页面共用主页面线框，从页面只描述差异 ----

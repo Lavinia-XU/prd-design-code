@@ -281,9 +281,13 @@ def normalize_component_rows(rows):
         if not item.get("iduxComponent"):
             item["iduxComponent"] = item.get("componentName") or item.get("idux") or item.get("idux_component") or ""
         form = str(item.get("iduxComponentForm") or "").strip()
+        variant_id = str(item.get("iduxComponentVariantId") or "").strip()
         if form:
             base = str(item.get("iduxComponent") or "").strip()
-            item["iduxComponent"] = f"{base}（{form}）" if base else form
+            # 样式变体编号（Common Design 组件表登记，如 IxTag 深色标签 -> IxTag_Filled）：
+            # 有编号拼成 "形态名 · 编号"，无编号维持原样（兼容未登记编号的组件）。
+            form_disp = f"{form} · {variant_id}" if variant_id else form
+            item["iduxComponent"] = f"{base}（{form_disp}）" if base else form_disp
         normalized.append(item)
     return normalized
 
@@ -297,6 +301,32 @@ ACTION_COLUMNS = [
     ("feedback", "Demo反馈"),
     ("source", "来源"),
 ]
+
+
+
+def _variant_coverage(data):
+    """统计样式变体编号覆盖率：对声明了 iduxComponentForm 的字段，iduxComponentVariantId 填写情况。
+
+    收口标准不是"校验器绿"而是"字段契约逐项落位"——变体编号漏填在校验器侧只能启发式发现，
+    生成侧输出覆盖率让 AI 与用户在确认点直接看到缺口。
+    """
+    declared = filled = 0
+    missing = []
+    for page in data.get("pages", []):
+        pid = str(page.get("id") or "")
+        for section in page.get("sections", []) or []:
+            for key in ("tableFields", "formFields", "filterFields", "fields", "cardFields"):
+                for field in section.get(key, []) or []:
+                    if not isinstance(field, dict):
+                        continue
+                    if not str(field.get("iduxComponentForm") or "").strip():
+                        continue
+                    declared += 1
+                    if str(field.get("iduxComponentVariantId") or "").strip():
+                        filled += 1
+                    else:
+                        missing.append(f"{pid}#{field.get('name', '')}")
+    return {"declared": declared, "filled": filled, "missing": missing, "coverage": f"{filled}/{declared}" if declared else "n/a"}
 
 
 def normalize_action_rows(actions):
@@ -405,6 +435,8 @@ def markdown_page(page, inherited_nav=None):
                 lines.extend([f"**{label}**", markdown_list(block.get(key))])
         if block.get("actions"):
             lines.extend(["**按钮/可点击操作**", markdown_table(normalize_action_rows(block.get("actions")), ACTION_COLUMNS)])
+        if block.get("rowActions"):
+            lines.extend(["**行内操作（操作列）**", markdown_table(normalize_action_rows(block.get("rowActions")), ACTION_COLUMNS)])
         if block.get("filterComponent") or block.get("filterComponentDescription"):
             lines.extend(["**筛选区组件说明**", markdown_list([item for item in [block.get("filterComponent"), block.get("filterComponentDescription")] if item])])
         if block.get("filterFields"):
@@ -541,6 +573,28 @@ def normalize_legacy_fields(items, mode):
     return rows
 
 
+OVERVIEW_STYLE_LABELS = {
+    "stat-number": "数字统计型",
+    "pie-chart": "饼图",
+    "line-chart": "折线图",
+    "bar-chart": "条形图",
+}
+
+
+def render_overview_block_detail(block):
+    """概览区块专用渲染（RULE-69）：形态说明行 + 指标表格（overviewMetrics）。"""
+    details = []
+    style = str(block.get("overviewStyle") or "").strip()
+    if style:
+        style_name = OVERVIEW_STYLE_LABELS.get(style, style)
+        details.append(f'<p class="overview-style-line"><strong>概览形态：</strong>{esc(style_name)}（{esc(style)}）——形态枚举以已读取 Common Design 模板文档原文为准</p>')
+    metrics = block.get("overviewMetrics") or []
+    if isinstance(metrics, list) and metrics:
+        metric_columns = [("name", "指标名称"), ("display", "展示形式"), ("iduxComponent", "组件名称"), ("description", "说明")]
+        details.append(optional_table_block("概览指标", metrics, metric_columns))
+    return "".join(details)
+
+
 def render_block_detail(block):
     details = []
     block_type = str(block.get("type") or block.get("title") or "")
@@ -550,6 +604,10 @@ def render_block_detail(block):
     html_text = optional_list_block("工具栏/筛选搜索", block.get("toolbar", []))
     if html_text:
         details.append(html_text)
+
+    overview_html = render_overview_block_detail(block)
+    if overview_html:
+        details.append(overview_html)
 
     filter_mode = block.get("filterMode") or block.get("filterType")
     filter_source = block.get("filterSource")
@@ -593,6 +651,10 @@ def render_block_detail(block):
 
     if block.get("actions"):
         html_text = optional_table_block("按钮/可点击操作", normalize_action_rows(block.get("actions")), ACTION_COLUMNS)
+        if html_text:
+            details.append(html_text)
+    if block.get("rowActions"):
+        html_text = optional_table_block("行内操作（操作列）", normalize_action_rows(block.get("rowActions")), ACTION_COLUMNS)
         if html_text:
             details.append(html_text)
     detail_map = [
@@ -889,7 +951,7 @@ def main():
     html_text = html_text.replace("{{SOURCE_CONTENT}}", render_markdown_source(data, pages))
     html_text = html_text.replace("{{PREVIEW_CONTENT}}", render_preview_content(data, pages, validation_info))
     output_path.write_text(html_text, encoding="utf-8")
-    print(json.dumps({"status": "success", "validationStatus": validation_info["status"], "warningCount": report.get("warningCount", 0), "infoCount": report.get("infoCount", 0), "output": str(output_path)}, ensure_ascii=False))
+    print(json.dumps({"status": "success", "validationStatus": validation_info["status"], "warningCount": report.get("warningCount", 0), "infoCount": report.get("infoCount", 0), "variantCoverage": _variant_coverage(data), "output": str(output_path)}, ensure_ascii=False))
 
 
 if __name__ == "__main__":

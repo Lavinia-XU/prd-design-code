@@ -1029,6 +1029,62 @@ class TestValidateDemoSpec(unittest.TestCase):
         self.assertEqual(code, 0)
         self.assertFalse(any(e.get("errorCode") == "REQUIRED_FIELD_MISSING" for e in report.get("errors", [])))
 
+    def test_requirement_field_merged_passes(self):
+        """需求字段合并承载（地理位置级联，filterFields 场景）-> RULE-36 通过。"""
+        page = base_page()
+        page["requirementFieldNames"] = ["国家", "地区", "省份", "城市"]
+        page["mergedFields"] = {
+            "国家": {"into": "地理位置", "note": "国家/地区/省份/城市合并为地理位置级联选择器"},
+            "地区": {"into": "地理位置", "note": "同上"},
+            "省份": {"into": "地理位置", "note": "同上"},
+            "城市": {"into": "地理位置", "note": "同上"},
+        }
+        page["sections"].append({
+            "name": "地理位置筛选", "type": "filter", "description": "按地理位置级联筛选",
+            "filterFields": [{"name": "地理位置", "iduxComponent": "IxCascader"}],
+        })
+        code, report = run_validator(make_spec([page]), strict=True)
+        self.assertEqual(code, 0)
+        self.assertFalse(any(e.get("errorCode") == "REQUIRED_FIELD_MISSING" for e in report.get("errors", [])))
+        self.assertFalse(any(e.get("errorCode") == "MERGED_FIELD_TARGET_MISSING" for e in report.get("warnings", [])))
+
+    def test_requirement_field_merged_split_passes(self):
+        """复合需求字段一拆多（联系人 -> 联系人姓名/联系电话，into 数组）-> RULE-36 通过。"""
+        page = base_page()
+        page["requirementFieldNames"] = ["联系人"]
+        page["mergedFields"] = {"联系人": {"into": ["联系人姓名", "联系电话"], "note": "复合字段一拆二承载"}}
+        page["sections"].append({
+            "name": "基本信息", "type": "form", "description": "表单配置",
+            "formFields": [
+                {"name": "联系人姓名", "iduxComponent": "IxInput", "rules": "必填"},
+                {"name": "联系电话", "iduxComponent": "IxInput", "rules": "必填"},
+            ],
+        })
+        code, report = run_validator(make_spec([page]), strict=True)
+        self.assertEqual(code, 0)
+        self.assertFalse(any(e.get("errorCode") == "REQUIRED_FIELD_MISSING" for e in report.get("errors", [])))
+
+    def test_requirement_field_merged_target_missing_warns(self):
+        """mergedFields into 拼错（目标不存在）-> MERGED_FIELD_TARGET_MISSING warning 且字段仍缺失阻断。"""
+        page = base_page()
+        page["requirementFieldNames"] = ["国家"]
+        page["mergedFields"] = {"国家": {"into": "地理位置2", "note": "目标拼错"}}
+        code, report = run_validator(make_spec([page]), strict=True)
+        self.assertEqual(code, 1)
+        self.assertTrue(any(e.get("errorCode") == "MERGED_FIELD_TARGET_MISSING" for e in report.get("warnings", [])))
+        self.assertTrue(any(e.get("errorCode") == "REQUIRED_FIELD_MISSING" for e in report.get("errors", [])))
+
+    def test_requirement_field_merged_into_excluded_warns(self):
+        """mergedFields into 指向被 excludedFields 排除的字段（语义互斥）-> 目标不算命中，双告警。"""
+        page = base_page()
+        page["requirementFieldNames"] = ["国家"]
+        page["excludedFields"] = {"地理位置": "本页面不展示地理位置"}
+        page["mergedFields"] = {"国家": {"into": "地理位置", "note": "目标已被排除"}}
+        code, report = run_validator(make_spec([page]), strict=True)
+        self.assertEqual(code, 1)
+        self.assertTrue(any(e.get("errorCode") == "MERGED_FIELD_TARGET_MISSING" for e in report.get("warnings", [])))
+        self.assertTrue(any(e.get("errorCode") == "REQUIRED_FIELD_MISSING" for e in report.get("errors", [])))
+
     def test_footer_ascii_order_mismatch_fails(self):
         """线框图中按钮顺序错误（取消在左、确定在右）-> RULE-37 FOOTER_ASCII_ORDER_MISMATCH 阻断。"""
         page = modal_page()
@@ -2600,7 +2656,345 @@ class TestValidateDemoSpec(unittest.TestCase):
         code, report = run_validator(make_spec([page], design_context=self._sweep_dc([entry])), strict=True)
         self.assertIn("CARRIER_SWEEP_MISMATCH", error_codes(report))
 
+    # ---- 关联改动同步闭环（RULE-66，条件式）：已有功能修改的关联视图同步/豁免留痕 ----
+
+    @staticmethod
+    def _change_entry(**over):
+        entry = {
+            "sourceField": "所属分区",
+            "pageId": "P01",
+            "views": ["table", "filter"],
+            "synced": [
+                {"view": "table", "landingRef": "P01#表格主体"},
+                {"view": "filter", "landingRef": "P01#筛选区"},
+            ],
+            "excluded": [],
+        }
+        entry.update(over)
+        return entry
+
+    @staticmethod
+    def _change_dc(entries, **over):
+        dc = {
+            "commonDesign": {"skillId": "common-design", "read": True},
+            "productDesign": {"matched": False, "skillId": "", "coverage": []},
+            "readLedger": [],
+            "changeSync": entries,
+        }
+        dc.update(over)
+        return dc
+
+    def test_change_sync_passes(self):
+        """触发字段已落位 + 表格/筛选同步落点可检索 -> 无 CHANGE_SYNC_*。"""
+        page = base_page()
+        for section in page["sections"]:
+            if section["type"] == "table":
+                section["tableFields"] = [{"name": "策略名称", "iduxComponent": "IxText"},
+                                          {"name": "所属分区", "iduxComponent": "IxText"}]
+        code, report = run_validator(make_spec([page], design_context=self._change_dc([self._change_entry()])), strict=True)
+        self.assertFalse(any(str(e.get("errorCode", "")).startswith("CHANGE_SYNC_") for e in report.get("errors", []) + report.get("warnings", [])))
+
+    def test_change_sync_source_not_landed_fails(self):
+        """触发字段未在页面 sections 字段数组落位 -> CHANGE_SYNC_SOURCE_NOT_LANDED。"""
+        page = base_page()
+        code, report = run_validator(make_spec([page], design_context=self._change_dc([self._change_entry()])), strict=True)
+        self.assertIn("CHANGE_SYNC_SOURCE_NOT_LANDED", error_codes(report))
+
+    def test_change_sync_not_landed_fails(self):
+        """synced 落点检索不到字段痕迹 -> CHANGE_SYNC_NOT_LANDED。"""
+        page = base_page()
+        for section in page["sections"]:
+            if section["type"] == "table":
+                section["tableFields"] = [{"name": "策略名称", "iduxComponent": "IxText"},
+                                          {"name": "所属分区", "iduxComponent": "IxText"}]
+        entry = self._change_entry(synced=[{"view": "table", "landingRef": "P01#不存在的区块"}])
+        code, report = run_validator(make_spec([page], design_context=self._change_dc([entry])), strict=True)
+        self.assertIn("CHANGE_SYNC_NOT_LANDED", error_codes(report))
+
+    def test_change_sync_exemption_reason_missing_fails(self):
+        """豁免缺理由 -> CHANGE_SYNC_EXEMPTION_REASON_MISSING（无理由豁免视为遗漏）。"""
+        page = base_page()
+        for section in page["sections"]:
+            if section["type"] == "table":
+                section["tableFields"] = [{"name": "策略名称", "iduxComponent": "IxText"},
+                                          {"name": "所属分区", "iduxComponent": "IxText"}]
+        entry = self._change_entry(excluded=[{"view": "detail"}])
+        code, report = run_validator(make_spec([page], design_context=self._change_dc([entry])), strict=True)
+        self.assertIn("CHANGE_SYNC_EXEMPTION_REASON_MISSING", error_codes(report))
+
+    def test_change_sync_view_uncovered_fails(self):
+        """views 枚举的 detail 视图既未同步也未豁免 -> CHANGE_SYNC_VIEW_UNCOVERED。"""
+        page = base_page()
+        for section in page["sections"]:
+            if section["type"] == "table":
+                section["tableFields"] = [{"name": "策略名称", "iduxComponent": "IxText"},
+                                          {"name": "所属分区", "iduxComponent": "IxText"}]
+        entry = self._change_entry(views=["table", "filter", "detail"])
+        code, report = run_validator(make_spec([page], design_context=self._change_dc([entry])), strict=True)
+        self.assertIn("CHANGE_SYNC_VIEW_UNCOVERED", error_codes(report))
+
+    def test_change_sync_target_missing_fails(self):
+        """pageId 不存在 -> CHANGE_SYNC_TARGET_MISSING。"""
+        code, report = run_validator(make_spec([base_page()], design_context=self._change_dc([self._change_entry(pageId="P99")])), strict=True)
+        self.assertIn("CHANGE_SYNC_TARGET_MISSING", error_codes(report))
+
+    def test_change_sync_entry_invalid_fails(self):
+        """缺 sourceField 且 views 非数组 -> CHANGE_SYNC_ENTRY_INVALID。"""
+        entry = self._change_entry(sourceField="", views="table")
+        code, report = run_validator(make_spec([base_page()], design_context=self._change_dc([entry])), strict=True)
+        self.assertIn("CHANGE_SYNC_ENTRY_INVALID", error_codes(report))
+
+    def test_change_sync_reverse_review_warns(self):
+        """声明条目之外的同页面：表单字段不在表格列/筛选项 -> CHANGE_SYNC_REVIEW warning，不阻断。"""
+        page = base_page()
+        page["sections"].append({"title": "表单主体", "type": "form",
+                                 "formFields": [{"name": "备注说明", "iduxComponent": "IxInput"}]})
+        code, report = run_validator(make_spec([page], design_context=self._change_dc([])), strict=True)
+        self.assertIn("CHANGE_SYNC_REVIEW", warning_codes(report))
+        self.assertFalse(any(str(e.get("errorCode", "")).startswith("CHANGE_SYNC_") for e in report.get("errors", [])))
+
+    def test_change_sync_no_reverse_no_noise(self):
+        """表单字段均已出现在表格列/筛选项 -> 不产生 CHANGE_SYNC_REVIEW。"""
+        page = base_page()
+        page["sections"].append({"title": "表单主体", "type": "form",
+                                 "formFields": [{"name": "策略名称", "iduxComponent": "IxInput"}]})
+        code, report = run_validator(make_spec([page]), strict=True)
+        self.assertFalse(any(str(e.get("errorCode", "")).startswith("CHANGE_SYNC_") for e in report.get("errors", []) + report.get("warnings", [])))
+
+    def test_change_sync_absent_skips(self):
+        """未声明 designContext -> RULE-66 不启用、不误报。"""
+        code, report = run_validator(make_spec([base_page()]), strict=True)
+        all_issues = report.get("errors", []) + report.get("warnings", [])
+        self.assertFalse(any(str(i.get("errorCode", "")).startswith("CHANGE_SYNC_") for i in all_issues))
+
+    # ---- 小i提示内容义务（RULE-67，条件式）：有小i必须写明提示内容 ----
+
+    def test_tooltip_placeholder_warns(self):
+        """表单字段 tips 只写"小i提示"占位 -> FORM_TIP_PLACEHOLDER warning（不阻断）。"""
+        page = modal_page()
+        page["sections"] = [
+            {"title": "表单主体", "type": "form", "formFields": [
+                {"name": "鉴权方式", "iduxComponent": "IxSelect", "rules": "必选", "tips": "小i提示"},
+            ]},
+        ]
+        code, report = run_validator(make_spec([base_page(), page]), strict=True)
+        self.assertTrue(any(w.get("errorCode") == "FORM_TIP_PLACEHOLDER" for w in report.get("warnings", [])))
+
+    def test_tooltip_specific_content_passes(self):
+        """tips 写明具体文案（去痕迹词后>=6字）-> 无 RULE-67 告警。"""
+        page = modal_page()
+        page["sections"] = [
+            {"title": "表单主体", "type": "form", "formFields": [
+                {"name": "鉴权方式", "iduxComponent": "IxSelect", "rules": "必选",
+                 "tips": "小i提示：用于实例鉴权，创建后不可修改"},
+            ]},
+        ]
+        code, report = run_validator(make_spec([base_page(), page]), strict=True)
+        self.assertFalse(any("TIP" in w.get("errorCode", "") for w in report.get("warnings", [])))
+
+    def test_tooltip_marker_only_warns(self):
+        """tips 仅含痕迹词组合（小i提示 [i]）-> FORM_TIP_PLACEHOLDER。"""
+        page = modal_page()
+        page["sections"] = [
+            {"title": "表单主体", "type": "form", "formFields": [
+                {"name": "超时时间", "iduxComponent": "IxInputNumber", "rules": "单位秒", "tips": "[i] 提示图标"},
+            ]},
+        ]
+        code, report = run_validator(make_spec([base_page(), page]), strict=True)
+        self.assertTrue(any(w.get("errorCode") == "FORM_TIP_PLACEHOLDER" for w in report.get("warnings", [])))
+
+    def test_tooltip_absent_skips(self):
+        """tips 无小i痕迹词（纯规则/联动文案）-> 整条规则跳过，零告警。"""
+        page = modal_page()
+        page["sections"] = [
+            {"title": "表单主体", "type": "form", "formFields": [
+                {"name": "策略名称", "iduxComponent": "IxInput", "rules": "长度不超过64字符", "tips": "提交后立即生效"},
+            ]},
+        ]
+        code, report = run_validator(make_spec([base_page(), page]), strict=True)
+        self.assertFalse(any("TIP" in w.get("errorCode", "") for w in report.get("warnings", [])))
+
+    def test_tooltip_short_residue_ambiguous_warns(self):
+        """tips 去痕迹词后残留极短文本（如"待补充"）-> FORM_TIP_PLACEHOLDER。"""
+        page = modal_page()
+        page["sections"] = [
+            {"title": "表单主体", "type": "form", "formFields": [
+                {"name": "镜像源", "iduxComponent": "IxInput", "tips": "小i提示：待补充"},
+            ]},
+        ]
+        code, report = run_validator(make_spec([base_page(), page]), strict=True)
+        self.assertTrue(any(w.get("errorCode") == "FORM_TIP_PLACEHOLDER" for w in report.get("warnings", [])))
+
+    def test_tooltip_filter_table_not_scanned(self):
+        """筛选/表格字段不适用（description 列语义不同）-> 零告警。"""
+        page = base_page()
+        for s in page["sections"]:
+            if s.get("type") == "filter":
+                s["filterFields"] = [{"name": "策略名称", "iduxComponent": "IxInput",
+                                      "options": "支持模糊", "description": "小i提示"}]
+            if s.get("type") == "table":
+                s.setdefault("tableFields", []).append(
+                    {"name": "备注", "display": "文本", "description": "提示图标"})
+        code, report = run_validator(make_spec([page]), strict=True)
+        self.assertFalse(any("TIP" in w.get("errorCode", "") for w in report.get("warnings", [])))
+
+    # ---- Feature 契约落位闭环（RULE-68，条件式）：CD Feature 功能契约保留/调整/禁止三级约束对账 ----
+
+    @staticmethod
+    def _feature_entry(**over):
+        entry = {
+            "source": "common-design/references/04-feature/import.md#功能契约",
+            "appliedTo": [
+                {"pageId": "P01", "item": "所属分区", "landingRef": "P01#表格主体"},
+            ],
+            "adjustments": [
+                {"item": "分批阈值", "from": "固定 100 条", "to": "可配置",
+                 "reason": "业务方要求按资产量级分批，固定值不满足"},
+            ],
+            "forbidden": [
+                {"pattern": "合并导入阶段"},
+            ],
+            "reason": "需求包含导入既有业务对象，命中该 Feature 文档的功能契约",
+        }
+        entry.update(over)
+        return entry
+
+    @staticmethod
+    def _feature_dc(entries, **over):
+        dc = {
+            "commonDesign": {"skillId": "common-design", "read": True},
+            "productDesign": {"matched": False, "skillId": "", "coverage": []},
+            "readLedger": [{"ref": "common-design/references/04-feature/import.md#功能契约", "status": "read"}],
+            "featureContract": entries,
+        }
+        dc.update(over)
+        return dc
+
+    @staticmethod
+    def _feature_page():
+        """P01 表格含「所属分区」「导入结果」字段，供 mustPreserve 落点与 forbidden 命中检索。"""
+        page = base_page()
+        for section in page["sections"]:
+            if section["type"] == "table":
+                section["tableFields"] = [{"name": "策略名称", "iduxComponent": "IxText"},
+                                          {"name": "所属分区", "iduxComponent": "IxText"},
+                                          {"name": "导入结果", "iduxComponent": "IxText"}]
+        return page
+
+    def test_feature_contract_passes(self):
+        """合法条目 + 落点可检索 + forbidden 未命中 + adjustments 有理由 -> 无 FEATURE_*。"""
+        code, report = run_validator(make_spec([self._feature_page()], design_context=self._feature_dc([self._feature_entry()])), strict=True)
+        self.assertFalse(any(str(e.get("errorCode", "")).startswith("FEATURE_") for e in report.get("errors", []) + report.get("warnings", [])))
+
+    def test_feature_contract_entry_invalid_fails(self):
+        """source 无 # 锚点且 appliedTo 为空 -> FEATURE_CONTRACT_ENTRY_INVALID。"""
+        entry = self._feature_entry(source="common-design/references/04-feature/import.md", appliedTo=[])
+        code, report = run_validator(make_spec([base_page()], design_context=self._feature_dc([entry])), strict=True)
+        self.assertIn("FEATURE_CONTRACT_ENTRY_INVALID", error_codes(report))
+
+    def test_feature_contract_target_missing_fails(self):
+        """appliedTo 的 pageId 不存在 -> FEATURE_TARGET_MISSING。"""
+        entry = self._feature_entry(appliedTo=[{"pageId": "P99", "item": "所属分区", "landingRef": "P99#表格主体"}])
+        code, report = run_validator(make_spec([base_page()], design_context=self._feature_dc([entry])), strict=True)
+        self.assertIn("FEATURE_TARGET_MISSING", error_codes(report))
+
+    def test_feature_contract_preserve_missing_fails(self):
+        """落点处检索不到 item 痕迹 -> FEATURE_PRESERVE_MISSING（必须保留结构未落位）。"""
+        entry = self._feature_entry(appliedTo=[{"pageId": "P01", "item": "所属分区", "landingRef": "P01#不存在的区块"}])
+        code, report = run_validator(make_spec([base_page()], design_context=self._feature_dc([entry])), strict=True)
+        self.assertIn("FEATURE_PRESERVE_MISSING", error_codes(report))
+
+    def test_feature_contract_adjustment_unreasoned_fails(self):
+        """adjustments 缺 reason -> FEATURE_ADJUSTMENT_UNREASONED（无理由调整视为静默偏离）。"""
+        entry = self._feature_entry(adjustments=[{"item": "分批阈值", "from": "固定 100 条", "to": "可配置"}])
+        code, report = run_validator(make_spec([self._feature_page()], design_context=self._feature_dc([entry])), strict=True)
+        self.assertIn("FEATURE_ADJUSTMENT_UNREASONED", error_codes(report))
+
+    def test_feature_contract_forbidden_pattern_fails(self):
+        """forbidden 声明的禁止模式词元出现在页面文本 -> FEATURE_FORBIDDEN_PATTERN。"""
+        entry = self._feature_entry(forbidden=[{"pattern": "导入结果"}])
+        code, report = run_validator(make_spec([self._feature_page()], design_context=self._feature_dc([entry])), strict=True)
+        self.assertIn("FEATURE_FORBIDDEN_PATTERN", error_codes(report))
+
+    def test_feature_contract_basis_unread_warns(self):
+        """source 未在 readLedger 精读命中 -> FEATURE_BASIS_UNREAD warning，不阻断。"""
+        code, report = run_validator(make_spec([self._feature_page()], design_context=self._feature_dc([self._feature_entry()], readLedger=[])), strict=True)
+        self.assertIn("FEATURE_BASIS_UNREAD", warning_codes(report))
+        self.assertFalse(any(str(e.get("errorCode", "")).startswith("FEATURE_") for e in report.get("errors", [])))
+
+    def test_feature_contract_absent_skips(self):
+        """未声明 designContext.featureContract -> RULE-68 不启用、不误报。"""
+        code, report = run_validator(make_spec([base_page()]), strict=True)
+        all_issues = report.get("errors", []) + report.get("warnings", [])
+        self.assertFalse(any(str(i.get("errorCode", "")).startswith("FEATURE_") for i in all_issues))
+
+    @staticmethod
+    def _blueprint_page(**over):
+        """P01 线框含 Feature 界面结构元素（步骤条/对象选择列表/已选计数）。"""
+        page = base_page()
+        page["wireframe"]["ascii"] = "标题栏/步骤条（1.选择对象 2.数据预览 3.执行导入）/对象选择列表/已选计数/下一步按钮"
+        page.update(over)
+        return page
+
+    def test_feature_ui_blueprint_passes(self):
+        """uiBlueprint 合法 + 结构元素画进 ascii -> 无 FEATURE_UI_BLUEPRINT_*。"""
+        entry = self._feature_entry(uiBlueprint=[
+            {"screen": "步骤1-选择导入对象", "pageId": "P01",
+             "structuralElements": ["步骤条（3步）", "对象选择列表", "已选计数", "下一步按钮"]},
+        ])
+        code, report = run_validator(make_spec([self._blueprint_page()], design_context=self._feature_dc([entry])), strict=True)
+        self.assertFalse(any(str(e.get("errorCode", "")).startswith("FEATURE_UI_BLUEPRINT") for e in report.get("errors", []) + report.get("warnings", [])))
+
+    def test_feature_ui_blueprint_invalid_fails(self):
+        """uiBlueprint 条目缺 screen/structuralElements 空数组 -> FEATURE_UI_BLUEPRINT_INVALID。"""
+        entry = self._feature_entry(uiBlueprint=[
+            {"pageId": "P01", "structuralElements": []},
+        ])
+        code, report = run_validator(make_spec([self._blueprint_page()], design_context=self._feature_dc([entry])), strict=True)
+        self.assertIn("FEATURE_UI_BLUEPRINT_INVALID", error_codes(report))
+
+    def test_feature_ui_blueprint_element_missing_fails(self):
+        """结构元素在页面全文检索不到 -> FEATURE_UI_BLUEPRINT_ELEMENT_MISSING（error）。"""
+        entry = self._feature_entry(uiBlueprint=[
+            {"screen": "步骤2-数据预览", "pageId": "P01", "structuralElements": ["导入进度条"]},
+        ])
+        code, report = run_validator(make_spec([self._blueprint_page()], design_context=self._feature_dc([entry])), strict=True)
+        self.assertIn("FEATURE_UI_BLUEPRINT_ELEMENT_MISSING", error_codes(report))
+
+    def test_feature_ui_blueprint_not_in_wireframe_warns(self):
+        """元素未画进 ascii 但页面文本命中（字段名提及）-> FEATURE_UI_BLUEPRINT_NOT_IN_WIREFRAME warning。"""
+        entry = self._feature_entry(uiBlueprint=[
+            {"screen": "步骤1-选择导入对象", "pageId": "P01", "structuralElements": ["所属分区"]},
+        ])
+        code, report = run_validator(make_spec([self._feature_page()], design_context=self._feature_dc([entry])), strict=True)
+        self.assertIn("FEATURE_UI_BLUEPRINT_NOT_IN_WIREFRAME", warning_codes(report))
+        self.assertNotIn("FEATURE_UI_BLUEPRINT_ELEMENT_MISSING", error_codes(report))
+
+    def test_feature_ui_blueprint_not_drawn_warns(self):
+        """落位页无 wireframe.ascii 且未声明共用 -> FEATURE_UI_BLUEPRINT_NOT_DRAWN warning。"""
+        page = base_page()
+        page["wireframe"] = {}
+        entry = self._feature_entry(uiBlueprint=[
+            {"screen": "步骤1-选择导入对象", "pageId": "P01", "structuralElements": ["对象选择列表"]},
+        ])
+        code, report = run_validator(make_spec([page], design_context=self._feature_dc([entry])), strict=True)
+        self.assertIn("FEATURE_UI_BLUEPRINT_NOT_DRAWN", warning_codes(report))
+
+    def test_feature_ui_blueprint_variants_ascii_hit(self):
+        """多 Tab 页面：结构元素在 wireframe.variants[].ascii 命中 -> 通过，不触发 NOT_DRAWN。"""
+        page = base_page()
+        page["wireframe"] = {"ascii": "", "variants": [
+            {"tabId": "t1", "ascii": "步骤条/对象选择列表/已选计数"},
+            {"tabId": "t2", "ascii": "预览表格"},
+        ]}
+        entry = self._feature_entry(uiBlueprint=[
+            {"screen": "步骤1-选择导入对象", "pageId": "P01", "structuralElements": ["步骤条（3步）", "已选计数"]},
+        ])
+        code, report = run_validator(make_spec([page], design_context=self._feature_dc([entry])), strict=True)
+        self.assertFalse(any(str(e.get("errorCode", "")).startswith("FEATURE_UI_BLUEPRINT") for e in report.get("errors", []) + report.get("warnings", [])))
+
     # ---- 页面定位证据闭环（RULE-53，条件式）：禁止文件名定位、防张冠李戴 ----
+
     @staticmethod
     def _evidence(**over):
         ev = {
@@ -2769,6 +3163,63 @@ class TestValidateDemoSpec(unittest.TestCase):
         self.assertEqual(code, 0, f"report={report}")
         self.assertNotIn("COMPONENT_FORM_MISSING", warning_codes(report))
         self.assertNotIn("COMPONENT_FORM_UNKNOWN", warning_codes(report))
+
+    def test_component_variant_missing_warns(self):
+        """判定说明已产生编号但字段未填 -> COMPONENT_VARIANT_MISSING warning（漏填静默场景的兜底）。"""
+        spec = make_spec([tag_page([
+            {"name": "风险等级", "display": "标签", "iduxComponent": "IxTag", "description": "高/中/低",
+             "formCandidates": ["描边标签", "深色标签"], "iduxComponentForm": "深色标签",
+             "formDecision": "按 Common Design 标签样式判定小节，风险等级语义醒目采用深色标签（IxTag_Filled）"},
+        ])])
+        code, report = run_validator(spec, strict=True)
+        self.assertEqual(code, 0, f"report={report}")
+        self.assertIn("COMPONENT_VARIANT_MISSING", warning_codes(report))
+
+    def test_component_variant_mismatch_warns(self):
+        """字段填的编号与判定说明引用的编号不一致 -> COMPONENT_VARIANT_MISMATCH warning。"""
+        spec = make_spec([tag_page([
+            {"name": "风险等级", "display": "标签", "iduxComponent": "IxTag", "description": "高/中/低",
+             "formCandidates": ["描边标签", "深色标签"], "iduxComponentForm": "深色标签",
+             "iduxComponentVariantId": "IxTag_Basic",
+             "formDecision": "按 Common Design 标签样式判定小节，风险等级语义醒目采用深色标签（IxTag_Filled）"},
+        ])])
+        code, report = run_validator(spec, strict=True)
+        self.assertEqual(code, 0, f"report={report}")
+        self.assertIn("COMPONENT_VARIANT_MISMATCH", warning_codes(report))
+
+    def test_component_variant_no_false_positive(self):
+        """判定说明只引用其他组件的编号、本组件无编号 -> 不触发 VARIANT_MISSING/MISMATCH。"""
+        spec = make_spec([tag_page([
+            {"name": "鉴权方式", "display": "密码输入框", "iduxComponent": "IxInput", "description": "登录密码",
+             "formCandidates": ["密码输入框", "文本输入框"], "iduxComponentForm": "密码输入框",
+             "formDecision": "参照主体配置表单鉴权字段（IxForm_Password）同款密码输入形态，该形态无变体编号登记"},
+        ])])
+        code, report = run_validator(spec, strict=True)
+        codes = set(error_codes(report)) | set(warning_codes(report))
+        self.assertNotIn("COMPONENT_VARIANT_MISSING", codes, f"report={report}")
+        self.assertNotIn("COMPONENT_VARIANT_MISMATCH", codes, f"report={report}")
+
+    def test_component_variant_without_form_warns(self):
+        """声明变体编号但未写形态名 -> COMPONENT_VARIANT_WITHOUT_FORM warning。"""
+        spec = make_spec([tag_page([
+            {"name": "风险等级", "display": "标签", "iduxComponent": "IxTag", "description": "高/中/低",
+             "formCandidates": ["描边标签", "深色标签"], "iduxComponentVariantId": "IxTag_Filled"},
+        ])])
+        code, report = run_validator(spec, strict=True)
+        self.assertEqual(code, 0, f"report={report}")
+        self.assertIn("COMPONENT_VARIANT_WITHOUT_FORM", warning_codes(report))
+
+    def test_component_variant_with_form_passes(self):
+        """编号与形态名成对出现 -> 无 COMPONENT_VARIANT_WITHOUT_FORM。"""
+        spec = make_spec([tag_page([
+            {"name": "风险等级", "display": "标签", "iduxComponent": "IxTag", "description": "高/中/低",
+             "formCandidates": ["描边标签", "深色标签"], "iduxComponentForm": "深色标签",
+             "iduxComponentVariantId": "IxTag_Filled",
+             "formDecision": "按 Common Design 标签样式判定小节，风险等级语义醒目采用深色标签（IxTag_Filled）"},
+        ])])
+        code, report = run_validator(spec, strict=True)
+        codes = set(error_codes(report)) | set(warning_codes(report))
+        self.assertNotIn("COMPONENT_VARIANT_WITHOUT_FORM", codes, f"report={report}")
 
     def test_component_form_single_candidate_passes(self):
         """仅一个候选（非多形态）-> RULE-54 不启用、不误报。"""
@@ -3861,6 +4312,363 @@ class TestPageTypeRename(unittest.TestCase):
         code, report = run_validator(make_spec([page]), strict=True)
         self.assertNotEqual(code, 0)
         self.assertIn("FOOTER_ALIGNMENT_MISMATCH", error_codes(report))
+
+
+class TestOverviewStyle(unittest.TestCase):
+    """RULE-69 概览区形态还原闭环。"""
+
+    @staticmethod
+    def overview_page(**overrides):
+        """构造概览表格页：templateId=page-table-overview + overview 区域 + 概览区块。"""
+        page = base_page()
+        page["id"] = "P09"
+        page["name"] = "事件总览"
+        page["type"] = "概览表格页"
+        page["templateContract"]["templateId"] = "page-table-overview"
+        page["templateContract"]["templateSource"] = "common-design/references/02-template/01-page-types.md#page-table-overview"
+        page["templateContract"]["requiredRegions"] = ["global-navigation", "title-bar", "overview", "filter", "toolbar", "table", "pagination"]
+        page["templateContract"]["regionOrder"] = ["global-navigation", "title-bar", "overview", "filter", "toolbar", "table", "pagination"]
+        page["templateContract"]["componentContract"] = {"overview": ["IxCard"], "table": ["IxTable"], "pagination": ["IxPagination"]}
+        page["wireframe"]["templateId"] = "page-table-overview"
+        page["wireframe"]["regions"] = [
+            {"id": "global-nav", "templateRegion": "global-navigation", "position": "top", "required": True, "content": "全局导航"},
+            {"id": "title-bar", "templateRegion": "title-bar", "position": "top", "required": True, "content": "页面标题"},
+            {"id": "overview", "templateRegion": "overview", "position": "content-top", "required": True, "content": "概览统计区（数字统计型）：事件总数 42 | 待处置 12"},
+            {"id": "filter", "templateRegion": "filter", "position": "content", "required": True, "content": "筛选区"},
+            {"id": "toolbar", "templateRegion": "toolbar", "position": "content", "required": True, "content": "工具栏"},
+            {"id": "table", "templateRegion": "table", "position": "content", "required": True, "content": "表格主体"},
+            {"id": "pagination", "templateRegion": "pagination", "position": "bottom", "required": True, "content": "分页"},
+        ]
+        page["wireframe"]["ascii"] = ("┌────────────────────────────────────┐\n"
+                                      "│ 事件总览                            │\n"
+                                      "├────────────────────────────────────┤\n"
+                                      "│ ┌────────┐ ┌────────┐              │\n"
+                                      "│ │事件总数 │ │待处置  │              │\n"
+                                      "│ │   42   │ │   12   │              │\n"
+                                      "│ └────────┘ └────────┘              │\n"
+                                      "│ 筛选/工具栏/表格/分页                │\n"
+                                      "└────────────────────────────────────┘")
+        page["sections"] = [
+            {"title": "概览统计区", "type": "概览区",
+             "overviewStyle": "stat-number",
+             "overviewMetrics": [
+                 {"name": "事件总数", "display": "数字", "iduxComponent": "IxCard", "description": "0值正常展示"},
+                 {"name": "待处置事件数", "display": "可点击数字", "iduxComponent": "IxCard", "description": "点击筛选待处置"},
+             ]},
+            {"title": "筛选区", "type": "filter"},
+            {"title": "表格主体", "type": "table", "tableFields": [{"name": "事件名称", "iduxComponent": "IxText"}]},
+        ]
+        page.update(overrides)
+        return page
+
+    def test_overview_style_stat_passes(self):
+        """概览区块声明 stat-number + 完整 overviewMetrics + 统计卡线框 -> 通过。"""
+        code, report = run_validator(make_spec([self.overview_page()]), strict=True)
+        self.assertEqual(code, 0, f"report={report}")
+        codes = error_codes(report) | warning_codes(report)
+        for c in ("OVERVIEW_STYLE_INVALID", "OVERVIEW_STYLE_MISSING", "OVERVIEW_CHART_STYLE_NOT_DRAWN", "OVERVIEW_METRIC_COMPONENT_MISSING"):
+            self.assertNotIn(c, codes, f"不应出现 {c}")
+
+    def test_overview_style_invalid_fails(self):
+        """声明注册表不存在的形态值 radar-chart -> OVERVIEW_STYLE_INVALID 阻断。"""
+        page = self.overview_page()
+        page["sections"][0]["overviewStyle"] = "radar-chart"
+        code, report = run_validator(make_spec([page]), strict=True)
+        self.assertNotEqual(code, 0)
+        self.assertIn("OVERVIEW_STYLE_INVALID", error_codes(report))
+
+    def test_overview_style_missing_warns(self):
+        """概览区块均未声明 overviewStyle -> OVERVIEW_STYLE_MISSING 告警。"""
+        page = self.overview_page()
+        del page["sections"][0]["overviewStyle"]
+        code, report = run_validator(make_spec([page]), strict=True)
+        self.assertEqual(code, 0)
+        self.assertIn("OVERVIEW_STYLE_MISSING", warning_codes(report))
+
+    def test_overview_style_chart_not_drawn_warns(self):
+        """声明 line-chart 但 ascii 概览区无「折线图」痕迹 -> OVERVIEW_CHART_STYLE_NOT_DRAWN 告警。"""
+        page = self.overview_page()
+        page["sections"][0]["overviewStyle"] = "line-chart"
+        page["sections"][0]["overviewMetrics"] = [
+            {"name": "事件趋势", "display": "折线图占位", "iduxComponent": "以已读取Common Design组件映射表为准", "description": "近7天事件数量趋势"},
+        ]
+        code, report = run_validator(make_spec([page]), strict=True)
+        self.assertEqual(code, 0)
+        self.assertIn("OVERVIEW_CHART_STYLE_NOT_DRAWN", warning_codes(report))
+
+    def test_overview_style_chart_drawn_passes(self):
+        """声明 pie-chart 且 ascii 概览区画 [饼图：风险等级分布] 占位框 -> 通过。"""
+        page = self.overview_page()
+        page["sections"][0]["overviewStyle"] = "pie-chart"
+        page["sections"][0]["overviewMetrics"] = [
+            {"name": "风险等级分布", "display": "饼图占位", "iduxComponent": "以已读取Common Design组件映射表为准", "description": "按风险等级统计占比，图例：高/中/低"},
+        ]
+        page["wireframe"]["ascii"] = page["wireframe"]["ascii"].replace("│   42   │ │   12   │", "│ [饼图：风险等级分布]        │")
+        code, report = run_validator(make_spec([page]), strict=True)
+        codes = error_codes(report) | warning_codes(report)
+        self.assertNotIn("OVERVIEW_CHART_STYLE_NOT_DRAWN", codes, f"已画饼图占位不应告警: {codes}")
+
+    def test_overview_metric_component_missing_warns(self):
+        """overviewMetrics 项缺 iduxComponent 与 description -> OVERVIEW_METRIC_COMPONENT_MISSING 告警。"""
+        page = self.overview_page()
+        page["sections"][0]["overviewMetrics"] = [{"name": "事件总数", "display": "数字"}]
+        code, report = run_validator(make_spec([page]), strict=True)
+        self.assertEqual(code, 0)
+        self.assertIn("OVERVIEW_METRIC_COMPONENT_MISSING", warning_codes(report))
+
+    def test_overview_style_exempt_skips(self):
+        """页面声明 overviewStyleExempt -> OVERVIEW_STYLE_MISSING 豁免。"""
+        page = self.overview_page()
+        del page["sections"][0]["overviewStyle"]
+        page["overviewStyleExempt"] = [{"reason": "用户明确确认本页不做概览统计卡"}]
+        code, report = run_validator(make_spec([page]), strict=True)
+        self.assertNotIn("OVERVIEW_STYLE_MISSING", warning_codes(report))
+
+    def test_overview_style_non_overview_page_skips(self):
+        """基础表格页（无 overview 区域/无概览区块）不触发 RULE-69。"""
+        code, report = run_validator(make_spec([base_page()]), strict=True)
+        self.assertEqual(code, 0)
+        codes = error_codes(report) | warning_codes(report)
+        for c in ("OVERVIEW_STYLE_INVALID", "OVERVIEW_STYLE_MISSING", "OVERVIEW_CHART_STYLE_NOT_DRAWN", "OVERVIEW_METRIC_COMPONENT_MISSING"):
+            self.assertNotIn(c, codes, f"非概览页不应触发 {c}")
+
+    def test_overview_style_region_trigger_enabled(self):
+        """非概览模板但 regions 声明 overview 区域 -> RULE-69 触发（缺形态声明告警）。"""
+        page = base_page()
+        page["wireframe"]["regions"] = [
+            {"id": "overview", "templateRegion": "overview", "position": "content-top", "required": True, "content": "概览区"},
+        ] + base_regions()[2:]
+        page["sections"] = [
+            {"title": "概览统计区", "type": "概览区", "description": "顶部统计"},
+            {"title": "筛选区", "type": "filter"},
+            {"title": "表格主体", "type": "table", "tableFields": [{"name": "策略名称", "iduxComponent": "IxText"}]},
+        ]
+        code, report = run_validator(make_spec([page]), strict=True)
+        self.assertIn("OVERVIEW_STYLE_MISSING", warning_codes(report))
+
+
+class TestRegionBasisReading(unittest.TestCase):
+    """RULE-70 v2 区域规范精读闭环（双轨制：运行时声明 + 注册表兜底枚举）。"""
+
+    TABLE_REF = "common-design/references/05-components/idux-component-map.md#表格组件"
+
+    def _dc(self, read_ledger=None, declarations=None):
+        dc = {
+            "commonDesign": {"skillId": "common-design", "read": True},
+            "productDesign": {"matched": False, "skillId": "", "coverage": []},
+        }
+        if read_ledger is not None:
+            dc["readLedger"] = read_ledger
+        if declarations is not None:
+            dc["regionBasisDeclarations"] = declarations
+        return dc
+
+    def test_region_basis_undeclared_warns(self):
+        """页面含表格区块但无任何 regionBasisDeclarations -> REGION_BASIS_UNDECLARED。"""
+        spec = make_spec([base_page()])
+        spec["designContext"] = self._dc(
+            [{"ref": "common-design/references/02-template/01-page-types.md#page-table-basic", "status": "read"}])
+        code, report = run_validator(spec, strict=True)
+        codes = warning_codes(report) | error_codes(report)
+        self.assertIn("REGION_BASIS_UNDECLARED", codes)
+
+    def test_region_basis_unread_warns(self):
+        """有 table 声明但 readLedger 无对应锚点 read -> REGION_BASIS_UNREAD。"""
+        spec = make_spec([base_page()])
+        spec["designContext"] = self._dc(
+            [{"ref": "common-design/references/02-template/01-page-types.md#page-table-basic", "status": "read"}],
+            declarations=[{"region": "table", "ref": self.TABLE_REF, "source": "common-design"}])
+        code, report = run_validator(spec, strict=True)
+        self.assertIn("REGION_BASIS_UNREAD", warning_codes(report))
+
+    def test_region_basis_read_passes(self):
+        """声明 + readLedger 锚点级 read 命中 -> 通过。"""
+        page = base_page()
+        page["sections"] = [s for s in page["sections"] if s.get("type") == "table"]
+        spec = make_spec([page])
+        spec["designContext"] = self._dc(
+            [{"ref": self.TABLE_REF, "status": "read"}],
+            declarations=[{"region": "table", "ref": self.TABLE_REF, "source": "common-design"}])
+        code, report = run_validator(spec, strict=True)
+        codes = warning_codes(report) | error_codes(report)
+        self.assertEqual(code, 0, f"report={report}")
+        self.assertNotIn("REGION_BASIS_UNREAD", codes)
+        self.assertNotIn("REGION_BASIS_UNDECLARED", codes)
+
+    def test_region_basis_doc_level_read_not_enough(self):
+        """readLedger 仅有同文档另一锚点 read（读了文档但跳过表格小节）-> 仍告警。"""
+        other_anchor_ref = "common-design/references/05-components/idux-component-map.md#IxButton"
+        spec = make_spec([base_page()])
+        spec["designContext"] = self._dc(
+            [{"ref": other_anchor_ref, "status": "read"}],
+            declarations=[{"region": "table", "ref": self.TABLE_REF, "source": "common-design"}])
+        code, report = run_validator(spec, strict=True)
+        self.assertIn("REGION_BASIS_UNREAD", warning_codes(report))
+
+    def test_region_basis_index_only_warns(self):
+        """声明的依据在 readLedger 为 index-only（只读索引）-> 仍告警。"""
+        spec = make_spec([base_page()])
+        spec["designContext"] = self._dc(
+            [{"ref": self.TABLE_REF, "status": "index-only"}],
+            declarations=[{"region": "table", "ref": self.TABLE_REF, "source": "common-design"}])
+        code, report = run_validator(spec, strict=True)
+        self.assertIn("REGION_BASIS_UNREAD", warning_codes(report))
+
+    def test_region_basis_whole_doc_read_passes(self):
+        """readLedger #* 整篇已读 -> 覆盖任意锚点，通过。"""
+        page = base_page()
+        page["sections"] = [s for s in page["sections"] if s.get("type") == "table"]
+        spec = make_spec([page])
+        spec["designContext"] = self._dc(
+            [{"ref": "common-design/references/05-components/idux-component-map.md#*", "status": "read"}],
+            declarations=[{"region": "table", "ref": self.TABLE_REF, "source": "common-design"}])
+        code, report = run_validator(spec, strict=True)
+        codes = warning_codes(report) | error_codes(report)
+        self.assertEqual(code, 0, f"report={report}")
+        self.assertNotIn("REGION_BASIS_UNREAD", codes)
+
+    def test_region_basis_page_level_decl_passes(self):
+        """页面级 regionBasisDeclarations（designContext 未声明）+ read 命中 -> 通过。"""
+        page = base_page()
+        page["sections"] = [s for s in page["sections"] if s.get("type") == "table"]
+        page["regionBasisDeclarations"] = [{"region": "table", "ref": self.TABLE_REF, "source": "common-design"}]
+        spec = make_spec([page])
+        spec["designContext"] = self._dc([{"ref": self.TABLE_REF, "status": "read"}])
+        code, report = run_validator(spec, strict=True)
+        codes = warning_codes(report) | error_codes(report)
+        self.assertEqual(code, 0, f"report={report}")
+        self.assertNotIn("REGION_BASIS_UNDECLARED", codes)
+
+    def test_region_basis_pd_source_decl_passes(self):
+        """声明 source=product-design（PD 侧规范依据）+ read 命中 -> 通过。"""
+        pd_ref = "product-design/refs/components.md#业务表格"
+        page = base_page()
+        page["sections"] = [s for s in page["sections"] if s.get("type") == "table"]
+        spec = make_spec([page])
+        spec["designContext"] = self._dc(
+            [{"ref": pd_ref, "status": "read"}],
+            declarations=[{"region": "table", "ref": pd_ref, "source": "product-design"}])
+        code, report = run_validator(spec, strict=True)
+        codes = warning_codes(report) | error_codes(report)
+        self.assertEqual(code, 0, f"report={report}")
+        self.assertNotIn("REGION_BASIS_UNDECLARED", codes)
+
+    def test_region_basis_form_filter_regions_covered(self):
+        """表单/筛选区块同样纳入区域识别（覆盖全类区块）。"""
+        page = base_page()
+        page["sections"] = [s for s in page["sections"] if s.get("type") != "table"]
+        page["sections"].append({"title": "配置表单区", "type": "form",
+                                 "formFields": [{"name": "端口", "iduxComponent": "IxInput"}]})
+        spec = make_spec([page])
+        spec["designContext"] = self._dc([])
+        code, report = run_validator(spec, strict=True)
+        self.assertIn("REGION_BASIS_UNDECLARED", warning_codes(report))
+
+    def test_region_basis_no_design_context_skips(self):
+        """未声明 designContext -> RULE-70 不启用（历史格式不误伤）。"""
+        code, report = run_validator(make_spec([base_page()]), strict=True)
+        self.assertEqual(code, 0)
+        self.assertNotIn("REGION_BASIS_UNDECLARED", warning_codes(report))
+        self.assertNotIn("REGION_BASIS_UNREAD", warning_codes(report))
+
+    def test_region_basis_exempt_skips(self):
+        """页面声明 regionBasisExempt（含 reason）-> 豁免。"""
+        page = base_page()
+        page["regionBasisExempt"] = {"reason": "纯展示静态表格，无规范依赖"}
+        spec = make_spec([page])
+        spec["designContext"] = self._dc([])
+        code, report = run_validator(spec, strict=True)
+        self.assertEqual(code, 0, f"report={report}")
+        self.assertNotIn("REGION_BASIS_UNDECLARED", warning_codes(report))
+
+    def test_region_basis_wireframe_skeleton_not_triggered(self):
+        """wireframe.regions 的 templateRegion 属模板骨架，不触发依据声明（sections 才是触发面）。"""
+        page = base_page()
+        page["sections"] = [s for s in page["sections"] if s.get("type") not in ("table", "filter")]
+        page["wireframe"]["regions"] = page["wireframe"]["regions"] + [
+            {"id": "left-tree", "templateRegion": "tree", "position": "content-left",
+             "required": False, "content": "左侧组织树"}]
+        spec = make_spec([page])
+        spec["designContext"] = self._dc([])
+        code, report = run_validator(spec, strict=True)
+        self.assertEqual(code, 0, f"report={report}")
+        self.assertNotIn("REGION_BASIS_UNDECLARED", warning_codes(report))
+
+
+class TestActionColumnOverflow(unittest.TestCase):
+    """RULE-71 表格行内操作收纳检验。"""
+
+    def _table_block(self, **overrides):
+        block = {"title": "表格主体", "type": "table",
+                 "tableFields": [{"name": "名称", "iduxComponent": "IxText"}]}
+        block.update(overrides)
+        return block
+
+    def _page_with_block(self, block):
+        page = base_page()
+        page["sections"] = [s for s in page["sections"] if s.get("type") != "table"]
+        page["sections"].append(block)
+        return page
+
+    def test_action_overflow_warns(self):
+        """rowActions 5 个未收纳 -> ACTION_COLUMN_OVERFLOW 告警。"""
+        block = self._table_block(rowActions=[{"name": f"操作{i}", "trigger": "直接生效", "feedback": "完成"} for i in range(1, 6)])
+        code, report = run_validator(make_spec([self._page_with_block(block)]), strict=True)
+        self.assertIn("ACTION_COLUMN_OVERFLOW", warning_codes(report))
+
+    def test_action_overflow_within_limit_passes(self):
+        """rowActions 3 个（阈值内）-> 通过。"""
+        block = self._table_block(rowActions=[{"name": f"操作{i}", "trigger": "直接生效", "feedback": "完成"} for i in range(1, 4)])
+        code, report = run_validator(make_spec([self._page_with_block(block)]), strict=True)
+        self.assertNotIn("ACTION_COLUMN_OVERFLOW", warning_codes(report))
+
+    def test_action_overflow_declared_passes(self):
+        """rowActions 5 个但声明 actionOverflow=true -> 通过。"""
+        block = self._table_block(actionOverflow=True,
+                                  rowActions=[{"name": f"操作{i}", "trigger": "直接生效", "feedback": "完成"} for i in range(1, 6)])
+        code, report = run_validator(make_spec([self._page_with_block(block)]), strict=True)
+        self.assertNotIn("ACTION_COLUMN_OVERFLOW", warning_codes(report))
+
+    def test_action_overflow_more_mark_passes(self):
+        """rowActions 5 个但说明文字含「更多」收纳痕迹 -> 通过。"""
+        block = self._table_block(description="行内操作展示前 3 个，其余收进更多菜单",
+                                  rowActions=[{"name": f"操作{i}", "trigger": "直接生效", "feedback": "完成"} for i in range(1, 6)])
+        code, report = run_validator(make_spec([self._page_with_block(block)]), strict=True)
+        self.assertNotIn("ACTION_COLUMN_OVERFLOW", warning_codes(report))
+
+    def test_action_overflow_row_scope_counts(self):
+        """actions[].scope=row 的项计入行内操作：4 个 row scope -> 告警。"""
+        block = self._table_block(actions=[
+            {"name": "查询", "scope": "toolbar", "trigger": "直接生效", "feedback": "刷新"},
+            {"name": "重置", "scope": "toolbar", "trigger": "直接生效", "feedback": "清空"},
+        ] + [{"name": f"操作{i}", "scope": "row", "trigger": "直接生效", "feedback": "完成"} for i in range(1, 5)])
+        code, report = run_validator(make_spec([self._page_with_block(block)]), strict=True)
+        self.assertIn("ACTION_COLUMN_OVERFLOW", warning_codes(report))
+
+    def test_action_overflow_limit_override(self):
+        """区块 actionColumnLimit=6 覆盖默认阈值：5 个 rowActions -> 通过。"""
+        block = self._table_block(actionColumnLimit=6,
+                                  rowActions=[{"name": f"操作{i}", "trigger": "直接生效", "feedback": "完成"} for i in range(1, 6)])
+        code, report = run_validator(make_spec([self._page_with_block(block)]), strict=True)
+        self.assertNotIn("ACTION_COLUMN_OVERFLOW", warning_codes(report))
+
+    def test_action_overflow_ambiguous_actions_hint(self):
+        """未声明 rowActions 且 actions 无 scope 且总数超阈值 -> 告警并提示区分 scope。"""
+        block = self._table_block(actions=[
+            {"name": name, "trigger": "直接生效", "feedback": "完成"}
+            for name in ("处置", "转派", "关闭", "导出报告", "查看日志")])
+        code, report = run_validator(make_spec([self._page_with_block(block)]), strict=True)
+        warnings = warning_codes(report)
+        self.assertIn("ACTION_COLUMN_OVERFLOW", warnings)
+
+    def test_action_overflow_non_table_block_skips(self):
+        """非表格区块（概览区）actions 多不触发本规则。"""
+        page = base_page()
+        page["sections"] = [{"title": "概览统计区", "type": "概览区", "overviewStyle": "stat-number",
+                             "overviewMetrics": [{"name": "总数", "display": "数字", "iduxComponent": "IxCard", "description": "总量"}],
+                             "actions": [{"name": f"点击{i}", "trigger": "直接生效", "feedback": "筛选"} for i in range(1, 6)]}]
+        code, report = run_validator(make_spec([page]), strict=True)
+        self.assertNotIn("ACTION_COLUMN_OVERFLOW", warning_codes(report))
 
 
 if __name__ == "__main__":

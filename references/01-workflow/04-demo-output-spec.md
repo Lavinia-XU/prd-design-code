@@ -24,7 +24,7 @@
 
 先整体说明页面内不同内容区块之间的位置关系，并遵守该页面类型已定义好的方位位置，不要自行组合新的上下左右关系，避免把页面结构弄混。若页面内有明显白色卡片承载内容，按卡片划分；若没有明显卡片，按业务内容模块划分。若页面有多个内容区块，按先上后下、先左后右逐个描述区块，让读者通过区块描述即可看出页面设计结构关系。
 
-实际输出时应根据页面结构完整列出所有区块，不限于表格区和表单区；常见区块还包括概览区、详情信息区、图表区、操作区、步骤条、提示说明区等。区块划分要确保业务完整性，不要为了套格式把同一个业务对象的工具栏、筛选和列表拆散。**例外（复用业务组件容器）**：拆解出来的容器若命中 Product Design 业务封装组件（或代码识别已知业务封装）且属于需求延伸容器，则**不在本说明书单独描述该页面**——不写页面内容区块、不画线框图、不写底部操作，只在宿主页面的内容区块/线框图中写一句"点击 X 打开 Y（复用 <组件名>，不单独绘制）"，并把该组件登记为开发项与设计依据；自绘样式会与业务实现不一致、误导编码（详见 11.24 RULE-59，声明复用后又自绘会被 REUSE_CONTAINER_OVER_DESCRIBED 阻断）。以下仅为区块描述格式示例，不代表页面只能包含这些区块。生成HTML的JSON中，表格字段必须使用`tableFields`数组，表单字段必须使用`formFields`数组，脚本会将二者渲染为HTML表格；不要把表格字段或表单字段只写成普通`fields`文本列表。字段内容必须写在对应形态渲染的键上（表单字段用`rules`/`tips`，筛选项用`options`/`description`，表格字段用`display`/`description`，键对照见本文件“字段形态键对照（RULE-41）”小节），跨形态套键会导致HTML对应列静默空白并被RULE-41阻断。需求或规范中明确列出的字段（表格列、表单项、筛选项、详情描述字段、配置项等）必须逐项落入对应区块的字段数组，不得过滤、合并或仅简述；页面对象写入`requirementFieldNames`（需求/规范明确要求的字段名数组）与`excludedFields`（字段名到排除原因的映射），校验器以 RULE-36 检查需求字段是否全部落位，缺失字段阻断生成。带固定选项的下拉类字段（表单下拉、筛选下拉及单选/多选等枚举控件）必须把选项逐项完整列出，禁止用“等/例如/…”只举例；页面对象写入`requirementOptionSets`（字段名到完整选项列表的声明），校验器以 RULE-48 检查声明选项是否全部落入表单`rules`或筛选`options`单元格（缺失阻断），并对未声明选项集的选择类字段做截断指纹告警（详见本文件 11.13）。需求源枚举表含分组/层级列时（`requirementOptionSets[].dimension=group/hierarchy`，或 `sourceColumns` 声明 ≥2 列自动视为分组）必须在选项单元格保留该维度（“组名：选项A/选项B”或“父级 → 子级”），压平为单层列表会被 RULE-48 以 OPTION_DIMENSION_LOST 告警；承载该维度的控件形态不在此判定，按 RULE-54 依 Common Design widget patterns（`03-patterns/03-widget-patterns/`）判定并锚点级登记依据。
+实际输出时应根据页面结构完整列出所有区块，不限于表格区和表单区；常见区块还包括概览区、详情信息区、图表区、操作区、步骤条、提示说明区等。区块划分要确保业务完整性，不要为了套格式把同一个业务对象的工具栏、筛选和列表拆散。**例外（复用业务组件容器）**：拆解出来的容器若命中 Product Design 业务封装组件（或代码识别已知业务封装）且属于需求延伸容器，则**不在本说明书单独描述该页面**——不写页面内容区块、不画线框图、不写底部操作，只在宿主页面的内容区块/线框图中写一句"点击 X 打开 Y（复用 <组件名>，不单独绘制）"，并把该组件登记为开发项与设计依据；自绘样式会与业务实现不一致、误导编码（详见 11.24 RULE-59，声明复用后又自绘会被 REUSE_CONTAINER_OVER_DESCRIBED 阻断）。以下仅为区块描述格式示例，不代表页面只能包含这些区块。生成HTML的JSON中，表格字段必须使用`tableFields`数组，表单字段必须使用`formFields`数组，脚本会将二者渲染为HTML表格；不要把表格字段或表单字段只写成普通`fields`文本列表。字段内容必须写在对应形态渲染的键上（表单字段用`rules`/`tips`，筛选项用`options`/`description`，表格字段用`display`/`description`，键对照见本文件“字段形态键对照（RULE-41）”小节），跨形态套键会导致HTML对应列静默空白并被RULE-41阻断。需求或规范中明确列出的字段（表格列、表单项、筛选项、详情描述字段、配置项等）必须全部被设计承载：逐项落入对应区块的字段数组，或经设计手法合并承载时在页面 `mergedFields` 登记合并声明（覆盖是**包含关系**而非一一对应——需求配置项不一定一一映射为界面配置项，如国家/地区/省份/城市可合并为"地理位置"级联配置、周期类型/每周几/时间可合并为"执行周期"复合配置，合并须逐字段显式声明去向，禁止静默过滤或仅简述，详见 11.37）；页面对象写入`requirementFieldNames`（需求/规范明确要求的字段名数组）、`excludedFields`（字段名到排除原因的映射）与`mergedFields`（字段名到合并声明的映射），校验器以 RULE-36 检查需求字段是否全部承载，缺失字段阻断生成。带固定选项的下拉类字段（表单下拉、筛选下拉及单选/多选等枚举控件）必须把选项逐项完整列出，禁止用“等/例如/…”只举例；页面对象写入`requirementOptionSets`（字段名到完整选项列表的声明），校验器以 RULE-48 检查声明选项是否全部落入表单`rules`或筛选`options`单元格（缺失阻断），并对未声明选项集的选择类字段做截断指纹告警（详见本文件 11.13）。需求源枚举表含分组/层级列时（`requirementOptionSets[].dimension=group/hierarchy`，或 `sourceColumns` 声明 ≥2 列自动视为分组）必须在选项单元格保留该维度（“组名：选项A/选项B”或“父级 → 子级”），压平为单层列表会被 RULE-48 以 OPTION_DIMENSION_LOST 告警；承载该维度的控件形态不在此判定，按 RULE-54 依 Common Design widget patterns（`03-patterns/03-widget-patterns/`）判定并锚点级登记依据。
 
 ### Wireframe / ASCII 线框图
 
@@ -251,7 +251,7 @@ HTML说明书标题必须是“XX需求设计说明书”。HTML采用“Markdow
   - 页面总览 ID 重复 -> MANIFEST_DUPLICATE（error）
   - 同 ID 的 name / type / containerType 不一致 -> MANIFEST_METADATA_MISMATCH（error）
   - 弹窗/抽屉容器没有任何入口（无 open-container 操作引用且无文本引用）-> ORPHAN_CONTAINER（已确认容器 error，未确认容器 warning）
-  - 需求/规范明确列出的字段（requirementFieldNames）未落入对应区块字段数组（tableFields/formFields/filterFields/cardFields 等）且无 excludedFields 排除原因 -> REQUIRED_FIELD_MISSING（error，RULE-36）
+  - 需求/规范明确列出的字段（requirementFieldNames）未落入对应区块字段数组（tableFields/formFields/filterFields/cardFields 等）、无 excludedFields 排除原因、也无 mergedFields 合并承载声明 -> REQUIRED_FIELD_MISSING（error，RULE-36）；mergedFields 声明的 into 目标未全部命中本页面实际落位字段（拼错/指向被排除字段/为空）-> MERGED_FIELD_TARGET_MISSING（warning，合并声明无效，该字段仍按缺失阻断，见 11.37）
   - 固定选项型下拉声明的完整选项（requirementOptionSets）未全部落入表单 `rules` 或筛选 `options` 单元格 -> REQUIRED_OPTION_MISSING（error）；声明字段不存在 -> OPTION_FIELD_NOT_FOUND（error）；未声明选项集的选择类字段选项单元格出现 等/例如/如：/… 截断指纹 -> OPTION_TRUNCATION_MARKER（warning，RULE-48）；需求源枚举表含分组/层级列（声明 `dimension=group/hierarchy` 或 `sourceColumns` ≥2 列）但选项单元格被压成单层列表、未保留该维度 -> OPTION_DIMENSION_LOST（warning，RULE-48）
   - 详情类页面中，概览卡片/对象摘要已展示字段（detailSummaryFields 声明，或 cardFields/摘要型区块启发式）又在详情描述列表重复出现 -> DETAIL_FIELD_DUPLICATE（warning）；同一详情描述列表内字段名重复 -> DETAIL_FIELD_DUPLICATED_IN_LIST（error，RULE-49）
   - 页面含概览卡片/对象摘要区块且该区块声明 `actions` 时：概览卡片已承载的对象级操作（编辑/重启/删除等）又出现在底部按钮栏 `footerActions` -> DETAIL_SUMMARY_ACTION_DUPLICATE（warning，RULE-58；按操作名同义归一比较，`detailActionDedupExempt`/`excludedActions` 豁免）
@@ -814,6 +814,8 @@ Product Design 已登记降级：当某组件令牌已被页面的 Product Desig
 
 **判定结论留痕（`formDecision`）**：读了判定小节就必须把结论写下来——声明多形态候选且已选形态的字段，须在字段上补一句话判定结论 `formDecision`（引用判定小节锚点依据并**包含所选形态名**；如按 PRD 明确要求偏离判定链，须在结论中写明来源）。判定结论与所选形态对不上 = 判定链没被执行，倒逼生成时真正走判定链。
 
+**变体编号落位（`iduxComponentVariantId`，条件必填）**：Common Design 组件映射表登记了变体编号的形态（已核实示例：IxTag 深色标签 -> `IxTag_Filled`；其余形态是否登记编号以映射表实际内容为准），字段必须填写 `iduxComponentVariantId`；映射表未登记编号的形态留空，并在 `formDecision` 末尾写明"该形态无变体编号登记"——让"查过没有"与"漏查"可区分。装配字段时禁止只写形态名就收工：**形态判定链的产出物是"形态名 + 变体编号"一对**，只写形态名等于判定链没走完。**防伪约束**：本 Skill 文档与示例中出现的编号仅 `IxTag_Filled` 为真实登记示例，任何其他编号字样（包括早期版本遗留写法）均为示意占位，**禁止从本文档复制编号到字段**——真实编号必须逐字段回查 Common Design 组件映射表；自洽的虚构编号会绕过全部校验（填了编号、判定说明也引用它），只有映射表是真值源。
+
 **校验项**：
 
 | 场景 | 级别 | errorCode |
@@ -824,14 +826,17 @@ Product Design 已登记降级：当某组件令牌已被页面的 Product Desig
 | `formDecision` 未引用所选形态名（结论与选择对不上） | warning | FORM_DECISION_MISMATCH |
 | 声明了多形态候选，但页面未登记 Common Design 组件映射依据（或依据未精读命中） | warning | COMPONENT_FORM_SOURCE_UNREAD |
 | 声明了多形态候选，但未登记 widget patterns 形态选择依据（或依据未精读命中） | warning | COMPONENT_FORM_RULE_UNREAD |
+| 字段声明了样式变体编号 `iduxComponentVariantId`（Common Design 组件表登记的变体编号，如 IxTag 深色标签 -> `IxTag_Filled`）但未写 `iduxComponentForm` 形态名——编号必须与形态名成对出现 | warning | COMPONENT_VARIANT_WITHOUT_FORM |
+| 判定说明（formDecision）中已出现本组件前缀的编号 token（如 IxTag_Filled）但字段 `iduxComponentVariantId` 未填——编号已在判定链中产生却未落到字段 | warning | COMPONENT_VARIANT_MISSING |
+| `iduxComponentVariantId` 与判定说明中引用的编号不一致——编号与判定结论脱节，编码侧将引用错误变体 | warning | COMPONENT_VARIANT_MISMATCH |
 
-**展示**：`iduxComponentForm` 并入既有"iDux组件名称"列展示（形如 `IxTag（深色标签）`），不新增列；由生成器 `scripts/generate_demo_spec_html.py` 的 `normalize_component_rows` 拼接。
+**展示**：`iduxComponentForm` 并入既有"iDux组件名称"列展示（形如 `IxTag（深色标签）`），不新增列；由生成器 `scripts/generate_demo_spec_html.py` 的 `normalize_component_rows` 拼接。Common Design 组件表登记了**样式变体编号**时，字段补填 `iduxComponentVariantId`（如 `IxTag_Filled`），展示自动升级为 `IxTag（深色标签 · IxTag_Filled）`——形态中文名在前保留可读性，编号在后供 Coding 直接引用；映射表未登记编号或单形态组件时留空，展示维持原样。生成器 stdout 输出 `variantCoverage`（declared/filled/missing/coverage），HTML 生成后必须查看该指标——coverage 非满且无"无编号登记"说明时，逐字段回查映射表补编号，**不得以校验器 0 error 作为组件映射完整的证明**。
 
 **示例**：
 
 ```json
 [
-  {"name": "风险等级", "display": "单标签", "iduxComponent": "IxTag", "iduxComponentForm": "深色标签", "formDecision": "按 Common Design 标签样式判定小节，风险等级语义醒目采用深色标签", "formCandidates": ["深色标签", "描边标签", "状态标签"], "description": "高/中/低，使用红/橙/蓝标签"},
+  {"name": "风险等级", "display": "单标签", "iduxComponent": "IxTag", "iduxComponentForm": "深色标签", "iduxComponentVariantId": "IxTag_Filled", "formDecision": "按 Common Design 标签样式判定小节，风险等级语义醒目采用深色标签", "formCandidates": ["深色标签", "描边标签", "状态标签"], "description": "高/中/低，使用红/橙/蓝标签"},
   {"name": "办公地址", "component": "级联选择", "iduxComponent": "IxCascader", "iduxComponentForm": "级联（可搜索）", "formDecision": "省市区为固定三级层级，按 widget patterns 判定小节采用级联形态（含搜索增强）", "formCandidates": ["平铺", "级联"], "required": "是", "rules": "省/市/区三级联动"},
   {"name": "身份标签", "component": "可编辑标签", "iduxComponent": "IxTag", "iduxComponentForm": "深色标签（支持新增）", "formDecision": "按标签样式判定小节采用深色标签，PRD 要求运维可现场补充标签，保留 Common Design 新增增强项", "formCandidates": ["深色标签", "描边标签"], "description": "主机身份标记，支持新增"},
   {"name": "触发方式", "component": "单选卡片", "iduxComponent": "IxRadioGroup", "iduxComponentForm": "卡片形态", "formDecision": "选项仅两项且 PRD 要求平铺可见，按判定小节采用卡片形态", "formCandidates": ["基础 radio 形态", "卡片形态"], "required": "是", "rules": "自动/手动", "tips": ""}
@@ -1301,3 +1306,241 @@ Product Design 已登记降级：当某组件令牌已被页面的 Product Desig
 
 **示例（错误）**：同上但页面 P01 的 templateContract.templateId 为 page-table-basic → CARRIER_SWEEP_MISMATCH（error）：判定与落地账实不一致，须按 CD 分流链重新判定或修正页面模板；同理，使用 page-card-list 却写 `"carrierSweep": []` → CARRIER_SWEEP_CARD_TRACE_MISSING（error）。
 
+### 11.31 关联改动同步闭环（RULE-66）
+
+**目的**：需求命中"修改既有功能"时（典型：在已有表单里新增一个配置项），同一业务对象的关联视图必须同步呈现该字段——表单加了配置，表格汇总要有这一列，筛选区要有对应搜索项；确属不该同步的视图须逐项写明专业豁免理由。禁止静默遗漏。
+
+**启用口径（条件式）**：`designContext.changeSync` 键声明时启用（含空数组——声明空数组即表示"本轮无关联改动条目"，反向复核对未触碰页面生效）；未声明 designContext 或无该键的 JSON 不启用，历史 JSON 不误伤。
+
+**条目结构**（`designContext.changeSync` 数组，每项）：
+
+```
+{
+  "sourceField": "所属分区",            // 必填，本次需求新增/修改的字段名
+  "pageId": "P01",                     // 必填，触发字段所在页面 ID
+  "views": ["form", "table", "filter"],// 必填，该字段涉及的对象关联视图枚举（form/table/filter/detail/card）
+  "synced": [                          // 必填数组，可为空；同步登记
+    {"view": "table", "landingRef": "P01#表格主体"},
+    {"view": "filter", "landingRef": "P01#筛选区"}
+  ],
+  "excluded": [                        // 必填数组，可为空；豁免登记
+    {"view": "detail", "reason": "仅列表态字段，详情侧已有原生信息块承载，避免重复"}
+  ]
+}
+```
+
+**landingRef 取值**：`<页面ID>#<区块标题或字段名>`（落点页面须可检索到该区块/字段痕迹）或开发项 ID（`codingGuide.pageItems[].id`）。
+
+**豁免语义**：豁免是专业判断，不是遗漏出口——如密码字段不进表格列、时间戳不值得做搜索项、超长描述不进筛选条件但可进关键词搜索。excluded 缺 reason 视为遗漏（阻断）。
+
+**校验表**：
+
+| errorCode | 级别 | 触发条件 |
+|---|---|---|
+| CHANGE_SYNC_ENTRY_INVALID | error | 条目缺 sourceField/pageId/views 或 synced/excluded 非数组；synced/excluded 视图项缺字段或 view 取值不在 form/table/filter/detail/card |
+| CHANGE_SYNC_TARGET_MISSING | error | pageId 不存在于 pages |
+| CHANGE_SYNC_SOURCE_NOT_LANDED | error | sourceField 不在该页 sections 任何字段数组中（触发字段未落位，先按 RULE-36 落字段） |
+| CHANGE_SYNC_NOT_LANDED | error | synced 落点指向不存在页面/开发项，或落点处检索不到区块/字段痕迹 |
+| CHANGE_SYNC_EXEMPTION_REASON_MISSING | error | excluded 项缺 reason |
+| CHANGE_SYNC_VIEW_UNCOVERED | error | views 枚举的视图未被 synced/excluded 覆盖 |
+| CHANGE_SYNC_REVIEW | warning | 反向复核：未被条目触碰的页面中，表单字段均未出现在表格列与筛选项（字段别名/派生列属正常差异故仅告警，完整对账以 changeSync 条目为准） |
+
+**范围边界**：只针对本次需求新增/修改的字段；存量字段的历史差异不属本规则范围，确属需要豁免的以 changeSync 条目留痕。
+
+**示例（合法）**：见上方条目结构——form 视图字段自身落位（RULE-36 保证），table/filter 同步落点可检索，detail 豁免有理由，views 全覆盖 → 无 CHANGE_SYNC_*。
+
+**示例（错误）**：同条目但 `"excluded": [{"view": "detail"}]`（缺 reason）→ CHANGE_SYNC_EXEMPTION_REASON_MISSING（error）；或 `"views": ["table", "filter", "detail"]` 且 detail 既不在 synced 也不在 excluded → CHANGE_SYNC_VIEW_UNCOVERED（error）。
+
+
+
+### 11.32 小i提示内容义务（RULE-67）
+
+**目的**：表单配置项有小 i 提示图标时，提示内容本身就是设计交付物——HTML 里只画图标不写内容，编码方只能猜文案或抄需求原文。本规则强制：**有小 i 就必须写明提示内容本身**，禁止占位空话（"有"、"需要"、"待补充"、"见原型"）充数。
+
+**启用口径（条件式）**：字段 `tips` 值含小 i 痕迹词（`小i` / `[i]` / `(i)` / `提示图标` / `小i提示` / `小i图标` / `i图标` / `tooltip` / `hover提示` / `悬浮提示`）时视为该字段声明了小 i 提示，规则对该字段启用；`tips` 无痕迹词（纯规则/联动文案）或字段无 `tips` 时整条跳过，历史 JSON 不误伤。
+
+**写法**：表单字段 `tips` 直接写提示文案；同时声明图标与内容时用 `小i提示：<具体文案>` 前缀（如 `小i提示：用于实例鉴权，创建后不可修改`）。多条内容用换行符 `\n` 分行（渲染器逐行展示）。
+
+**校验项（warning，不阻断 code）**：
+
+| errorCode | 触发 | 处理 |
+|---|---|---|
+| FORM_TIP_PLACEHOLDER | tips 去除痕迹词后无具体文案（<6 字或纯空话：有/需要/是/待补充/见原型/略） | 把具体说明文案写进 tips；若确实无提示内容则删除痕迹词 |
+| FORM_TIP_AMBIGUOUS | tips 去除痕迹词后仅残留极短文本（如"长度64"），内容是否完整需人工复核 | 补全为完整提示文案 |
+
+**履行豁免**：去除痕迹词后剩余文案 ≥6 字且非纯空话，视为已履行义务，不告警。
+
+**范围**：仅表单字段（页面级 `formFields` 与含"表单/form"区块的 `formFields`/`fields`）。表格字段 `description` 与筛选项 `description` 的列语义不同（表格描述列/筛选项说明），不在本规则内。
+
+**示例（合法）**：`{"name": "鉴权方式", "iduxComponent": "IxSelect", "rules": "必选", "tips": "小i提示：用于实例鉴权，创建后不可修改"}` → 无 RULE-67 告警。
+
+**示例（错误）**：`{"name": "鉴权方式", "tips": "小i提示"}` → FORM_TIP_PLACEHOLDER（warning）；`{"name": "镜像源", "tips": "小i提示：待补充"}` → FORM_TIP_PLACEHOLDER（warning）。
+### 11.33 Feature 契约落位闭环（RULE-68）
+
+**目的**：Common Design Feature 业务功能层文档（如导入功能）声明功能契约——哪些结构**必须保留**、哪些**可按业务调整**、哪些**禁止出现**。设计命中该功能时，CD 是约束而非参考：契约条款必须落进设计并逐项对账，禁止把 Feature 文档当"风格参考"读过就算。同时补齐 AI 自评暴露的三个缺口：契约条款只校"读"不校"用"（RULE-43 只查精读不查落位）、"可调整"部分静默修改不可见、禁止模式无从检查。
+
+**启用口径（条件式）**：`designContext.featureContract` 键声明时启用（含空数组）；未声明 designContext 或无该键的 JSON 不启用，历史 JSON 不误伤。触发义务在 resolver：需求命中的 Feature 文档**含功能契约章节**时必须登记（Feature 文档不含契约章节则正常精读、不产生条目）。
+
+**条目结构**（`designContext.featureContract` 数组，**按 source 文档分组**——一份 Feature 契约一个条目，落点摊平在 appliedTo）：
+
+```
+{
+  "source": "<Feature文档路径>#<功能契约章节锚点>",   // 必填，含 # 锚点；契约条款的唯一依据
+  "appliedTo": [                                     // 必填非空数组：必须保留的契约条款逐项落点
+    {"pageId": "P06", "item": "阶段时间轴", "landingRef": "P06#阶段时间轴"},
+    {"pageId": "P08", "item": "导入进度展示", "landingRef": "P08#导入进度"},
+    {"pageId": "P09", "item": "三态结果呈现", "landingRef": "P09#variant-partial"}
+  ],
+  "adjustments": [                                   // 可选数组（可空）：可按业务调整部分的调整留痕
+    {"item": "分批阈值", "from": "固定 100 条", "to": "可配置", "reason": "业务方按资产量级分批，固定值不满足"}
+  ],
+  "forbidden": [                                     // 可选数组（可空）：禁止出现的模式，逐条从契约原文抄录
+    {"pattern": "合并导入阶段"}
+  ],
+  "uiBlueprint": [                                   // 可选数组：界面蓝图对账（Feature 文档含分步线框图时必须逐界面登记，禁止选择性登记）
+    {"screen": "步骤1-选择导入对象", "pageId": "P06",
+     "structuralElements": ["步骤条（3步）", "对象选择列表", "已选计数", "下一步按钮"]}
+  ],
+  "reason": "需求包含导入既有业务对象，命中该 Feature 文档的功能契约"   // 必填，为何该契约适用本需求
+}
+```
+
+**landingRef 取值**：`<页面ID>#<区块标题或字段名>`（落点页面须可检索到该契约结构痕迹，且 `#` 前页面 ID 必须与 pageId 一致）或开发项 ID（`codingGuide.pageItems[].id`）。
+
+**三级条款语义**：
+
+- **必须保留（appliedTo）**：契约明文"必须/一定要有"的结构。逐项登记页面落点，落点处检索不到痕迹视为未落位（阻断）。custom 模板不豁免本检查——契约约束独立于模板 override。
+- **可按业务调整（adjustments）**：契约明文"可根据实际业务修改"的部分。沿用 CD 原结构则无需登记；**只要调整就必须留痕**（CD 原结构 from -> 本设计调整 to -> 业务理由 reason），无理由调整视为静默偏离契约（阻断）。结构调整偏离契约时须在确认点向用户呈现并确认。
+- **禁止出现（forbidden）**：契约明文"禁止/不得出现"的模式。**声明式机制**：AI 从契约原文逐条抄录 pattern 为数据，校验器对全部页面文本做检索，命中即阻断——禁止模式清单由 CD 契约承载并演化，校验器零 CD 词汇硬编码，CD 新增禁止项零改动。pattern 抄录粒度以契约原文短语为准（禁止把宽泛词如功能名单字抄成 pattern，避免误伤）。
+
+**校验表**：
+
+| errorCode | 级别 | 触发条件 |
+|---|---|---|
+| FEATURE_CONTRACT_ENTRY_INVALID | error | 条目非对象；source 缺失或不含 #；appliedTo 非非空数组；appliedTo 项非对象或缺 pageId/item/landingRef；adjustments 项非对象或缺 item/from/to；forbidden 项非对象或缺 pattern；reason 缺失 |
+| FEATURE_TARGET_MISSING | error | appliedTo 项 pageId 不存在于 pages |
+| FEATURE_PRESERVE_MISSING | error | landingRef 指向不存在页面/开发项；`#` 前页面 ID 与 pageId 不一致；落点处检索不到 item 痕迹 |
+| FEATURE_ADJUSTMENT_UNREASONED | error | adjustments 项缺 reason（无理由调整视为静默偏离） |
+| FEATURE_FORBIDDEN_PATTERN | error | forbidden 声明的禁止模式词元（按标点/空白拆分、长度≥2）出现在任一页面文本（线框/区块/字段/操作） |
+| FEATURE_BASIS_UNREAD | warning | source 未在 readLedger 中锚点级精读命中（status=read） |
+| FEATURE_UI_BLUEPRINT_INVALID | error | uiBlueprint 非数组；界面条目非对象或缺 screen/pageId；structuralElements 非非空数组或元素为空 |
+| FEATURE_UI_BLUEPRINT_NOT_DRAWN | warning | 界面落位页无 wireframe.ascii（含 variants）且未声明 wireframeSharedWith 共用线框 |
+| FEATURE_UI_BLUEPRINT_ELEMENT_MISSING | error | 结构元素在落位页全文（线框/区块/字段）检索不到——Feature 线框结构未落位 |
+| FEATURE_UI_BLUEPRINT_NOT_IN_WIREFRAME | warning | 结构元素未在 ascii 命中但在页面其他文本命中——疑似只是文字提及未画进线框 |
+
+**界面蓝图对账（uiBlueprint，第四维度）**：CD Feature 文档对功能绘制了详细分步线框图（每个步骤界面、进度页、结果页）时，这些线框是**结构资产**而非参考图——设计说明书的线框图必须按原图结构绘制。落地机制：AI 精读 Feature 线框图后**逐界面登记**一个 `uiBlueprint` 条目（screen=界面名、pageId=落位页、structuralElements=该界面的结构元素清单，如步骤条/对象选择列表/进度条/异常行标记/操作列），校验器对每个结构元素做三层检索：**ascii 命中 → 通过；未画进 ascii 但页面其他文本命中 → FEATURE_UI_BLUEPRINT_NOT_IN_WIREFRAME（warning，疑似只是文字提及）；全文检索不到 → FEATURE_UI_BLUEPRINT_ELEMENT_MISSING（error）**。落位页未绘制线框图给 FEATURE_UI_BLUEPRINT_NOT_DRAWN（warning）。全量登记义务：Feature 含分步线框图时**每个界面必须一个条目**，禁止选择性登记——漏登记整个界面是机器盲区（校验器不知道 CD 原图有几个界面），由本义务条款约束，精读时先数清界面数再逐一登记。诚实边界：元素"画了但画得不像"（如步骤条画成 tabs）机器不判定，结构形态保真由 resolver 义务（线框按 Feature 原图结构绘制）与 Step 7 确认点对照兜底。Feature 文档无线框图（纯文字契约）时不需要 uiBlueprint。
+
+**机制通用性**：规则不认识任何具体功能词——任何 Feature 文档的契约都走同一结构；CD 新增 Feature 文档或新增契约条款零代码改动。禁止模式检索的语义真值在契约原文（AI 精读后声明），校验器只做账实一致与留痕完整性。
+
+**范围边界**：featureContract 是 Feature 级声明（一份契约横跨多个页面落点），不是页面级——不要按页面拆成多个条目重复声明同一 source；确认点对照（CD 原结构 / PRD 改动 / 业务事实必须改 / 结构偏离待确认）在 Step 7 确认环节呈现。
+
+**示例（合法）**：见上方条目结构——appliedTo 落点处可检索到契约结构、adjustments 有理由、forbidden 未命中、source 精读命中 → 无 FEATURE_*。
+
+**示例（错误）**：`"adjustments": [{"item": "分批阈值", "from": "固定 100 条", "to": "可配置"}]`（缺 reason）→ FEATURE_ADJUSTMENT_UNREASONED（error）；`"forbidden": [{"pattern": "合并导入阶段"}]` 且某页面线框含"合并导入阶段"→ FEATURE_FORBIDDEN_PATTERN（error）；appliedTo 落点 `"P06#不存在区块"` → FEATURE_PRESERVE_MISSING（error）。uiBlueprint 条目 `{"pageId": "P06", "structuralElements": []}` → FEATURE_UI_BLUEPRINT_INVALID（error）；结构元素"导入进度条"页面全文检索不到 → FEATURE_UI_BLUEPRINT_ELEMENT_MISSING（error）；元素"阶段时间轴"只在区块描述提及、未画进 ascii → FEATURE_UI_BLUEPRINT_NOT_IN_WIREFRAME（warning）。
+
+### 11.34 概览区形态还原闭环（RULE-69）
+
+**目的**：概览表格页（page-table-overview）与概览左树表格页（page-table-overview-tree）的概览区在 Common Design 中定义了多种形态（数字统计型/饼图/折线图/条形图等），但历史上概览区块只是"纯文字区块"——形态枚举在拆解、JSON、线框图、HTML、codingGuide 全链路均无结构化承载，AI Coding 只能拿到一个通用卡片框描述，无法还原正确样式。本规则把概览形态作为结构化契约贯穿全链路：拆解时声明形态、JSON 落字段、线框图画形态痕迹、HTML 渲染指标表、校验器对账声明与绘制。
+
+**启用口径（条件式）**：页面 `templateId` 命中注册表中含 `overviewVariants` 的模板（当前为 page-table-overview / page-table-overview-tree），或 wireframe.regions 含 `templateRegion: overview` 区域时启用；其他页面跳过，历史 JSON 不误伤。复用业务组件容器页（RULE-59）、声明 `wireframeSharedWith` 的从页面（RULE-62，主页面承担）、PD override 页（模板结构以 Product Design 为准）跳过本规则。
+
+**字段契约**（概览区块级声明）：
+
+```
+{"title": "概览统计区", "type": "概览区",
+ "overviewStyle": "stat-number",              // 形态值：注册表 overviewVariants.styles 的 id（stat-number/pie-chart/line-chart/bar-chart）
+ "overviewMetrics": [                          // 指标数组：图表形态时为图表承载的指标/维度，统计型为统计卡指标
+   {"name": "事件总数", "display": "数字", "iduxComponent": "IxCard", "description": "0值正常展示"},
+   {"name": "风险等级分布", "display": "饼图占位", "iduxComponent": "以已读取Common Design组件映射表为准", "description": "按风险等级统计占比，图例：高/中/低"}
+ ]
+}
+```
+
+- `overviewStyle`：概览区形态，取值必须是页面命中模板在注册表 `overviewVariants.styles` 中登记的 `id`（形态枚举以精读 Common Design 模板文档原文为准，禁止凭经验新增形态值）；
+- `overviewMetrics`：概览区承载的指标数组，每项含 `name`（指标名）、`display`（展示形式）、`iduxComponent`（组件）、`description`（说明，含取值/维度/图例/交互）；图表形态（drawKind=chart）的指标在此声明维度与图例，编码阶段据此还原图表；
+- `overviewStyleExempt`：页面级豁免声明（对象数组，每项含 `reason`），仅限用户明确确认不声明概览形态时使用。
+
+**线框图形态痕迹要求**：概览区在 ascii 中不能只画一个空卡片框——按声明形态绘制可辨识痕迹：
+
+- 数字统计型（stat-number）：概览区画统计卡行，每张卡"指标名 + 数字"（如 `事件总数 42`）；
+- 图表形态（饼图/折线图/条形图）：概览区画图表占位框，框内标注形态名与维度（如 `[饼图：风险等级分布]`）；
+- 组合形态：页面声明多个概览区块时按各区块形态分别绘制。
+
+**校验表**：
+
+| errorCode | 级别 | 触发条件 |
+|---|---|---|
+| OVERVIEW_STYLE_INVALID | error | 区块声明的 `overviewStyle` 值不在页面命中模板 `overviewVariants.styles` 的 id 集合（含模板无 overviewVariants 却声明形态值） |
+| OVERVIEW_STYLE_MISSING | warning | 启用页面的概览区块均未声明 `overviewStyle`（形态信息缺失，AI Coding 只能自绘） |
+| OVERVIEW_CHART_STYLE_NOT_DRAWN | warning | 声明图表形态（drawKind=chart）但 ascii（含 variants）中检索不到该形态名痕迹（疑似只写文字未画进线框） |
+| OVERVIEW_METRIC_COMPONENT_MISSING | warning | `overviewMetrics` 项缺 `name`、`iduxComponent` 或 `description` |
+
+**与既有规则的关系**：RULE-32/33 只验证概览区"画没画"，本规则验证"画成什么形态、与声明是否一致"；RULE-41 管字段键形态对位，本规则的 `overviewMetrics` 是概览区块的专用渲染键；模板组件契约（requiredComponents.overview=IxCard）管容器组件，`overviewMetrics[].iduxComponent` 管指标级组件（图表类组件名以已读取 Common Design 组件映射表为准，本 Skill 不保存组件映射清单）。
+
+**示例（合法）**：概览页声明 `"overviewStyle": "pie-chart"`，overviewMetrics 声明维度与图例，ascii 概览区画 `[饼图：风险等级分布]` 占位框 → 无 OVERVIEW_*。
+
+**示例（错误）**：`"overviewStyle": "radar-chart"`（注册表无此 id）→ OVERVIEW_STYLE_INVALID（error）；概览页所有区块均无 overviewStyle → OVERVIEW_STYLE_MISSING（warning）；声明 `"overviewStyle": "line-chart"` 但 ascii 概览区只有空卡片框 → OVERVIEW_CHART_STYLE_NOT_DRAWN（warning）；`"overviewMetrics": [{"name": "事件总数"}]`（缺组件与说明）→ OVERVIEW_METRIC_COMPONENT_MISSING（warning）。
+
+### 11.35 区域规范精读闭环（RULE-70，双轨制 v2）
+
+**目的**：当前依据强制读取机制（RULE-43/54/57）都是"结果触发"——AI 做了某个判定（登记了依据、选了形态、写了表单布局）才回头查依据是否精读。这存在结构性漏洞：页面明显有表格，但 AI 压根没读对应规范文档，设计说明书照常输出，规范真值（如"操作列最多放 3 个、超出收进更多"）整体缺失，后续开发直接按 AI 经验自绘。RULE-70 把触发方式反转为**存在性触发**：页面拆出了某类区块，该区域的规范依据就必须已声明并精读，不依赖 AI 先做判定。
+
+**双轨制（关键设计）**：本 Skill 不预置、不维护任何规范文档路径——规范分布在 Common Design / Product Design 的多个目录（组件映射、形态判定、表格/表单/导航/信息层级判断等）且随版本演进，"读什么"的权威是**运行时实际加载的 CD/PD 内容**。因此判定分两轨：
+
+1. **权威轨（regionBasisDeclarations）**：AI 在读取实际加载的 CD/PD 内容后，于 `designContext.regionBasisDeclarations`（或页面级同名字段）登记各区域依据声明：`{ "region": "<区域键>", "ref": "<实际加载的 CD/PD 规范文档路径>#<锚点>", "source": "common-design|product-design" }`。ref 由 AI 从当前实际加载目录取，本 Skill 不校验其指向。
+2. **兜底轨（registry 区域识别枚举）**：`regionReadingContract.regions` 仅登记「区域识别枚举」（table/overview/tree/form/filter/steps/detail/nav 的 label/desc），用于区域命中判定与提示文案，**不含任何文档路径**。
+
+**启用条件（条件式）**：页面 `sections`（区块 type/title）命中区域识别枚举（注册表登记枚举 ∪ 校验器内置识别枚举）。`wireframe.regions` 的 templateRegion 属模板必需骨架（由模板契约管辖），不触发本规则——避免每张表格页都强制声明筛选等骨架规范；声明触发面与设计决策面一致（sections 才是 AI 设计决策载体）。
+
+**判定（双 errorCode）**：
+
+| 情形 | 级别 | errorCode |
+|---|---|---|
+| 命中区域，但声明池（designContext 与页面级 regionBasisDeclarations 合并）无该区域任何声明 | warning | REGION_BASIS_UNDECLARED |
+| 有声明，但 ref 未在 readLedger **锚点级**精读命中（status=read 且锚点一致；`#*` 整篇已读覆盖任意锚点） | warning | REGION_BASIS_UNREAD |
+| 同文档仅读索引（index-only）或只读了另一小节 | warning | REGION_BASIS_UNREAD |
+| 声明 ref 锚点级 read 命中（或该文档 `#*` 整篇 read） | 通过 | - |
+
+**豁免**：复用业务组件容器页（RULE-59）、PD override 页、`wireframeSharedFrom` 从页面（主页面承担）跳过；页面级声明 `regionBasisExempt: {reason: "..."}` 豁免；历史 JSON 无 designContext 不启用（不误伤）。
+
+**契约边界**：registry 只登记区域识别枚举、不登记「区域 → 必读文档」映射；规范真值以精读原文为准。表单区块的布局依据由 RULE-57 单独承载，筛选项控件选择依据由 RULE-54（widget patterns）承载——这些结果的依据校验不因本规则重复告警（本规则只查"区域依据是否已声明并精读"）。
+
+**示例**：页面拆出"事件表格区"（type 含"表格"），regionBasisDeclarations 无 table 声明 → REGION_BASIS_UNDECLARED（message 提示按当前实际加载的 CD/PD 目录确认表格相关规范）；AI 在 `designContext.regionBasisDeclarations` 补 `{region: "table", ref: "<CD/PD 实际路径>#<表格锚点>", source: "common-design"}` 但 readLedger 未登记该锚点 read → REGION_BASIS_UNREAD；补 `{"ref": "<同路径>#<表格锚点>", "status": "read"}`（或该文档 `#*` 整篇 read）后通过，精读结论（操作列收纳等）随之进入设计依据。
+### 11.36 表格行内操作收纳检验（RULE-71）
+
+**目的**：RULE-70 保证表格规范已精读，本规则对最易踩坑的操作列做结果性兜底检验——行内操作超过收纳阈值仍平铺时提醒收敛，防止列宽挤压、操作溢出换行进入编码。
+
+**行内操作来源**（按优先级）：
+1. 区块 `rowActions` 数组（行内操作专用键，渲染器渲染为"行内操作（操作列）"表）；
+2. `actions[].scope = "row"` 的项（显式标记行内）；`scope = "toolbar"` 的项不计入；
+3. 两者均未声明时以区块 `actions` 总数启发判定，并在告警 message 提示用 `rowActions` 或 `actions[].scope` 显式区分。
+
+**判定**：行内操作数量超过阈值（默认 3；区块或页面 `actionColumnLimit` 可覆盖）且未声明收纳 → `ACTION_COLUMN_OVERFLOW`（warning）。收纳豁免：区块声明 `actionOverflow: true`，或 description/interactionNotes/线框 ascii 中已含"更多"收纳痕迹。
+
+**口径边界**：本 Skill 不内置规范真值数值，阈值 3 仅为通用提醒口径，收纳规则真值以已读取的 Common Design 表格规范为准（由 RULE-70 保证已精读）。
+
+**示例（告警）**：表格区块 rowActions 声明 5 个操作、无收纳声明 → ACTION_COLUMN_OVERFLOW（warning，fix 建议收纳进"更多"并声明 actionOverflow）；**示例（通过）**：5 个操作但 description 写明"超出部分收进更多菜单"、区块声明 `actionOverflow: true` → 通过。
+
+### 11.37 字段合并承载声明（RULE-36 扩展：mergedFields）
+
+**目的与语义**：需求文档要配置的字段与界面配置项是**包含关系而非一一对应**——设计手法可以把多个需求配置项合并为一个界面配置项承载（信息完整承载即算覆盖）：地理位置要求配置国家/地区/省份/城市，可合并为"地理位置"一个级联配置；执行周期的周期类型/每周几/时间，可合并为"执行周期"一个复合配置。早期 RULE-36 只做字段名字面匹配（精确/双向包含），合并字段与源字段零交集会被误判 REQUIRED_FIELD_MISSING（error），逼出两个错误行为：把级联拆回独立配置项（违背设计手法），或滥用 excludedFields（其语义是"不展示"，合并明明展示了）。本节在不削弱遗漏检测的前提下放开合并自由。
+
+**契约**：页面对象新增 `mergedFields` 映射（字段名 → 合并声明）：
+
+```json
+"mergedFields": {
+  "国家": { "into": "地理位置", "note": "国家/地区/省份/城市合并为地理位置级联选择器" },
+  "地区": { "into": "地理位置", "note": "同上" },
+  "省份": { "into": "地理位置", "note": "同上" },
+  "城市": { "into": "地理位置", "note": "同上" },
+  "联系人": { "into": ["联系人姓名", "联系电话"], "note": "复合字段一拆二承载" }
+}
+```
+
+- `into`：合并去向，字符串（多合一）或字符串数组（一拆多/多对多）；**必须全部命中本页面实际落位字段数组**（tableFields/formFields/filterFields/cardFields/fields/detailFields 的真实字段名，区块级或页面级均可）；
+- `note`：合并手法说明（合并为什么控件形态、承载关系），专业判断留痕；
+- 一个 into 承接多个源字段是正常场景；合并声明与 excludedFields 语义互斥——排除是"不展示"，合并是"换形态展示"，into 不指向被排除字段。
+
+**判定链**（RULE-36 对每个 requirementFieldNames 字段依次判定）：落位字段数组字面命中 → 通过；excludedFields 排除 → 通过；mergedFields 有声明且 into 全部命中真实落位字段 → 通过；否则 REQUIRED_FIELD_MISSING（error）。into 未全部命中（拼错/指向被排除字段/为空）给 MERGED_FIELD_TARGET_MISSING（warning）且该字段仍按缺失阻断——防止声明一个不存在的目标骗过校验。双向包含启发（"联系人" in "联系人姓名"）对多数一拆多场景自然兜住，零交集拆分用 into 数组显式声明。
+
+**机制边界**：校验器不硬编码"哪些字段允许合并、合并成什么控件形态"——那是设计判断，真值在已读取的 Common Design 表单/组件规范（如级联选择器适用场景），mergedFields 机制只管"合并必须逐字段显式登记 + 去向真实存在"，任何字段名、任何业务领域通用，新合并场景无需改 Skill。字段合并时 `requirementOptionSets` 应改按 into 字段名（合并后形态）声明选项集；按源字段名声明的选项集因字段名零交集校验会静默跳过（不误伤也验不到），AI 侧须自觉换名。

@@ -92,6 +92,48 @@
         "table",
         "pagination"
       ],
+      "overviewVariants": {
+        "source": "common-design/references/02-template/01-page-types.md#page-table-overview",
+        "note": "概览区形态枚举来源于 Common Design 概览表格页模板定义，实际枚举以精读该锚点原文为准；本登记为机器可读快照，Common Design 更新后按 templateSync 机制对账。图表类组件名不在此硬编码，以已读取的 Common Design 组件映射表为准。",
+        "styles": [
+          {
+            "id": "stat-number",
+            "name": "数字统计型",
+            "drawKind": "stat",
+            "drawHint": "统计卡行：指标名+数字对（如 事件总数 42），可点击数字与跳转在区块说明补充",
+            "components": [
+              "IxCard"
+            ]
+          },
+          {
+            "id": "pie-chart",
+            "name": "饼图",
+            "drawKind": "chart",
+            "drawHint": "图表占位框：方框内标注（饼图：维度名），占比维度与图例在 overviewMetrics 中逐项声明",
+            "components": [
+              "IxCard"
+            ]
+          },
+          {
+            "id": "line-chart",
+            "name": "折线图",
+            "drawKind": "chart",
+            "drawHint": "图表占位框：方框内标注（折线图：指标随时间变化趋势）",
+            "components": [
+              "IxCard"
+            ]
+          },
+          {
+            "id": "bar-chart",
+            "name": "条形图",
+            "drawKind": "chart",
+            "drawHint": "图表占位框：方框内标注（条形图：分类横向对比）",
+            "components": [
+              "IxCard"
+            ]
+          }
+        ]
+      },
       "requiredComponents": {
         "overview": [
           "IxCard"
@@ -130,6 +172,48 @@
         "table",
         "pagination"
       ],
+      "overviewVariants": {
+        "source": "common-design/references/02-template/01-page-types.md#page-table-overview-tree",
+        "note": "概览区形态枚举来源于 Common Design 概览左树表格页模板定义（概览区形态与概览表格页一致），实际枚举以精读该锚点原文为准；本登记为机器可读快照，Common Design 更新后按 templateSync 机制对账。图表类组件名不在此硬编码，以已读取的 Common Design 组件映射表为准。",
+        "styles": [
+          {
+            "id": "stat-number",
+            "name": "数字统计型",
+            "drawKind": "stat",
+            "drawHint": "统计卡行：指标名+数字对（如 事件总数 42），可点击数字与跳转在区块说明补充",
+            "components": [
+              "IxCard"
+            ]
+          },
+          {
+            "id": "pie-chart",
+            "name": "饼图",
+            "drawKind": "chart",
+            "drawHint": "图表占位框：方框内标注（饼图：维度名），占比维度与图例在 overviewMetrics 中逐项声明",
+            "components": [
+              "IxCard"
+            ]
+          },
+          {
+            "id": "line-chart",
+            "name": "折线图",
+            "drawKind": "chart",
+            "drawHint": "图表占位框：方框内标注（折线图：指标随时间变化趋势）",
+            "components": [
+              "IxCard"
+            ]
+          },
+          {
+            "id": "bar-chart",
+            "name": "条形图",
+            "drawKind": "chart",
+            "drawHint": "图表占位框：方框内标注（条形图：分类横向对比）",
+            "components": [
+              "IxCard"
+            ]
+          }
+        ]
+      },
       "requiredComponents": {
         "overview": [
           "IxCard"
@@ -533,6 +617,43 @@
       "variants": {
         "required": false,
         "rule": ""
+      }
+    }
+  },
+  "regionReadingContract": {
+    "description": "区域规范依据双轨契约（RULE-70）：页面区块命中区域后，该区域的规范依据以运行时声明的 regionBasisDeclarations 为准——ref 必须取自当前实际加载的 Common Design / Product Design 目录，本 Skill 不预置、不维护任何规范文档路径（规范分布在 Common Design 多个目录，如 02-template 页面模板、03-patterns 交互与信息层级判断、05-components 组件映射等，且随版本演进）。本注册表仅登记「区域识别枚举」作为兜底：区块命中区域但声明池（designContext 与页面级 regionBasisDeclarations 合并）中无该区域依据声明时给 REGION_BASIS_UNDECLARED（warning）；声明了依据但 ref 未在 readLedger 锚点级精读命中（status=read，#* 整篇可命中）给 REGION_BASIS_UNREAD（warning）。表单布局单列口径由 RULE-57 承载、控件形态选择依据由 RULE-54 承载，不在此重复告警。Common Design 更新后以 templateSync 机制对本枚举对账。",
+    "regions": {
+      "table": {
+        "label": "表格",
+        "desc": "表格区规范（列配置、操作列收纳、空态等）"
+      },
+      "overview": {
+        "label": "概览",
+        "desc": "概览区规范（统计卡、图表组件等）"
+      },
+      "tree": {
+        "label": "树",
+        "desc": "树形区规范（树面板、树形下拉等）"
+      },
+      "form": {
+        "label": "表单",
+        "desc": "表单区规范（布局、校验、反馈等；表单布局单列口径由 RULE-57 承载）"
+      },
+      "filter": {
+        "label": "筛选",
+        "desc": "筛选区规范（筛选方式、控件选择等；控件形态判定由 RULE-54 承载）"
+      },
+      "steps": {
+        "label": "步骤条",
+        "desc": "步骤条规范（步骤流转、状态标记等）"
+      },
+      "detail": {
+        "label": "详情",
+        "desc": "详情展示区规范（信息层级、字段展示等）"
+      },
+      "nav": {
+        "label": "导航",
+        "desc": "导航区规范（全局导航、菜单结构等）"
       }
     }
   },
